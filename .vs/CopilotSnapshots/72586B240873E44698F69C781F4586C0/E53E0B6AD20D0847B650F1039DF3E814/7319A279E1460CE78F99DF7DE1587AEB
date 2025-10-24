@@ -1,0 +1,215 @@
+﻿@model WebCinema.Models.Khach_Hang
+
+@{
+    ViewBag.Title = "Tài Khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .profile-container {
+        max-width: 1000px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-name {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-email {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    .profile-body {
+        background: white;
+        padding: 2rem;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-tabs {
+        display: flex;
+        gap: 0;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .profile-tab {
+        flex: 1;
+        padding: 1rem;
+        background: #f9f9f9;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .profile-tab.active {
+        background: white;
+        color: #ff6b35;
+        border-bottom-color: #ff6b35;
+    }
+
+    .profile-content {
+        display: none;
+    }
+
+    .profile-content.active {
+        display: block;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        padding: 1.5rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #ff6b35;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+    .btn-edit {
+        padding: 0.8rem 2rem;
+        background: #ff6b35;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit:hover {
+        background: #ff8555;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            👤
+        </div>
+        <h1 class="profile-name">@Model.ho_ten</h1>
+        <p class="profile-email">@Model.email</p>
+    </div>
+
+    <div class="profile-body">
+        <div class="profile-tabs">
+            <button class="profile-tab active" onclick="switchTab(0)">Thông Tin Cá Nhân</button>
+            <button class="profile-tab" onclick="switchTab(1)">Lịch Sử Đặt Vé</button>
+            <button class="profile-tab" onclick="switchTab(2)">Ưu Đãi</button>
+        </div>
+
+        <!-- Personal Info Tab -->
+        <div class="profile-content active" id="content-0">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">Họ và tên</div>
+                    <div class="info-value">@Model.ho_ten</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">@Model.email</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Số điện thoại</div>
+                    <div class="info-value">@(Model.so_dien_thoai ?? "Chưa cập nhật")</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Mã khách hàng</div>
+                    <div class="info-value">#KH@Model.khach_hang_id.ToString("D6")</div>
+                </div>
+            </div>
+            <button class="btn-edit" onclick="alert('Tính năng đang phát triển')">
+                Chỉnh Sửa Thông Tin
+            </button>
+        </div>
+
+        <!-- Booking History Tab -->
+        <div class="profile-content" id="content-1">
+            <div class="empty-state">
+                <div class="empty-state-icon">🎬</div>
+                <h3>Chưa có lịch sử đặt vé</h3>
+                <p>Bạn chưa đặt vé xem phim nào. Hãy khám phá các bộ phim đang chiếu!</p>
+            </div>
+        </div>
+
+        <!-- Promotions Tab -->
+        <div class="profile-content" id="content-2">
+            <div class="empty-state">
+                <div class="empty-state-icon">🎁</div>
+                <h3>Chưa có ưu đãi nào</h3>
+                <p>Các ưu đãi dành riêng cho bạn sẽ xuất hiện tại đây.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(index) {
+        // Update tabs
+        const tabs = document.querySelectorAll('.profile-tab');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        tabs[index].classList.add('active');
+
+        // Update content
+        const contents = document.querySelectorAll('.profile-content');
+        contents.forEach(content => content.classList.remove('active'));
+        document.getElementById('content-' + index).classList.add('active');
+    }
+</script>

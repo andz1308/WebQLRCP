@@ -1,0 +1,96 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class DashboardController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        public ActionResult Index()
+        {
+            try
+            {
+                // Th?ng kê t?ng quan
+                var totalMovies = db.Phims.Count();
+                var totalUsers = db.Khach_Hangs.Count();
+                var totalBookings = db.Dat_Ves.Count();
+                var totalRevenue = db.Dat_Ves.Sum(d => (decimal?)d.tong_tien) ?? 0;
+
+                // Th?ng kê theo tháng
+                var currentMonth = DateTime.Now.Month;
+                var currentYear = DateTime.Now.Year;
+                var monthlyRevenue = db.Dat_Ves
+                    .Where(d => d.ngay_tao.HasValue && 
+                                d.ngay_tao.Value.Month == currentMonth && 
+                                d.ngay_tao.Value.Year == currentYear)
+                    .Sum(d => (decimal?)d.tong_tien) ?? 0;
+
+                var monthlyBookings = db.Dat_Ves
+                    .Where(d => d.ngay_tao.HasValue && 
+                                d.ngay_tao.Value.Month == currentMonth && 
+                                d.ngay_tao.Value.Year == currentYear)
+                    .Count();
+
+                // Top 5 phim có doanh thu cao nh?t
+                var topMovies = db.Ves
+                    .Where(v => v.Dat_Ve.ngay_tao.HasValue)
+                    .GroupBy(v => v.Suat_Chieu.phim_id)
+                    .Select(g => new
+                    {
+                        PhimId = g.Key,
+                        TongDoanhThu = g.Sum(v => v.gia_ve),
+                        SoVe = g.Count()
+                    })
+                    .OrderByDescending(x => x.TongDoanhThu)
+                    .Take(5)
+                    .ToList();
+
+                // Doanh thu 7 ngày g?n nh?t
+                var last7Days = Enumerable.Range(0, 7)
+                    .Select(i => DateTime.Today.AddDays(-i))
+                    .Reverse()
+                    .ToList();
+
+                var dailyRevenue = last7Days.Select(date => new
+                {
+                    Date = date,
+                    Revenue = db.Dat_Ves
+                        .Where(d => d.ngay_tao.HasValue && 
+                                    d.ngay_tao.Value.Date == date)
+                        .Sum(d => (decimal?)d.tong_tien) ?? 0
+                }).ToList();
+
+                ViewBag.TotalMovies = totalMovies;
+                ViewBag.TotalUsers = totalUsers;
+                ViewBag.TotalBookings = totalBookings;
+                ViewBag.TotalRevenue = totalRevenue;
+                ViewBag.MonthlyRevenue = monthlyRevenue;
+                ViewBag.MonthlyBookings = monthlyBookings;
+                ViewBag.TopMovies = topMovies;
+                ViewBag.DailyRevenue = dailyRevenue;
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có l?i x?y ra khi t?i d? li?u th?ng kê.";
+                return View();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

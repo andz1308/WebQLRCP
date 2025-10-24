@@ -1,0 +1,89 @@
+﻿@model IEnumerable<WebCinema.Models.Rap>
+
+@{
+    ViewBag.Title = "Quản Lý Rạp Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-building"></i> Danh Sách Rạp Chiế‌u</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Rạp Mới
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+            @foreach (var cinema in Model)
+            {
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; background: white;">
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 1rem;">
+                        <div style="flex: 1;">
+                            <h3 style="color: #2c3e50; margin-bottom: 0.5rem; font-size: 1.3rem;">
+                                <i class="fas fa-film" style="color: #ff6b35;"></i> @cinema.ten_rap
+                            </h3>
+                            <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                                <i class="fas fa-map-marker-alt"></i> @(cinema.dia_chi ?? "Chưa cập nhật địa chỉ")
+                            </p>
+                            <p style="color: #7f8c8d; font-size: 0.9rem;">
+                                <i class="fas fa-envelope"></i> @(cinema.email ?? "N/A")
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(cinema.mo_ta))
+                    {
+                        <p style="color: #555; font-size: 0.9rem; margin-bottom: 1rem; border-left: 3px solid #ff6b35; padding-left: 1rem;">
+                            @cinema.mo_ta
+                        </p>
+                    }
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
+                        <a href="@Url.Action("Rooms", new { id = cinema.rap_id })" class="btn btn-primary" style="padding: 0.6rem 1rem; flex: 1;">
+                            <i class="fas fa-door-open"></i> Phòng Chiếu
+                        </a>
+                        <a href="@Url.Action("Edit", new { id = cinema.rap_id })" class="btn btn-secondary" style="padding: 0.6rem 1rem;">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <button onclick="deleteCinema(@cinema.rap_id, '@cinema.ten_rap')" class="btn btn-danger" style="padding: 0.6rem 1rem;">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có rạp chiếu nào trong hệ thống.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteCinema(id, name) {
+            if (confirmDelete('Bạn có chắc chắn muốn xóa rạp "' + name + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+

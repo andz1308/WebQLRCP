@@ -1,0 +1,183 @@
+﻿using System;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Security;
+using WebCinema.Models;
+using WebCinema.Services;
+
+namespace WebCinema.Controllers
+{
+    public class AccountController : Controller
+    {
+        private AuthService authService = new AuthService();
+
+        // GET: Account/Login
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        // POST: Account/Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(LoginViewModel model, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                var auth = authService.Login(model.Email, model.Password);
+
+                if (auth != null && auth.IsAuthenticated)
+                {
+                    // Clear any previous session
+                    Session.Clear();
+
+                    if (auth.Role == "Customer" && auth.Customer != null)
+                    {
+                        Session["CustomerId"] = auth.Customer.khach_hang_id;
+                        Session["CustomerName"] = auth.Customer.ho_ten;
+                        Session["CustomerEmail"] = auth.Customer.email;
+                        Session["UserRole"] = "Customer";
+
+                        if (model.RememberMe)
+                        {
+                            HttpCookie userCookie = new HttpCookie("UserAuth");
+                            userCookie["Email"] = auth.Customer.email;
+                            userCookie.Expires = DateTime.Now.AddDays(30);
+                            Response.Cookies.Add(userCookie);
+                        }
+
+                        // Create auth cookie
+                        FormsAuthentication.SetAuthCookie(auth.Customer.email, model.RememberMe);
+                    }
+                    else if ((auth.Role == "Admin" || auth.Role == "Staff") && auth.Employee != null)
+                    {
+                        Session["EmployeeId"] = auth.Employee.nhanvien_id;
+                        Session["EmployeeName"] = auth.Employee.ho_ten;
+                        Session["EmployeeEmail"] = auth.Employee.email;
+                        Session["UserRole"] = auth.Role; // Admin or Staff
+
+                        if (model.RememberMe)
+                        {
+                            HttpCookie userCookie = new HttpCookie("UserAuth");
+                            userCookie["Email"] = auth.Employee.email;
+                            userCookie.Expires = DateTime.Now.AddDays(30);
+                            Response.Cookies.Add(userCookie);
+                        }
+
+                        // Create auth cookie
+                        FormsAuthentication.SetAuthCookie(auth.Employee.email, model.RememberMe);
+                    }
+
+                    // Redirect based on role
+                    if (auth.Role == "Admin")
+                    {
+                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                    }
+
+                    if (auth.Role == "Staff")
+                    {
+                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                    }
+
+                    // For customers, redirect to return URL or home
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
+            }
+
+            return View(model);
+        }
+
+        // GET: Account/Register
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Account/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string errorMessage;
+                bool success = authService.Register(model, out errorMessage);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                    return RedirectToAction("Login");
+                }
+
+                ModelState.AddModelError("", errorMessage);
+            }
+
+            return View(model);
+        }
+
+        // GET: Account/Logout
+        public ActionResult Logout()
+        {
+            // Clear session
+            Session.Clear();
+            Session.Abandon();
+
+            // Clear cookie
+            if (Request.Cookies["UserAuth"] != null)
+            {
+                HttpCookie userCookie = new HttpCookie("UserAuth");
+                userCookie.Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Add(userCookie);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        // GET: Account/Profile
+        new public ActionResult Profile()
+        {
+            // If customer
+            if (Session["UserRole"] == null)
+            {
+                return RedirectToAction("Login", new { returnUrl = Url.Action("Profile") });
+            }
+
+            var role = Session["UserRole"].ToString();
+
+            if (role == "Customer")
+            {
+                int customerId = (int)Session["CustomerId"];
+                var customer = authService.GetCustomerById(customerId);
+
+                if (customer == null)
+                {
+                    return RedirectToAction("Logout");
+                }
+
+                return View(customer);
+            }
+
+            // For staff/admin show employee profile view (reuse same view or create new)
+            if (role == "Admin" || role == "Staff")
+            {
+                int employeeId = (int)Session["EmployeeId"];
+                var employee = authService.GetEmployeeById(employeeId);
+                if (employee == null)
+                {
+                    return RedirectToAction("Logout");
+                }
+
+                return View("ProfileEmployee", employee);
+            }
+
+            return RedirectToAction("Logout");
+        }
+    }
+}

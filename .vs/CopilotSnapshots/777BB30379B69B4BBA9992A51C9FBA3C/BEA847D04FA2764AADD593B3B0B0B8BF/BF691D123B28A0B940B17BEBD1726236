@@ -1,0 +1,95 @@
+﻿@model WebCinema.Models.Phim
+
+@{
+    ViewBag.Title = "Thêm Phim M?i";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Phim M?i</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay L?i
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Create", "MovieManagement", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Tên Phim *</label>
+                    @Html.TextBoxFor(m => m.ten_phim, new { @class = "form-control", placeholder = "Nh?p tên phim", required = "required" })
+                    @Html.ValidationMessageFor(m => m.ten_phim, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">??o Di?n</label>
+                    @Html.DropDownList("dao_dien_id", (SelectList)ViewBag.DaoDiens, "-- Ch?n ??o di?n --", new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nhà S?n Xu?t</label>
+                    @Html.DropDownList("nha_san_xuat_id", (SelectList)ViewBag.NhaSanXuats, "-- Ch?n nhà s?n xu?t --", new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Th?i L??ng (phút)</label>
+                    @Html.TextBoxFor(m => m.thoi_luong, new { @class = "form-control", type = "number", placeholder = "120" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày Kh?i Chi?u</label>
+                    @Html.TextBoxFor(m => m.ngay_khoi_chieu, new { @class = "form-control", type = "date" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Mô T?</label>
+                    @Html.TextAreaFor(m => m.mo_ta, new { @class = "form-control", rows = 5, placeholder = "Mô t? v? phim..." })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Th? Lo?i</label>
+                    <div style="max-height: 200px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
+                        @foreach (var genre in (List<WebCinema.Models.Loai_Phim>)ViewBag.LoaiPhims)
+                        {
+                            <div style="margin-bottom: 0.5rem;">
+                                <input type="checkbox" name="selectedGenres" value="@genre.loaiphim_id" id="genre_@genre.loaiphim_id" />
+                                <label for="genre_@genre.loaiphim_id" style="margin-left: 0.5rem; cursor: pointer;">@genre.ten_loai</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Poster/Hình ?nh</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Trailer (Video ho?c YouTube Link)</label>
+                    <input type="text" name="video" class="form-control" placeholder="https://youtube.com/watch?v=..." />
+                    <small style="color: #999;">Ho?c upload video:</small>
+                    <input type="file" name="videoFile" class="form-control" accept="video/*" style="margin-top: 0.5rem;" />
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> L?u Phim
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>
+}
+

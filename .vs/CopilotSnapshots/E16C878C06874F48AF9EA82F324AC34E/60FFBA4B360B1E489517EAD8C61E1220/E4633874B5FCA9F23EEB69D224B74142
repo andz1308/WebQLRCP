@@ -1,0 +1,200 @@
+﻿using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using WebCinema.Models; // Namespace chứa CSDLDataContext
+
+namespace WebCinema.Services
+{
+    public class AuthService
+    {
+        private readonly CSDLDataContext db;
+
+        // ---------------------------------------------------------
+        // 🧱 CONSTRUCTOR
+        // ---------------------------------------------------------
+        public AuthService()
+        {
+            // Sử dụng constructor mặc định của CSDLDataContext (.dbml)
+            // -> Tự động đọc connection string từ file Settings.settings
+            db = new CSDLDataContext();
+        }
+
+        // ---------------------------------------------------------
+        // 🔒 HÀM HASH MẬT KHẨU
+        // ---------------------------------------------------------
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 🧾 ĐĂNG KÝ KHÁCH HÀNG MỚI
+        // ---------------------------------------------------------
+        public bool Register(RegisterViewModel model, out string errorMessage)
+        {
+            errorMessage = null;
+
+            // Kiểm tra email trùng
+            if (db.Khach_Hangs.Any(k => k.email == model.Email))
+            {
+                errorMessage = "Email đã được sử dụng.";
+                return false;
+            }
+
+            // Kiểm tra số điện thoại trùng
+            if (db.Khach_Hangs.Any(k => k.so_dien_thoai == model.PhoneNumber))
+            {
+                errorMessage = "Số điện thoại đã được sử dụng.";
+                return false;
+            }
+
+            try
+            {
+                var customer = new Khach_Hang
+                {
+                    ho_ten = model.FullName,
+                    email = model.Email,
+                    so_dien_thoai = model.PhoneNumber,
+                    mat_khau = HashPassword(model.Password),
+                    ngay_dang_ky = DateTime.Now
+                };
+
+                db.Khach_Hangs.InsertOnSubmit(customer);
+                db.SubmitChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Lỗi khi đăng ký: " + ex.Message;
+                return false;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 🔑 ĐĂNG NHẬP (CHO ADMIN / STAFF / CUSTOMER)
+        // ---------------------------------------------------------
+        public AuthResult Login(string email, string password)
+        {
+            var result = new AuthResult { IsAuthenticated = false };
+
+            // --- Kiểm tra nhân viên (Admin hoặc Staff)
+            var employee = db.Nhan_Viens.FirstOrDefault(n => n.email == email);
+            if (employee != null)
+            {
+                // Nếu cột mật khẩu có giá trị, kiểm tra mật khẩu đã hash
+                try
+                {
+                    if (!string.IsNullOrEmpty(employee.mat_khau))
+                    {
+                        if (employee.mat_khau != HashPassword(password))
+                        {
+                            // Mật khẩu không khớp
+                            return result;
+                        }
+                    }
+                    else
+                    {
+                        // Nếu chưa có mật khẩu lưu, không cho đăng nhập để bảo mật
+                        return result;
+                    }
+                }
+                catch
+                {
+                    return result;
+                }
+
+                result.IsAuthenticated = true;
+                result.Employee = employee;
+
+                try
+                {
+                    if (employee.role_id.HasValue)
+                    {
+                        var role = db.Roles.FirstOrDefault(r => r.role_id == employee.role_id.Value);
+                        if (role != null && role.ten_role != null)
+                        {
+                            var roleName = role.ten_role.Trim();
+                            if (roleName.Equals("admin", StringComparison.OrdinalIgnoreCase) || roleName.IndexOf("admin", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                result.Role = "Admin";
+                            }
+                            else
+                            {
+                                result.Role = "Staff";
+                            }
+                        }
+                        else
+                        {
+                            result.Role = "Staff";
+                        }
+                    }
+                    else
+                    {
+                        result.Role = "Staff";
+                    }
+                }
+                catch
+                {
+                    result.Role = "Staff";
+                }
+
+                return result;
+            }
+
+            // --- Kiểm tra khách hàng
+            var customer = db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+            if (customer != null)
+            {
+                if (customer.mat_khau == HashPassword(password))
+                {
+                    result.IsAuthenticated = true;
+                    result.Customer = customer;
+                    result.Role = "Customer";
+                }
+                return result;
+            }
+
+            // --- Không tìm thấy tài khoản
+            return result;
+        }
+
+        // ---------------------------------------------------------
+        // 🧍 LẤY DỮ LIỆU NGƯỜI DÙNG
+        // ---------------------------------------------------------
+        public Khach_Hang GetCustomerById(int id)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == id);
+        }
+
+        public Khach_Hang GetCustomerByEmail(string email)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+        }
+
+        public Nhan_Vien GetEmployeeById(int id)
+        {
+            return db.Nhan_Viens.FirstOrDefault(n => n.nhanvien_id == id);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 📦 KẾT QUẢ ĐĂNG NHẬP
+    // ---------------------------------------------------------
+    public class AuthResult
+    {
+        public bool IsAuthenticated { get; set; }
+        public string Role { get; set; }     // "Admin" | "Staff" | "Customer"
+        public Nhan_Vien Employee { get; set; }
+        public Khach_Hang Customer { get; set; }
+    }
+}

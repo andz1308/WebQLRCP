@@ -1,0 +1,101 @@
+﻿-- =====================================================
+-- SQL Script: Add Authentication Columns to Khach_Hang
+-- =====================================================
+-- Project: WebCinema
+-- Purpose: Add password and registration date columns for user authentication
+-- Run this script in SQL Server Management Studio
+-- =====================================================
+
+-- STEP 1: Identify your database name
+-- Replace [WebCinema_DB] with your actual database name
+USE [WebCinema_DB]  
+GO
+
+-- STEP 2: Check current structure of Khach_Hang table
+SELECT 
+    COLUMN_NAME, 
+    DATA_TYPE, 
+    CHARACTER_MAXIMUM_LENGTH,
+    IS_NULLABLE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'Khach_Hang'
+ORDER BY ORDINAL_POSITION
+GO
+
+-- STEP 3: Add mat_khau (password) column
+-- This will store SHA256 hashed passwords (64 characters in hex = 256 bits)
+IF NOT EXISTS (
+    SELECT * FROM sys.columns 
+    WHERE object_id = OBJECT_ID(N'[dbo].[Khach_Hang]') 
+    AND name = 'mat_khau'
+)
+BEGIN
+    ALTER TABLE [dbo].[Khach_Hang]
+    ADD mat_khau NVARCHAR(256) NULL
+    
+    PRINT '✓ Column mat_khau added successfully'
+END
+ELSE
+BEGIN
+    PRINT '! Column mat_khau already exists'
+END
+GO
+
+-- STEP 4: Add ngay_dang_ky (registration date) column
+IF NOT EXISTS (
+    SELECT * FROM sys.columns 
+    WHERE object_id = OBJECT_ID(N'[dbo].[Khach_Hang]') 
+    AND name = 'ngay_dang_ky'
+)
+BEGIN
+    ALTER TABLE [dbo].[Khach_Hang]
+    ADD ngay_dang_ky DATETIME NULL DEFAULT GETDATE()
+    
+    PRINT '✓ Column ngay_dang_ky added successfully'
+END
+ELSE
+BEGIN
+    PRINT '! Column ngay_dang_ky already exists'
+END
+GO
+
+-- STEP 5: Update existing records with default registration date
+UPDATE [dbo].[Khach_Hang]
+SET ngay_dang_ky = GETDATE()
+WHERE ngay_dang_ky IS NULL
+GO
+
+-- STEP 6: Verify the changes
+SELECT TOP 10
+    khach_hang_id,
+    ho_ten,
+    email,
+    so_dien_thoai,
+    mat_khau,
+    ngay_dang_ky
+FROM [dbo].[Khach_Hang]
+GO
+
+PRINT ''
+PRINT '====================================='
+PRINT 'DATABASE UPDATE COMPLETED!'
+PRINT '====================================='
+PRINT 'Next Steps:'
+PRINT '1. In Visual Studio, open CSDL.dbml'
+PRINT '2. Right-click on design surface'
+PRINT '3. Select "Update Model from Database"'
+PRINT '4. Or delete and re-add the Khach_Hang table'
+PRINT '5. Save and rebuild the project'
+PRINT '6. Uncomment the authentication code in AuthService.cs'
+PRINT '====================================='
+GO
+
+-- OPTIONAL: Add indexes for performance
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Khach_Hang_Email')
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX IX_Khach_Hang_Email
+    ON [dbo].[Khach_Hang] (email)
+    
+    PRINT '✓ Index created on email column for faster lookups'
+END
+GO

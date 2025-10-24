@@ -1,0 +1,90 @@
+﻿using System;
+using System.Linq;
+using WebCinema.Models;
+
+namespace WebCinema.Services
+{
+    public class AuthService
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // ===== IMPORTANT NOTE =====
+        // Database table Khach_Hang currently has these columns:
+        // - khach_hang_id (int)
+        // - ho_ten (string)
+        // - email (string)
+        // - so_dien_thoai (string)
+        // 
+        // It does NOT have:
+        // - mat_khau (password)
+        // - ngay_dang_ky (registration date)
+        //
+        // This is a TEMPORARY implementation for testing.
+        // To add proper authentication, run the SQL script:
+        // WebCinema\Database\AddAuthenticationColumns.sql
+        // Then refresh the DBML file.
+        // ===========================
+
+        // Register new customer (without password for now)
+        public bool Register(RegisterViewModel model, out string errorMessage)
+        {
+            errorMessage = null;
+
+            // Check if email already exists
+            if (db.Khach_Hangs.Any(k => k.email == model.Email))
+            {
+                errorMessage = "Email đã được sử dụng";
+                return false;
+            }
+
+            // Check if phone already exists
+            if (!string.IsNullOrEmpty(model.PhoneNumber) && 
+                db.Khach_Hangs.Any(k => k.so_dien_thoai == model.PhoneNumber))
+            {
+                errorMessage = "Số điện thoại đã được sử dụng";
+                return false;
+            }
+
+            try
+            {
+                var customer = new Khach_Hang
+                {
+                    ho_ten = model.FullName,
+                    email = model.Email,
+                    so_dien_thoai = model.PhoneNumber
+                    // NOTE: Password is not stored until mat_khau column is added to database
+                };
+
+                db.Khach_Hangs.InsertOnSubmit(customer);
+                db.SubmitChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Đã xảy ra lỗi khi đăng ký: " + ex.Message;
+                return false;
+            }
+        }
+
+        // Login - TEMPORARY: Only checks if email exists (no password validation)
+        // TODO: After adding mat_khau column, implement proper password validation
+        public Khach_Hang Login(string email, string password)
+        {
+            // TEMPORARY: Just check if email exists
+            // In production, you MUST verify password
+            return db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+        }
+
+        // Get customer by ID
+        public Khach_Hang GetCustomerById(int id)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == id);
+        }
+
+        // Get customer by email
+        public Khach_Hang GetCustomerByEmail(string email)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+        }
+    }
+}
