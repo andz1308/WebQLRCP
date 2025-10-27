@@ -1,0 +1,122 @@
+﻿@model IEnumerable<WebCinema.Models.Nha_San_Xuat>
+
+@{
+    ViewBag.Title = "Quản Lý Nhà Sản Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-industry"></i> Quản Lý Nhà Sản Xuất</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Nhà Sản Xuất
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "ProducerManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm kiếm theo tên hoặc quốc gia..." class="form-control" style="flex: 1;" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Logo</th>
+                        <th>Tên Nhà Sản Xuất</th>
+                        <th>Quốc Gia</th>
+                        <th>Số Phim</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var producer in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(producer.logo))
+                                {
+                                    var imgSrc = producer.logo.StartsWith("http") ? producer.logo : 
+                                                producer.logo.StartsWith("~") ? Url.Content(producer.logo) : 
+                                                Url.Content("~/Content/images/producers/" + producer.logo);
+                                    <img src="@imgSrc" alt="@producer.ten_nha_san_xuat" style="width: 80px; height: 50px; object-fit: contain; border-radius: 4px;" />
+                                }
+                                else
+                                {
+                                    <div style="width: 80px; height: 50px; background: linear-gradient(135deg, #8e44ad 0%, #a569bd 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                        🏢
+                                    </div>
+                                }
+                            </td>
+                            <td><strong>@producer.ten_nha_san_xuat</strong></td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(producer.quoc_gia))
+                                {
+                                    <span style="padding: 0.3rem 0.8rem; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 0.9rem;">
+                                        <i class="fas fa-flag"></i> @producer.quoc_gia
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color: #999;">N/A</span>
+                                }
+                            </td>
+                            <td>
+                                <span style="padding: 0.3rem 0.8rem; background: #e3f2fd; color: #1976d2; border-radius: 4px; font-weight: 600;">
+                                    @producer.Phims.Count phim
+                                </span>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = producer.nha_san_xuat_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteProducer(@producer.nha_san_xuat_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có nhà sản xuất nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteProducer(id) {
+            if (confirmDelete('Bạn có chắc chắn muốn xóa nhà sản xuất này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

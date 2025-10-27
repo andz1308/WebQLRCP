@@ -1,0 +1,98 @@
+@model WebCinema.Models.Suat_Chieu
+
+@{
+    ViewBag.Title = "Thêm Su?t Chi?u";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Su?t Chi?u</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay L?i
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Create", "ShowtimeManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Phim *</label>
+                    @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, "-- Ch?n phim --", new { @class = "form-control", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">R?p *</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Ch?n r?p --", new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phòng Chi?u *</label>
+                    <select name="phong_chieu_id" id="roomSelect" class="form-control" required>
+                        <option value="">-- Ch?n r?p tr??c --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Ngày Chi?u *</label>
+                    @Html.TextBox("ngay_chieu", "", new { @class = "form-control", type = "date", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ca Chi?u *</label>
+                    @Html.DropDownList("ca_chieu_id", (SelectList)ViewBag.Shifts, "-- Ch?n ca chi?u --", new { @class = "form-control", required = "required" })
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> L?u Su?t Chi?u
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#cinemaSelect').change(function () {
+                var cinemaId = $(this).val();
+                if (cinemaId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRoomsByCinema")',
+                        type: 'GET',
+                        data: { cinemaId: cinemaId },
+                        success: function (response) {
+                            if (response.success) {
+                                var roomSelect = $('#roomSelect');
+                                roomSelect.empty();
+                                roomSelect.append('<option value="">-- Ch?n phòng chi?u --</option>');
+                                $.each(response.rooms, function (index, room) {
+                                    roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
+                                });
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Có l?i x?y ra khi t?i danh sách phòng.');
+                        }
+                    });
+                } else {
+                    $('#roomSelect').empty().append('<option value="">-- Ch?n r?p tr??c --</option>');
+                }
+            });
+
+            // Set minimum date to today
+            var today = new Date().toISOString().split('T')[0];
+            $('input[name="ngay_chieu"]').attr('min', today);
+        });
+    </script>
+}

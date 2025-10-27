@@ -1,0 +1,56 @@
+﻿@model WebCinema.Models.Nha_San_Xuat
+
+@{
+    ViewBag.Title = "Thêm Nhà Sản Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Nhà Sản Xuất</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Create", "ProducerManagement", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Tên Nhà Sản Xuất *</label>
+                    @Html.TextBoxFor(m => m.ten_nha_san_xuat, new { @class = "form-control", placeholder = "Warner Bros, Marvel Studios...", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quốc Gia</label>
+                    @Html.TextBoxFor(m => m.quoc_gia, new { @class = "form-control", placeholder = "Mỹ, Hàn Quốc, Nhật Bản..." })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Logo</label>
+                    <input type="file" name="imageFile" accept="image/*" class="form-control" />
+                    <small style="color: #999; display: block; margin-top: 0.5rem;">Hoặc nhập link logo:</small>
+                    <input type="text" name="imageUrl" class="form-control" placeholder="https://example.com/logo.png" style="margin-top: 0.5rem;" />
+                    <small style="color: #999;">Khuyến nghị: 300x150px (tỷ lệ 2:1)</small>
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Mô Tả</label>
+                    @Html.TextAreaFor(m => m.mo_ta, new { @class = "form-control", rows = "10", placeholder = "Nhập mô tả về nhà sản xuất..." })
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> Lưu Nhà Sản Xuất
+            </button>
+        </div>
+    }
+</div>

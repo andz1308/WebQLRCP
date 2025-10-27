@@ -1,0 +1,176 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class ActorManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ActorManagement
+        public ActionResult Index(string searchTerm)
+        {
+            var actors = db.Dien_Viens.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                actors = actors.Where(a => a.ho_ten.Contains(searchTerm));
+            }
+
+            var result = actors.OrderBy(a => a.ho_ten).ToList();
+            ViewBag.SearchTerm = searchTerm;
+            return View(result);
+        }
+
+        // GET: Admin/ActorManagement/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Admin/ActorManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Dien_Vien actor, HttpPostedFileBase imageFile)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Upload image
+                    if (imageFile != null && imageFile.ContentLength > 0)
+                    {
+                        var fileName = Path.GetFileName(imageFile.FileName);
+                        var uploadDir = Server.MapPath("~/Content/images/Actors");
+
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+
+                        var path = Path.Combine(uploadDir, fileName);
+                        imageFile.SaveAs(path);
+                        actor.hinh_anh = "~/Content/images/Actors/" + fileName;
+                    }
+
+                    db.Dien_Viens.InsertOnSubmit(actor);
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Thêm diễn viên thành công!";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            return View(actor);
+        }
+
+        // GET: Admin/ActorManagement/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var actor = db.Dien_Viens.FirstOrDefault(a => a.dienvien_id == id);
+            if (actor == null)
+            {
+                return HttpNotFound();
+            }
+            return View(actor);
+        }
+
+        // POST: Admin/ActorManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, Dien_Vien actor, HttpPostedFileBase imageFile)
+        {
+            try
+            {
+                var existingActor = db.Dien_Viens.FirstOrDefault(a => a.dienvien_id == id);
+                if (existingActor == null)
+                {
+                    return HttpNotFound();
+                }
+
+                existingActor.ho_ten = actor.ho_ten;
+                existingActor.ngay_sinh = actor.ngay_sinh;
+                existingActor.quoc_tich = actor.quoc_tich;
+                existingActor.tieu_su = actor.tieu_su;
+
+                // Upload new image if provided
+                if (imageFile != null && imageFile.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(imageFile.FileName);
+                    var uploadDir = Server.MapPath("~/Content/images/Actors");
+
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+
+                    var path = Path.Combine(uploadDir, fileName);
+                    imageFile.SaveAs(path);
+                    existingActor.hinh_anh = "~/Content/images/Actors/" + fileName;
+                }
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật diễn viên thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            return View(actor);
+        }
+
+        // POST: Admin/ActorManagement/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var actor = db.Dien_Viens.FirstOrDefault(a => a.dienvien_id == id);
+                if (actor == null)
+                {
+                    return Json(new { success = false, message = "Diễn viên không tồn tại." });
+                }
+
+                // Check if actor has roles
+                if (actor.Vai_Diens.Any())
+                {
+                    return Json(new { success = false, message = "Không thể xóa diễn viên đã tham gia phim." });
+                }
+
+                db.Dien_Viens.DeleteOnSubmit(actor);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa diễn viên thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

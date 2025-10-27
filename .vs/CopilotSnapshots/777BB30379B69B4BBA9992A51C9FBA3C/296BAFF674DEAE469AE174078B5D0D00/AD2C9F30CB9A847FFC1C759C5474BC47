@@ -1,0 +1,150 @@
+﻿@model IEnumerable<WebCinema.Models.MovieViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<section class="movies-section" id="movies">
+    <h2 class="section-title">Phim Đang Chiếu</h2>
+    <div class="movies-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                var movie = item.Movie;
+                var genres = item.Genres;
+                var avgRating = item.AverageRating;
+                var ratingCount = item.RatingCount;
+                var imgPath = item.ImagePath;
+                
+                string genreText = genres != null && genres.Any() ? string.Join(", ", genres) : "Chưa phân loại";
+                string durationText = movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A";
+                
+                // Tính số sao đầy và sao rỗng
+                int fullStars = (int)Math.Round(avgRating);
+                int emptyStars = 5 - fullStars;
+                
+                <div class="movie-card" onclick="location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">
+                    <div class="movie-poster">
+                        @if (!string.IsNullOrEmpty(imgPath))
+                        {
+                            <img src="@imgPath" alt="@movie.ten_phim" style="width: 100%; height: 100%; object-fit: cover;" />
+                        }
+                        else if (!string.IsNullOrEmpty(movie.hinh_anh))
+                        {
+                            // fallback: try original field (handles edge cases)
+                            string imgSrc = movie.hinh_anh.StartsWith("~") ? Url.Content(movie.hinh_anh) : movie.hinh_anh;
+                            <img src="@imgSrc" alt="@movie.ten_phim" style="width: 100%; height: 100%; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                🎬
+                            </div>
+                        }
+                    </div>
+                    <div class="movie-info">
+                        <h3 class="movie-title">@movie.ten_phim</h3>
+                        <p class="movie-genre">@genreText | @durationText</p>
+                        <div class="movie-rating">
+                            <span class="stars">
+                                @for (int i = 0; i < fullStars; i++)
+                                {
+                                    <text>★</text>
+                                }
+                                @for (int i = 0; i < emptyStars; i++)
+                                {
+                                    <text>☆</text>
+                                }
+                            </span>
+                            <span class="rating-text">@avgRating.ToString("0.0")/5 (@ratingCount)</span>
+                        </div>
+                        <button class="movie-btn" onclick="event.stopPropagation(); location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">Đặt Vé</button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #999;">
+                <h3>Hiện chưa có phim nào đang chiếu</h3>
+                <p>Vui lòng quay lại sau!</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- PROMOTIONS SECTION -->
+<section class="promotions-section" id="promotions">
+    <div class="promotions-container">
+        <h2 class="section-title">Khuyến Mãi Đặc Biệt</h2>
+        <div class="promo-grid">
+            <div class="promo-card">
+                <div class="promo-icon">🎫</div>
+                <h3 class="promo-title">Ưu Đãi Thành Viên</h3>
+                <p class="promo-desc">Giảm giá đến 20% cho thành viên VIP khi đặt vé online</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">🍿</div>
+                <h3 class="promo-title">Combo Bắp Nước</h3>
+                <p class="promo-desc">Mua combo bắp nước chỉ từ 69.000đ - Tiết kiệm đến 30%</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">💳</div>
+                <h3 class="promo-title">Thanh Toán Online</h3>
+                <p class="promo-desc">Giảm 10% khi thanh toán qua ví điện tử và thẻ ngân hàng</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CINEMAS SECTION -->
+<section class="cinemas-section" id="cinemas">
+    <h2 class="section-title">Hệ Thống Rạp DAV</h2>
+    <div class="cinemas-grid">
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">DAV Vincom Center</h3>
+                <p class="cinema-location">📍 Hà Nội</p>
+                <p class="cinema-details">191 Bà Triệu, Hai Bà Trưng<br>10 phòng chiếu - IMAX</p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">DAV Crescent Mall</h3>
+                <p class="cinema-location">📍 TP.HCM</p>
+                <p class="cinema-details">101 Tôn Dật Tiên, Quận 7<br>8 phòng chiếu - 4DX</p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">DAV Vincom Đà Nẵng</h3>
+                <p class="cinema-location">📍 Đà Nẵng</p>
+                <p class="cinema-details">910A Ngô Quyền, Sơn Trà<br>7 phòng chiếu - Starium</p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">DAV Landmark 81</h3>
+                <p class="cinema-location">📍 TP.HCM</p>
+                <p class="cinema-details">Vinhomes Central Park, Bình Thạnh<br>12 phòng chiếu - Premium</p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+    </div>
+</section>
+

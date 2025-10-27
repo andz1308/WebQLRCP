@@ -1,0 +1,140 @@
+﻿@model IEnumerable<WebCinema.Models.Suat_Chieu>
+
+@{
+    ViewBag.Title = "Qu?n Lý Su?t Chi?u";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-clock"></i> Danh Sách Su?t Chi?u</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Su?t Chi?u
+        </a>
+    </div>
+
+    <!-- Filter Form -->
+    <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        @using (Html.BeginForm("Index", "ShowtimeManagement", FormMethod.Get))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Phim</label>
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- T?t c? phim --", new { @class = "form-control" })
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">R?p</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- T?t c? r?p --", new { @class = "form-control" })
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Ngày Chi?u</label>
+                    <input type="date" name="date" value="@ViewBag.Date" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> L?c
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã SC</th>
+                        <th>Phim</th>
+                        <th>R?p</th>
+                        <th>Phòng</th>
+                        <th>Ngày Chi?u</th>
+                        <th>Ca Chi?u</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var showtime in Model)
+                    {
+                        <tr>
+                            <td><strong>#@showtime.suat_chieu_id</strong></td>
+                            <td>@(showtime.Phim != null ? showtime.Phim.ten_phim : "N/A")</td>
+                            <td>@(showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null ? showtime.Phong_Chieu.Rap.ten_rap : "N/A")</td>
+                            <td>@(showtime.Phong_Chieu != null ? showtime.Phong_Chieu.ten_phong : "N/A")</td>
+                            <td>@showtime.ngay_chieu.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (showtime.Ca_Chieu != null)
+                                {
+                                    @{ 
+                                        var ca = showtime.Ca_Chieu;
+                                        string caName = null;
+                                        var caType = ca.GetType();
+                                        var prop = caType.GetProperty("ten_ca") 
+                                            ?? caType.GetProperty("ten_Ca_Chieu") 
+                                            ?? caType.GetProperty("ten_ca_chieu") 
+                                            ?? caType.GetProperty("ten") 
+                                            ?? caType.GetProperty("name");
+                                        if (prop != null)
+                                        {
+                                            caName = prop.GetValue(ca, null) as string;
+                                        }
+                                        else
+                                        {
+                                            // fallback: try find first string property that looks like a name
+                                            var fallbackProp = caType.GetProperties()
+                                                .FirstOrDefault(p => p.PropertyType == typeof(string) && (p.Name.ToLower().Contains("ten") || p.Name.ToLower().Contains("name")));
+                                            if (fallbackProp != null)
+                                            {
+                                                caName = fallbackProp.GetValue(ca, null) as string;
+                                            }
+                                        }
+                                    }
+
+                                    <span style="padding: 0.3rem 0.8rem; background: #3498db; color: white; border-radius: 4px; font-size: 0.85rem;">
+                                        @(caName ?? ("Ca " + showtime.ca_chieu_id))
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = showtime.suat_chieu_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> S?a
+                                </a>
+                                <button onclick="deleteShowtime(@showtime.suat_chieu_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Không có su?t chi?u nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteShowtime(id) {
+            if (confirmDelete('B?n có ch?c ch?n mu?n xóa su?t chi?u này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có l?i x?y ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

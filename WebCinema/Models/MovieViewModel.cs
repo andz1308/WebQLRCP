@@ -8,5 +8,8 @@ namespace WebCinema.Models
         public List<string> Genres { get; set; }
         public double AverageRating { get; set; }
         public int RatingCount { get; set; }
+
+        // Resolved image path (absolute URL or virtual path starting with '/').
+        public string ImagePath { get; set; }
     }
 }

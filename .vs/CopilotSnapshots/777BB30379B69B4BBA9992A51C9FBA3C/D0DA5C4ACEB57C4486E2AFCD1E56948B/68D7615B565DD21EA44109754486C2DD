@@ -1,0 +1,59 @@
+﻿@model WebCinema.Models.Dien_Vien
+
+@{
+    ViewBag.Title = "Thêm Diễn Viên";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Diễn Viên</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Create", "ActorManagement", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Tên Diễn Viên *</label>
+                    @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-control", placeholder = "Nhập tên diễn viên", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày Sinh</label>
+                    @Html.TextBoxFor(m => m.ngay_sinh, new { @class = "form-control", type = "date" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quốc Tịch</label>
+                    @Html.TextBoxFor(m => m.quoc_tich, new { @class = "form-control", placeholder = "Việt Nam" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Hình ảnh</label>
+                    <input type="file" name="imageFile" accept="image/*" class="form-control" />
+                    <small style="color: #999;">Khuy?n ngh?: 400x400px</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tiểu Sử</label>
+                    @Html.TextAreaFor(m => m.tieu_su, new { @class = "form-control", rows = "6", placeholder = "Nhập tiểu sử diễn viên..." })
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> Lưu Diễn Viên
+            </button>
+        </div>
+    }
+</div>

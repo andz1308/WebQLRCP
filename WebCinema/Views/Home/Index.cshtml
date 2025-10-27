@@ -22,6 +22,9 @@
                 var genres = item.Genres;
                 var avgRating = item.AverageRating;
                 var ratingCount = item.RatingCount;
+                // Use reflection to get ImagePath if the viewmodel doesn't have the property at compile time
+                var imgPathProp = item.GetType().GetProperty("ImagePath");
+                var imgPath = imgPathProp != null ? imgPathProp.GetValue(item, null) as string : null;
                 
                 string genreText = genres != null && genres.Any() ? string.Join(", ", genres) : "Chưa phân loại";
                 string durationText = movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A";
@@ -31,7 +34,41 @@
                 int emptyStars = 5 - fullStars;
                 
                 <div class="movie-card" onclick="location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">
-                    <div class="movie-poster" style="@(movie.hinh_anh != null ? "background: url('" + Url.Content(movie.hinh_anh) + "') center/cover;" : "")"></div>
+                    <div class="movie-poster">
+                        @if (!string.IsNullOrEmpty(imgPath))
+                        {
+                            <img src="@imgPath" alt="@movie.ten_phim"
+                                 style="width:100%;height:100%;object-fit:cover;" />
+                        }
+                        else if (!string.IsNullOrEmpty(movie.hinh_anh))
+                        {
+                            string imgSrc = movie.hinh_anh;
+
+                            // Nếu là đường dẫn tương đối (bắt đầu bằng "~") thì chuyển thành tuyệt đối
+                            if (imgSrc.StartsWith("~"))
+                            {
+                                imgSrc = Url.Content(imgSrc);
+                            }
+                            // Nếu là đường dẫn tương đối mà không có "~", thêm "/Content/images/"
+                            else if (!imgSrc.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+                                     !imgSrc.StartsWith("/"))
+                            {
+                                imgSrc = Url.Content("~/Content/images/movies/" + imgSrc);
+                            }
+
+                            <img src="@imgSrc" alt="@movie.ten_phim"
+                                 style="width:100%;height:100%;object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+                background:#ff6b35;color:white;font-size:3rem;">
+                                🎬
+                            </div>
+                        }
+
+
+                    </div>
                     <div class="movie-info">
                         <h3 class="movie-title">@movie.ten_phim</h3>
                         <p class="movie-genre">@genreText | @durationText</p>
@@ -64,7 +101,7 @@
 </section>
 
 <!-- PROMOTIONS SECTION -->
-<section class="promotions-section">
+<section class="promotions-section" id="promotions">
     <div class="promotions-container">
         <h2 class="section-title">Khuyến Mãi Đặc Biệt</h2>
         <div class="promo-grid">
