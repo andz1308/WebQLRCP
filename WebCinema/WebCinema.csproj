@@ -144,6 +144,7 @@
     <Compile Include="Areas\Admin\Controllers\DirectorManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\Home_adminController.cs" />
     <Compile Include="Areas\Admin\Controllers\MovieManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ProducerManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
@@ -238,6 +239,9 @@
     <Content Include="Areas\Admin\Views\DirectorManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\DirectorManagement\Create.cshtml" />
     <Content Include="Areas\Admin\Views\DirectorManagement\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\ProducerManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ProducerManagement\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\ProducerManagement\Edit.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -275,7 +279,6 @@
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Views\Home_admin\" />
-    <Folder Include="Areas\Admin\Views\ProducerManagement\" />
     <Folder Include="Content\images\actors\" />
     <Folder Include="Content\images\directors\" />
     <Folder Include="Content\images\movies\" />

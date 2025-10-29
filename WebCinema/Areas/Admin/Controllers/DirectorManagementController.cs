@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -66,14 +66,14 @@ namespace WebCinema.Areas.Admin.Controllers
                     db.Dao_Diens.InsertOnSubmit(director);
                     db.SubmitChanges();
 
-                    TempData["SuccessMessage"] = "Th�m ??o di?n th�nh c�ng!";
+                    TempData["SuccessMessage"] = "Thêm đạo diễn thành công!";
                     return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                TempData["ErrorMessage"] = "C� l?i x?y ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
             }
 
             return View(director);
@@ -130,13 +130,13 @@ namespace WebCinema.Areas.Admin.Controllers
 
                 db.SubmitChanges();
 
-                TempData["SuccessMessage"] = "C?p nh?t ??o di?n th�nh c�ng!";
+                TempData["SuccessMessage"] = "Cập nhật đạo diễn thành công!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                TempData["ErrorMessage"] = "C� l?i x?y ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
             }
 
             return View(director);
@@ -151,24 +151,24 @@ namespace WebCinema.Areas.Admin.Controllers
                 var director = db.Dao_Diens.FirstOrDefault(d => d.daodien_id == id);
                 if (director == null)
                 {
-                    return Json(new { success = false, message = "??o di?n kh�ng t?n t?i." });
+                    return Json(new { success = false, message = "Đạo diễn không tồn tại." });
                 }
 
                 // Check if director has movies
                 if (director.Phims.Any())
                 {
-                    return Json(new { success = false, message = "Kh�ng th? x�a ??o di?n ?� c� phim." });
+                    return Json(new { success = false, message = "Không thể xóa đạo diễn đã có phim." });
                 }
 
                 db.Dao_Diens.DeleteOnSubmit(director);
                 db.SubmitChanges();
 
-                return Json(new { success = true, message = "X�a ??o di?n th�nh c�ng!" });
+                return Json(new { success = true, message = "Xóa đạo diễn thành công!" });
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                return Json(new { success = false, message = "C� l?i x?y ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lõi xảy ra: " + ex.Message });
             }
         }
 

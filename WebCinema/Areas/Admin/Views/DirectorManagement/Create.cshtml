@@ -1,15 +1,17 @@
-@model WebCinema.Models.Dao_Dien
+﻿@model WebCinema.Models.Dao_Dien
 
 @{
-    ViewBag.Title = "Th�m ??o Di?n";
+    ViewBag.Title = "Thêm Đạo Diễn";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
 }
 
 <div class="content-card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-plus"></i> Th�m ??o Di?n</h2>
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Đạo Diễn</h2>
         <a href="@Url.Action("Index")" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay L?i
+            <i class="fas fa-arrow-left"></i> Quay Lại
         </a>
     </div>
 
@@ -21,40 +23,40 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div>
                 <div class="form-group">
-                    <label class="form-label">T�n ??o Di?n *</label>
-                    @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-control", placeholder = "Nh?p t�n ??o di?n", required = "required" })
+                    <label class="form-label">Tên Đạo Diễn *</label>
+                    @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-control", placeholder = "Nhập tên đạo diễn", required = "required" })
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Ng�y Sinh</label>
+                    <label class="form-label">Ngày Sinh</label>
                     @Html.TextBoxFor(m => m.ngay_sinh, new { @class = "form-control", type = "date" })
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Qu?c T?ch</label>
-                    @Html.TextBoxFor(m => m.quoc_tich, new { @class = "form-control", placeholder = "Vi?t Nam, M?, H�n Qu?c..." })
+                    <label class="form-label">Quốc Tịch</label>
+                    @Html.TextBoxFor(m => m.quoc_tich, new { @class = "form-control", placeholder = "Việt Nam, Mỹ, Hàn Quốc..." })
                 </div>
             </div>
 
             <div>
                 <div class="form-group">
-                    <label class="form-label">H�nh ?nh</label>
+                    <label class="form-label">Hình Ảnh</label>
                     <input type="file" name="imageFile" accept="image/*" class="form-control" />
-                    <small style="color: #999; display: block; margin-top: 0.5rem;">Ho?c nh?p link ?nh:</small>
+                    <small style="color: #999; display: block; margin-top: 0.5rem;">Hoặc nhập link Ảnh:</small>
                     <input type="text" name="imageUrl" class="form-control" placeholder="https://example.com/image.jpg" style="margin-top: 0.5rem;" />
-                    <small style="color: #999;">Khuy?n ngh?: 400x400px</small>
+                    <small style="color: #999;">Khuyến nghị: 400x400px</small>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Ti?u S?</label>
-                    @Html.TextAreaFor(m => m.tieu_su, new { @class = "form-control", rows = "6", placeholder = "Nh?p ti?u s? ??o di?n..." })
+                    <label class="form-label">Tiểu Sử</label>
+                    @Html.TextAreaFor(m => m.tieu_su, new { @class = "form-control", rows = "6", placeholder = "Nhập tiểu sử đạo diễn..." })
                 </div>
             </div>
         </div>
 
         <div style="margin-top: 2rem; text-align: right;">
             <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
-                <i class="fas fa-save"></i> L?u ??o Di?n
+                <i class="fas fa-save"></i> Lưu Đạo Diễn
             </button>
         </div>
     }

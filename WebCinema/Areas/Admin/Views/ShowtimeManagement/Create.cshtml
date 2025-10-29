@@ -1,15 +1,17 @@
-@model WebCinema.Models.Suat_Chieu
+﻿@model WebCinema.Models.Suat_Chieu
 
 @{
-    ViewBag.Title = "Th�m Su?t Chi?u";
+    ViewBag.Title = "Thêm Suất Chiếu";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
 }
 
 <div class="content-card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-plus"></i> Th�m Su?t Chi?u</h2>
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Suất Chiếu</h2>
         <a href="@Url.Action("Index")" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay L?i
+            <i class="fas fa-arrow-left"></i> Quay Lại
         </a>
     </div>
 
@@ -22,38 +24,38 @@
             <div>
                 <div class="form-group">
                     <label class="form-label">Phim *</label>
-                    @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, "-- Ch?n phim --", new { @class = "form-control", required = "required" })
+                    @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, "-- Chọn phim --", new { @class = "form-control", required = "required" })
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">R?p *</label>
-                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Ch?n r?p --", new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                    <label class="form-label">Rạp *</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Chọn rạp --", new { @class = "form-control", required = "required", id = "cinemaSelect" })
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Ph�ng Chi?u *</label>
+                    <label class="form-label">Phòng Chiếu *</label>
                     <select name="phong_chieu_id" id="roomSelect" class="form-control" required>
-                        <option value="">-- Ch?n r?p tr??c --</option>
+                        <option value="">-- Chọn rạp trước --</option>
                     </select>
                 </div>
             </div>
 
             <div>
                 <div class="form-group">
-                    <label class="form-label">Ng�y Chi?u *</label>
+                    <label class="form-label">Ngày Chiếu *</label>
                     @Html.TextBox("ngay_chieu", "", new { @class = "form-control", type = "date", required = "required" })
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Ca Chi?u *</label>
-                    @Html.DropDownList("ca_chieu_id", (SelectList)ViewBag.Shifts, "-- Ch?n ca chi?u --", new { @class = "form-control", required = "required" })
+                    <label class="form-label">Ca Chiếu *</label>
+                    @Html.DropDownList("ca_chieu_id", (SelectList)ViewBag.Shifts, "-- Chọn ca chiếu --", new { @class = "form-control", required = "required" })
                 </div>
             </div>
         </div>
 
         <div style="margin-top: 2rem; text-align: right;">
             <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
-                <i class="fas fa-save"></i> L?u Su?t Chi?u
+                <i class="fas fa-save"></i> Lưu Suất Chiếu
             </button>
         </div>
     }
@@ -73,7 +75,7 @@
                             if (response.success) {
                                 var roomSelect = $('#roomSelect');
                                 roomSelect.empty();
-                                roomSelect.append('<option value="">-- Ch?n ph�ng chi?u --</option>');
+                                roomSelect.append('<option value="">-- Chọn phòng chiếu --</option>');
                                 $.each(response.rooms, function (index, room) {
                                     roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
                                 });
@@ -82,11 +84,11 @@
                             }
                         },
                         error: function () {
-                            alert('C� l?i x?y ra khi t?i danh s�ch ph�ng.');
+                            alert('Có lỗi xảy ra khi tới danh sách phòng.');
                         }
                     });
                 } else {
-                    $('#roomSelect').empty().append('<option value="">-- Ch?n r?p tr??c --</option>');
+                    $('#roomSelect').empty().append('<option value="">-- Chọn rạp trước --</option>');
                 }
             });
 

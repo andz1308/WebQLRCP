@@ -3,13 +3,15 @@
 @{
     ViewBag.Title = "Quản Lý Suất Chiếu";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
 }
 
 <div class="content-card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-clock"></i> Danh Sách Su?t Chi?u</h2>
+        <h2 class="card-title"><i class="fas fa-clock"></i> Danh Sách Suất Chiếu</h2>
         <a href="@Url.Action("Create")" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Thêm Su?t Chi?u
+            <i class="fas fa-plus"></i> Thêm Suất Chiếu
         </a>
     </div>
 
@@ -20,18 +22,18 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
                 <div class="form-group" style="margin: 0;">
                     <label class="form-label">Phim</label>
-                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- T?t c? phim --", new { @class = "form-control" })
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- Tất cả phim --", new { @class = "form-control" })
                 </div>
                 <div class="form-group" style="margin: 0;">
-                    <label class="form-label">R?p</label>
-                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- T?t c? r?p --", new { @class = "form-control" })
+                    <label class="form-label">Rạp</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Tất cả rạp --", new { @class = "form-control" })
                 </div>
                 <div class="form-group" style="margin: 0;">
-                    <label class="form-label">Ngày Chi?u</label>
+                    <label class="form-label">Ngày Chiếu</label>
                     <input type="date" name="date" value="@ViewBag.Date" class="form-control" />
                 </div>
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> L?c
+                    <i class="fas fa-search"></i> Lọc
                 </button>
             </div>
         }
@@ -47,8 +49,8 @@
                         <th>Phim</th>
                         <th>Rạp</th>
                         <th>Phòng</th>
-                        <th>Ngày Chi?u</th>
-                        <th>Ca Chi?u</th>
+                        <th>Ngày Chiếu</th>
+                        <th>Ca Chiếu</th>
                         <th>Thao Tác</th>
                     </tr>
                 </thead>
@@ -98,7 +100,7 @@
     }
     else
     {
-        <p style="text-align: center; color: #999; padding: 2rem;">Không có su?t chi?u nào.</p>
+        <p style="text-align: center; color: #999; padding: 2rem;">Không có suất chiếu nào.</p>
     }
 </div>
 

@@ -29,12 +29,22 @@
                 <div class="form-group">
                     <label class="form-label">Đạo Diễn</label>
                     @Html.DropDownList("dao_dien_id", (SelectList)ViewBag.DaoDiens, "-- Chọn đạo diễn --", new { @class = "form-control" })
+                    <a href="@Url.Action("Create", "DirectorManagement")" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem; margin-top: 0.5rem; display: inline-block;">
+                        <i class="fas fa-plus"></i> Thêm đạo diễn mới
+                    </a>
                 </div>
-
+               
+                
                 <div class="form-group">
                     <label class="form-label">Nhà Sản Xuất</label>
-                    @Html.DropDownList("nha_san_xuat_id", (SelectList)ViewBag.NhaSanXuats, "-- Chọn nhà sản xuất --", new { @class = "form-control" })
+                    <div style="display: flex; gap: 0.5rem;">
+                        @Html.DropDownList("nha_san_xuat_id", (SelectList)ViewBag.NhaSanXuats, "-- Chọn nhà sản xuất --", new { @class = "form-control" })
+                    </div>
+                    <a href="@Url.Action("Create", "ProducerManagement")" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem; margin-top: 0.5rem; display: inline-block;">
+                        <i class="fas fa-plus"></i> Thêm nhà sản xuất mới
+                    </a>
                 </div>
+                
 
                 <div class="form-group">
                     <label class="form-label">Thời Lượng (phút)</label>
@@ -69,11 +79,15 @@
                 <div class="form-group">
                     <label class="form-label">Poster/Hình ảnh</label>
                     <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                    <small class="form-text text-muted">Hoặc nhập URL:</small>
+                    <input type="text" name="imageUrl" class="form-control" style="margin-top: 0.5rem;" placeholder="https://example.com/poster.jpg" />
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Trailer (YouTube Link)</label>
-                    <input type="text" name="video" class="form-control" placeholder="https://youtube.com/watch?v=..." />
+                    <label class="form-label">Trailer (Video)</label>
+                    <input type="file" name="videoFile" class="form-control" accept="video/*" />
+                    <small class="form-text text-muted">Hoặc nhập link YouTube:</small>
+                    <input type="text" name="videoUrl" class="form-control" style="margin-top: 0.5rem;" placeholder="https://youtube.com/watch?v=..." />
                 </div>
             </div>
         </div>

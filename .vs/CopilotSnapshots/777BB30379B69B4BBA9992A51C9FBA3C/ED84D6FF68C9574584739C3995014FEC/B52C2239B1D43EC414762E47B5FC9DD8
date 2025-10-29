@@ -1,0 +1,102 @@
+﻿@model IEnumerable<WebCinema.Models.Nha_San_Xuat>
+
+@{
+    ViewBag.Title = "Quản Lý Nhà Sản Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-building"></i> Quản Lý Nhà Sản Xuất</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Nhà Sản Xuất
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "ProducerManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm theo tên nhà sản xuất..." class="form-control" style="flex: 1;" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm Kiếm
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên Nhà Sản Xuất</th>
+                        <th>Quốc Gia</th>
+                        <th>Logo</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var producer in Model)
+                    {
+                        <tr>
+                            <td><strong>@producer.nha_san_xuat_id</strong></td>
+                            <td>@producer.ten_nha_san_xuat</td>
+                            <td>@(producer.quoc_gia ?? "N/A")</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(producer.logo))
+                                {
+                                    <img src="@Url.Content(producer.logo)" alt="@producer.ten_nha_san_xuat" style="max-width: 50px; max-height: 50px; border-radius: 4px;" />
+                                }
+                                else
+                                {
+                                    <span style="color: #999;">Không có logo</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = producer.nha_san_xuat_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteProducer(@producer.nha_san_xuat_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có nhà sản xuất nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteProducer(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa nhà sản xuất này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

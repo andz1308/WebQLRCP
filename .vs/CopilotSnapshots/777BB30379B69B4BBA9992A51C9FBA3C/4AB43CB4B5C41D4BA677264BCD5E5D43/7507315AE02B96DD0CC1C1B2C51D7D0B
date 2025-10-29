@@ -1,0 +1,202 @@
+﻿@model WebCinema.Models.Phim
+
+@{
+    ViewBag.Title = "Chỉnh Sửa Phim";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-edit"></i> Chỉnh Sửa Phim: @Model.ten_phim</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Edit", "MovieManagement", new { id = Model.phim_id }, FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Tên Phim *</label>
+                    @Html.TextBoxFor(m => m.ten_phim, new { @class = "form-control", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Đạo Diễn</label>
+                    @Html.DropDownList("dao_dien_id", (SelectList)ViewBag.DaoDiens, "-- Chọn đạo diễn --", new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nhà Sản Xuất</label>
+                    @Html.DropDownList("nha_san_xuat_id", (SelectList)ViewBag.NhaSanXuats, "-- Chọn nhà sản xuất --", new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thời Lượng (phút)</label>
+                    @Html.TextBoxFor(m => m.thoi_luong, new { @class = "form-control", type = "number" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày Khởi Chiếu</label>
+                    @Html.TextBoxFor(m => m.ngay_khoi_chieu, new { @class = "form-control", type = "date", Value = Model.ngay_khoi_chieu.HasValue ? Model.ngay_khoi_chieu.Value.ToString("yyyy-MM-dd") : "" })
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.hinh_anh))
+                {
+                    <div class="form-group">
+                        <label class="form-label">Poster Hiện Tại</label>
+                        <div>
+                            <img src="@Url.Content(Model.hinh_anh)" alt="@Model.ten_phim" style="max-width: 200px; border-radius: 8px;" />
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Mô Tả</label>
+                    @Html.TextAreaFor(m => m.mo_ta, new { @class = "form-control", rows = 3 })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thể Loại</label>
+                    <div style="max-height: 150px; overflow-y: auto; border: 2px solid #e0e0e0; border-radius: 8px; padding: 1rem;">
+                        @{
+                            var selectedGenres = (int[])ViewBag.SelectedGenres;
+                        }
+                        @foreach (var genre in (List<WebCinema.Models.Loai_Phim>)ViewBag.LoaiPhims)
+                        {
+                            var isChecked = selectedGenres != null && selectedGenres.Contains(genre.loaiphim_id);
+                            <div style="margin-bottom: 0.5rem;">
+                                <input type="checkbox" name="selectedGenres" value="@genre.loaiphim_id" id="genre_@genre.loaiphim_id" @(isChecked ? "checked" : "") />
+                                <label for="genre_@genre.loaiphim_id" style="margin-left: 0.5rem; cursor: pointer;">@genre.ten_loai</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Đổi Poster/Hình ảnh</label>
+                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Link Trailer YouTube</label>
+                    @Html.TextBox("video", Model.video, new { @class = "form-control", placeholder = "https://youtube.com/watch?v=..." })
+                </div>
+            </div>
+        </div>
+
+        <!-- Cast Section -->
+        <div style="margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 12px;">
+            <h3 style="margin-bottom: 1.5rem; color: #2c3e50;">
+                <i class="fas fa-users"></i> Diễn Viên Tham Gia
+            </h3>
+            <div id="castContainer">
+                @{
+                    var movieCast = (List<WebCinema.Models.Vai_Dien>)ViewBag.MovieCast;
+                    if (movieCast != null && movieCast.Any())
+                    {
+                        foreach (var cast in movieCast)
+                        {
+                            <div class="cast-row" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;">
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label">Diễn viên</label>
+                                    <select name="selectedActors" class="form-control">
+                                        <option value="">-- Chọn diễn viên --</option>
+                                        @foreach (var actor in (SelectList)ViewBag.Actors)
+                                        {
+                                            <option value="@actor.Value" @(cast.dien_vien_id.ToString() == actor.Value ? "selected" : "")>@actor.Text</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin: 0;">
+                                    <label class="form-label">Vai diễn</label>
+                                    <input type="text" name="actorRoles" class="form-control" value="@cast.ten_vai_dien" placeholder="Vai chính, vai phụ..." />
+                                </div>
+                                <button type="button" onclick="removeCastRow(this)" class="btn btn-danger" style="padding: 0.75rem 1rem;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="cast-row" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;">
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label">Diễn viên</label>
+                                <select name="selectedActors" class="form-control">
+                                    <option value="">-- Chọn diễn viên --</option>
+                                    @foreach (var actor in (SelectList)ViewBag.Actors)
+                                    {
+                                        <option value="@actor.Value">@actor.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label class="form-label">Vai diễn</label>
+                                <input type="text" name="actorRoles" class="form-control" placeholder="Vai chính, vai phụ..." />
+                            </div>
+                            <button type="button" onclick="removeCastRow(this)" class="btn btn-danger" style="padding: 0.75rem 1rem;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    }
+                }
+            </div>
+            <div class="text-end">
+                <button type="button" onclick="addCastRow()" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                    <i class="fas fa-plus"></i> Thêm Diễn Viên
+                </button>
+            </div>
+        </div>
+
+        <div class="text-end" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-success" style="padding: 0.75rem 1.5rem;">
+                <i class="fas fa-save"></i> Lưu Thay Đổi
+            </button>
+        </div>
+    }
+</div>
+
+<script>
+    function addCastRow() {
+        var container = document.getElementById("castContainer");
+        var newRow = document.createElement("div");
+        newRow.className = "cast-row";
+        newRow.style = "display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; margin-bottom: 1rem; align-items: end;";
+        newRow.innerHTML = `
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Diễn viên</label>
+                <select name="selectedActors" class="form-control">
+                    <option value="">-- Chọn diễn viên --</option>
+                    @foreach (var actor in (SelectList)ViewBag.Actors)
+                    {
+                        <option value="@actor.Value">@actor.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Vai diễn</label>
+                <input type="text" name="actorRoles" class="form-control" placeholder="Vai chính, vai phụ..." />
+            </div>
+            <button type="button" onclick="removeCastRow(this)" class="btn btn-danger" style="padding: 0.75rem 1rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(newRow);
+    }
+
+    function removeCastRow(button) {
+        var row = button.closest(".cast-row");
+        if (row) {
+            row.remove();
+        }
+    }
+</script>
+
+
