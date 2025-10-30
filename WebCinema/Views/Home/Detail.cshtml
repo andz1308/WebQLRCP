@@ -685,31 +685,84 @@
         </div>
     </div>
 
-    <!-- Additional Info -->
+    <!-- Movie Info -->
     <div class="section-detail">
         <h2>Thông Tin Phim</h2>
         <div class="info-grid">
-            @if (movie.Dao_Dien != null)
+            @if (Model.Movie.Dao_Dien != null)
             {
                 <div class="info-item">
-                    <div class="info-label">Đạo diễn</div>
-                    <div class="info-value">@movie.Dao_Dien.ho_ten</div>
+                    <i class="fas fa-user-tie"></i>
+                    <div>
+                        <span class="info-label">Đạo diễn</span>
+                        
+                            <a href="@Url.Action("Director", "Person", new { id = Model.Movie.Dao_Dien.daodien_id })" style="color: #000000 ; text-decoration: none; font-weight: 600; transition: color 0.3s; ">
+                                @Model.Movie.Dao_Dien.ho_ten
+                            </a>
+            
+                        
+                    </div>
                 </div>
             }
-            @if (movie.Nha_San_Xuat != null)
+
+            @if (Model.Movie.Vai_Diens != null && Model.Movie.Vai_Diens.Any())
             {
                 <div class="info-item">
-                    <div class="info-label">Nhà sản xuất</div>
-                    <div class="info-value">@movie.Nha_San_Xuat.ten_nha_san_xuat</div>
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">Diễn viên</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            @foreach (var vaiDien in Model.Movie.Vai_Diens)
+                            {
+                                if (vaiDien.Dien_Vien != null)
+                                {
+                                    <a href="@Url.Action("Actor", "Person", new { id = vaiDien.Dien_Vien.dienvien_id })" 
+                                       style="padding: 0.3rem 0.8rem; background: #f0f0f0; border-radius: 20px; color: #333; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: inline-block;">
+                                        @vaiDien.Dien_Vien.ho_ten
+                                        @if (!string.IsNullOrEmpty(vaiDien.ten_vai_dien))
+                                        {
+                                            <span style="color: #999; font-style: italic;"> (@vaiDien.ten_vai_dien)</span>
+                                        }
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
                 </div>
             }
-            @if (movie.Nha_San_Xuat != null && movie.Nha_San_Xuat.quoc_gia != null)
+
+            @if (Model.Movie.Nha_San_Xuat != null)
             {
                 <div class="info-item">
-                    <div class="info-label">Quốc gia</div>
-                    <div class="info-value">@movie.Nha_San_Xuat.quoc_gia</div>
+                    <i class="fas fa-building"></i>
+                    <div>
+                        <span class="info-label">Nhà sản xuất</span>
+                        <span style="color: #000000 ; text-decoration: none; font-weight: 600; transition: color 0.3s; " @*class="info-value"*@>@Model.Movie.Nha_San_Xuat.ten_nha_san_xuat </span>
+                    </div>
                 </div>
             }
+
+            @*@if (Model.Movie.thoi_luong.HasValue)
+            {
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <span class="info-label">Thời lượng</span>
+                        <span class="info-value">@Model.Movie.thoi_luong phút</span>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Movie.ngay_khoi_chieu.HasValue)
+            {
+                <div class="info-item">
+                    <i class="fas fa-calendar"></i>
+                    <div>
+                        <span class="info-label">Ngày khởi chiếu</span>
+                        <span class="info-value">@Model.Movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+            }*@
         </div>
     </div>
 

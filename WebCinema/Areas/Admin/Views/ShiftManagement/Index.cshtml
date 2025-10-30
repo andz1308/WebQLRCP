@@ -1,0 +1,83 @@
+﻿@model IEnumerable<WebCinema.Models.Ca_Chieu>
+
+@{
+    ViewBag.Title = "Quản Lý Ca Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-business-time"></i> Quản Lý Ca Chiếu</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Ca Chiếu
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Giờ Bắt Đầu</th>
+                        <th>Giờ Kết Thúc</th>
+                        <th>Tổng Thời Gian</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var shift in Model)
+                    {
+                        var duration = shift.gio_ket_thuc - shift.gio_bat_dau;
+                        <tr>
+                            <td><strong>@shift.ca_chieu_id</strong></td>
+                            <td>@shift.gio_bat_dau.ToString(@"hh\:mm")</td>
+                            <td>@shift.gio_ket_thuc.ToString(@"hh\:mm")</td>
+                            <td>@duration.Hours giờ @duration.Minutes phút</td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = shift.ca_chieu_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteShift(@shift.ca_chieu_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có ca chiếu nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteShift(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa ca chiếu này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

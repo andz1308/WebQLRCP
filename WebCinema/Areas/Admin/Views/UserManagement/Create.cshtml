@@ -1,0 +1,62 @@
+﻿@model WebCinema.Models.Khach_Hang
+
+@{
+    ViewBag.Title = "Thêm Người Dùng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Người Dùng</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Create", "UserManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Họ Tên *</label>
+                    @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-control", placeholder = "Nhập họ tên", required = "required" })
+                    @Html.ValidationMessageFor(m => m.ho_ten, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    @Html.TextBoxFor(m => m.email, new { @class = "form-control", type = "email", placeholder = "email@example.com", required = "required" })
+                    @Html.ValidationMessageFor(m => m.email, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số Điện Thoại</label>
+                    @Html.TextBoxFor(m => m.so_dien_thoai, new { @class = "form-control", placeholder = "0912345678" })
+                    @Html.ValidationMessageFor(m => m.so_dien_thoai, "", new { @class = "error-message" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Mật Khẩu *</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required />
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> Lưu Người Dùng
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

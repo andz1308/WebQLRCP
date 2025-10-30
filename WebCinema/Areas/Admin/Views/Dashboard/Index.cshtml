@@ -5,6 +5,8 @@
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
 }
 
+
+
 <!-- Stats Cards -->
 <div class="stats-grid">
     <div class="stat-card">
@@ -75,11 +77,42 @@
         </div>
     </div>
 </div>
-
+<!-- Filter Section -->
+<div class="content-card" style="margin-bottom: 2rem;">
+    <div style="padding: 1.5rem;">
+        @using (Html.BeginForm("Index", "Dashboard", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Chọn Tháng</label>
+                    <select name="month" class="form-control">
+                        <option value="">-- Tất cả tháng --</option>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" @(ViewBag.SelectedMonth == i ? "selected" : "")>Tháng @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Chọn Năm</label>
+                    <select name="year" class="form-control">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i" @(ViewBag.SelectedYear == i ? "selected" : "")>Năm @i</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+</div>
 <!-- Revenue Chart -->
 <div class="content-card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-chart-bar"></i> Doanh Thu 7 Ngày Gần Nhất</h2>
+        <h2 class="card-title"><i class="fas fa-chart-bar"></i> Doanh Thu </h2>
     </div>
     <canvas id="revenueChart" height="80"></canvas>
 </div>
@@ -89,7 +122,7 @@
     <div class="card-header">
         <h2 class="card-title"><i class="fas fa-trophy"></i> Top 5 Phim Có Doanh Thu Cao Nhất</h2>
     </div>
-    
+
     @if (ViewBag.TopMovies != null && ((System.Collections.IList)ViewBag.TopMovies).Count > 0)
     {
         <table class="data-table">
@@ -102,7 +135,7 @@
                 </tr>
             </thead>
             <tbody>
-                @{ 
+                @{
                     int index = 1;
                     var db = new WebCinema.Models.CSDLDataContext();
                     // Use non-dynamic iteration and reflection to safely read anonymous projection properties
@@ -167,12 +200,12 @@
         // Revenue Chart
         var ctx = document.getElementById('revenueChart').getContext('2d');
         var dailyRevenue = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.DailyRevenue));
-        
+
         var labels = dailyRevenue.map(function(item) {
             var date = new Date(item.Date);
             return date.getDate() + '/' + (date.getMonth() + 1);
         });
-        
+
         var data = dailyRevenue.map(function(item) {
             return item.Revenue;
         });

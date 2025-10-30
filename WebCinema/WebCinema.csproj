@@ -146,6 +146,7 @@
     <Compile Include="Areas\Admin\Controllers\MovieManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProducerManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ShiftManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Controllers\EvaluateController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InvoiceController.cs" />
+    <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\PromoController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -242,6 +244,12 @@
     <Content Include="Areas\Admin\Views\ProducerManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\ProducerManagement\Create.cshtml" />
     <Content Include="Areas\Admin\Views\ProducerManagement\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\ShiftManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ShiftManagement\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\ShiftManagement\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\UserManagement\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\UserManagement\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\UserManagement\Details.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -274,6 +282,8 @@
     <Content Include="Views\Account\Login.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\Profile.cshtml" />
+    <Content Include="Views\Person\Actor.cshtml" />
+    <Content Include="Views\Person\Director.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

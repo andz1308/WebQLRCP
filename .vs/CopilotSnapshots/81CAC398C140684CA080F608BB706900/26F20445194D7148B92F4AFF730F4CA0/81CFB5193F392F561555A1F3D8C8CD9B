@@ -1,0 +1,4 @@
+﻿                    @if (((DateTime?)movie.ngay_khoi_chieu).HasValue)
+                    {
+                        <div class="movie-year">@((DateTime?)movie.ngay_khoi_chieu).Value.Year</div>
+                    }

@@ -1,0 +1,205 @@
+@model WebCinema.Models.Dien_Vien
+
+@{
+    ViewBag.Title = Model.ho_ten;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .person-detail-container {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .person-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .person-avatar {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 5px solid white;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .person-info h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .person-meta {
+        display: flex;
+        gap: 2rem;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+    }
+
+    .bio-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 3rem;
+        line-height: 1.8;
+        color: #555;
+    }
+
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .movie-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .movie-card img {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+    }
+
+    .movie-card-content {
+        padding: 1rem;
+    }
+
+    .movie-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .movie-role {
+        font-size: 0.9rem;
+        color: #999;
+        font-style: italic;
+    }
+
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+
+    .back-button:hover {
+        background: #764ba2;
+        transform: translateX(-5px);
+    }
+</style>
+
+<div class="person-detail-container">
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Quay L?i
+    </a>
+
+    <div class="person-header">
+        <div>
+            @if (!string.IsNullOrEmpty(Model.hinh_anh))
+            {
+                <img src="@Url.Content(Model.hinh_anh)" alt="@Model.ho_ten" class="person-avatar" />
+            }
+            else
+            {
+                <div class="person-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 4rem; font-weight: bold;">
+                    @Model.ho_ten.Substring(0, 1).ToUpper()
+                </div>
+            }
+        </div>
+        <div class="person-info">
+            <h1>@Model.ho_ten</h1>
+            <div class="person-meta">
+                @if (Model.ngay_sinh.HasValue)
+                {
+                    <span><i class="fas fa-calendar"></i> @Model.ngay_sinh.Value.ToString("dd/MM/yyyy")</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.quoc_tich))
+                {
+                    <span><i class="fas fa-flag"></i> @Model.quoc_tich</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.tieu_su))
+    {
+        <div class="bio-section">
+            <h2 class="section-title">Ti?u S?</h2>
+            <p>@Model.tieu_su</p>
+        </div>
+    }
+
+    <h2 class="section-title">Phim ?ã Tham Gia</h2>
+    <div class="movies-grid">
+        @foreach (var item in ViewBag.Movies)
+        {
+            var movie = item.Movie;
+            var role = item.Role;
+            <a href="@Url.Action("Detail", "Home", new { id = movie.phim_id })" class="movie-card">
+                @if (!string.IsNullOrEmpty(movie.hinh_anh))
+                {
+                    <img src="@Url.Content(movie.hinh_anh)" alt="@movie.ten_phim" />
+                }
+                <div class="movie-card-content">
+                    <div class="movie-title">@movie.ten_phim</div>
+                    @if (!string.IsNullOrEmpty(role))
+                    {
+                        <div class="movie-role">Vai: @role</div>
+                    }
+                </div>
+            </a>
+        }
+    </div>
+</div>
