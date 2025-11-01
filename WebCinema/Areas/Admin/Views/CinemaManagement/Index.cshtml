@@ -41,10 +41,10 @@
                     }
 
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
-                        <a href="@Url.Action("Rooms", new { id = cinema.rap_id })" class="btn btn-primary" style="padding: 0.6rem 1rem; flex: 1;">
+                        <a href="@Url.Action("Index", "Auditori")" class="btn btn-primary" style="padding: 0.6rem 1rem; flex: 1;">
                             <i class="fas fa-door-open"></i> Phòng Chiếu
                         </a>
-                        <a href="@Url.Action("Edit", new { id = cinema.rap_id })" class="btn btn-secondary" style="padding: 0.6rem 1rem;">
+                        <a href="@Url.Action("Create", "Auditori", new { rapId = cinema.rap_id })" class="btn btn-secondary" style="padding: 0.6rem 1rem;">
                             <i class="fas fa-edit"></i> Sửa
                         </a>
                         <button onclick="deleteCinema(@cinema.rap_id, '@cinema.ten_rap')" class="btn btn-danger" style="padding: 0.6rem 1rem;">
@@ -85,5 +85,4 @@
         }
     </script>
 }
-
 

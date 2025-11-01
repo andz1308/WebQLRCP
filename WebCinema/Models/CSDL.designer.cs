@@ -101,12 +101,6 @@ namespace WebCinema.Models
     partial void DeleteVai_Dien(Vai_Dien instance);
     #endregion
 		
-		public CSDLDataContext() : 
-				base(global::System.Configuration.ConfigurationManager.ConnectionStrings["CinemaDBConnectionString1"].ConnectionString, mappingSource)
-		{
-			OnCreated();
-		}
-		
 		public CSDLDataContext(string connection) : 
 				base(connection, mappingSource)
 		{
@@ -464,7 +458,7 @@ namespace WebCinema.Models
 		
 		private int _ghe_id;
 		
-		private int _Dat_Ve_id;
+		private System.Nullable<int> _Dat_Ve_id;
 		
 		private int _suat_chieu_id;
 		
@@ -490,7 +484,7 @@ namespace WebCinema.Models
     partial void Onve_idChanged();
     partial void Onghe_idChanging(int value);
     partial void Onghe_idChanged();
-    partial void OnDat_Ve_idChanging(int value);
+    partial void OnDat_Ve_idChanging(System.Nullable<int> value);
     partial void OnDat_Ve_idChanged();
     partial void Onsuat_chieu_idChanging(int value);
     partial void Onsuat_chieu_idChanged();
@@ -555,8 +549,8 @@ namespace WebCinema.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Dat_Ve_id", DbType="Int NOT NULL")]
-		public int Dat_Ve_id
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Dat_Ve_id", DbType="Int")]
+		public System.Nullable<int> Dat_Ve_id
 		{
 			get
 			{
@@ -603,7 +597,7 @@ namespace WebCinema.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ma_qr_code", DbType="NVarChar(255) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ma_qr_code", DbType="NVarChar(255)")]
 		public string ma_qr_code
 		{
 			get
@@ -703,7 +697,7 @@ namespace WebCinema.Models
 					}
 					else
 					{
-						this._Dat_Ve_id = default(int);
+						this._Dat_Ve_id = default(Nullable<int>);
 					}
 					this.SendPropertyChanged("Dat_Ve");
 				}
@@ -2407,6 +2401,10 @@ namespace WebCinema.Models
 		
 		private string _so_ghe;
 		
+		private int _hang;
+		
+		private int _cot;
+		
 		private int _loai_ghe_id;
 		
 		private System.Nullable<int> _trang_thai;
@@ -2427,6 +2425,10 @@ namespace WebCinema.Models
     partial void Onphong_chieu_idChanged();
     partial void Onso_gheChanging(string value);
     partial void Onso_gheChanged();
+    partial void OnhangChanging(int value);
+    partial void OnhangChanged();
+    partial void OncotChanging(int value);
+    partial void OncotChanged();
     partial void Onloai_ghe_idChanging(int value);
     partial void Onloai_ghe_idChanged();
     partial void Ontrang_thaiChanging(System.Nullable<int> value);
@@ -2501,6 +2503,46 @@ namespace WebCinema.Models
 					this._so_ghe = value;
 					this.SendPropertyChanged("so_ghe");
 					this.Onso_gheChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_hang", DbType="Int NOT NULL")]
+		public int hang
+		{
+			get
+			{
+				return this._hang;
+			}
+			set
+			{
+				if ((this._hang != value))
+				{
+					this.OnhangChanging(value);
+					this.SendPropertyChanging();
+					this._hang = value;
+					this.SendPropertyChanged("hang");
+					this.OnhangChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_cot", DbType="Int NOT NULL")]
+		public int cot
+		{
+			get
+			{
+				return this._cot;
+			}
+			set
+			{
+				if ((this._cot != value))
+				{
+					this.OncotChanging(value);
+					this.SendPropertyChanging();
+					this._cot = value;
+					this.SendPropertyChanged("cot");
+					this.OncotChanged();
 				}
 			}
 		}
@@ -3393,7 +3435,7 @@ namespace WebCinema.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_phu_phi", DbType="Decimal(3,2) NOT NULL")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_phu_phi", DbType="Decimal(10,2) NOT NULL")]
 		public decimal phu_phi
 		{
 			get
@@ -4734,6 +4776,10 @@ namespace WebCinema.Models
 		
 		private string _ten_phong;
 		
+		private int _so_hang;
+		
+		private int _so_cot;
+		
 		private int _suc_chua;
 		
 		private EntitySet<Ghe> _Ghes;
@@ -4752,6 +4798,10 @@ namespace WebCinema.Models
     partial void Onrap_idChanged();
     partial void Onten_phongChanging(string value);
     partial void Onten_phongChanged();
+    partial void Onso_hangChanging(int value);
+    partial void Onso_hangChanged();
+    partial void Onso_cotChanging(int value);
+    partial void Onso_cotChanged();
     partial void Onsuc_chuaChanging(int value);
     partial void Onsuc_chuaChanged();
     #endregion
@@ -4824,6 +4874,46 @@ namespace WebCinema.Models
 					this._ten_phong = value;
 					this.SendPropertyChanged("ten_phong");
 					this.Onten_phongChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_so_hang", DbType="Int NOT NULL")]
+		public int so_hang
+		{
+			get
+			{
+				return this._so_hang;
+			}
+			set
+			{
+				if ((this._so_hang != value))
+				{
+					this.Onso_hangChanging(value);
+					this.SendPropertyChanging();
+					this._so_hang = value;
+					this.SendPropertyChanged("so_hang");
+					this.Onso_hangChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_so_cot", DbType="Int NOT NULL")]
+		public int so_cot
+		{
+			get
+			{
+				return this._so_cot;
+			}
+			set
+			{
+				if ((this._so_cot != value))
+				{
+					this.Onso_cotChanging(value);
+					this.SendPropertyChanging();
+					this._so_cot = value;
+					this.SendPropertyChanged("so_cot");
+					this.Onso_cotChanged();
 				}
 			}
 		}

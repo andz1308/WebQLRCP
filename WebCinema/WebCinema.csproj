@@ -138,6 +138,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\ActorManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\AuditoriController.cs" />
     <Compile Include="Areas\Admin\Controllers\BookingManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\CinemaManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
@@ -215,11 +216,6 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
-    <Content Include="Models\CSDL.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>CSDL.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </Content>
     <Content Include="Areas\Admin\Views\Dashboard\Index.cshtml" />
     <Content Include="Areas\Admin\Views\MovieManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\MovieManagement\Create.cshtml" />
@@ -250,6 +246,14 @@
     <Content Include="Areas\Admin\Views\UserManagement\Create.cshtml" />
     <Content Include="Areas\Admin\Views\UserManagement\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\UserManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Auditori\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Auditori\EditLayout.cshtml" />
+    <Content Include="Areas\Admin\Views\Auditori\Create.cshtml" />
+    <Content Include="Models\CSDL.dbml">
+      <Generator>MSLinqToSQLGenerator</Generator>
+      <LastGenOutput>CSDL.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

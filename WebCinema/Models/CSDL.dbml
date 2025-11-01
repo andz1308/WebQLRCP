@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="CinemaDB" Class="CSDLDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="WebSettings" ConnectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="CinemaDBConnectionString1" Provider="System.Data.SqlClient" />
   <Table Name="dbo.Ca_Chieu" Member="Ca_Chieus">
     <Type Name="Ca_Chieu">
       <Column Name="ca_chieu_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -12,9 +11,9 @@
     <Type Name="Ve">
       <Column Name="ve_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="ghe_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="Dat_Ve_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Dat_Ve_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="suat_chieu_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ma_qr_code" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="ma_qr_code" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="trang_thai_ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="gia_ve" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
       <Association Name="Ve_Danh_Gia" Member="Danh_Gias" ThisKey="ve_id" OtherKey="ve_id" Type="Danh_Gia" />
@@ -102,6 +101,8 @@
       <Column Name="ghe_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="phong_chieu_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="so_ghe" Type="System.String" DbType="NVarChar(10) NOT NULL" CanBeNull="false" />
+      <Column Name="hang" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="cot" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="loai_ghe_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="trang_thai" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Ghe_Ve" Member="Ves" ThisKey="ghe_id" OtherKey="ghe_id" Type="Ve" />
@@ -147,7 +148,7 @@
     <Type Name="Loai_Ngay">
       <Column Name="loai_ngay_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="loai_ngay" Member="loai_ngay1" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="phu_phi" Type="System.Decimal" DbType="Decimal(3,2) NOT NULL" CanBeNull="false" />
+      <Column Name="phu_phi" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
       <Association Name="Loai_Ngay_Suat_Chieu" Member="Suat_Chieus" ThisKey="loai_ngay_id" OtherKey="loai_ngay_id" Type="Suat_Chieu" />
     </Type>
   </Table>
@@ -216,6 +217,8 @@
       <Column Name="phong_chieu_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="rap_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ten_phong" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="so_hang" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="so_cot" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="suc_chua" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="Phong_Chieu_Ghe" Member="Ghes" ThisKey="phong_chieu_id" OtherKey="phong_chieu_id" Type="Ghe" />
       <Association Name="Phong_Chieu_Suat_Chieu" Member="Suat_Chieus" ThisKey="phong_chieu_id" OtherKey="phong_chieu_id" Type="Suat_Chieu" />

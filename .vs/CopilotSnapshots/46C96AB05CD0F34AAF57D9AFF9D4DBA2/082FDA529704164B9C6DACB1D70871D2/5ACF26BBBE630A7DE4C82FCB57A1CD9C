@@ -1,0 +1,72 @@
+﻿@model IEnumerable<WebCinema.Models.Phong_Chieu>
+
+@{
+    ViewBag.Title = "Danh sách Phòng Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    // Lấy rapId từ ViewBag (nếu có)
+    var rapId = ViewBag.RapId;
+}
+
+<h2>Danh sách Phòng Chiếu (@ViewBag.TenRap)</h2>
+<hr />
+
+<p>
+    @if (rapId != null)
+    {
+        @Html.ActionLink(
+            "Thêm phòng mới cho rạp này",
+            "Create",
+            new { rapId = rapId },
+            new { @class = "btn btn-primary" }
+        )
+    }
+    else
+    {
+        @Html.ActionLink(
+            "Tạo phòng chiếu mới",
+            "Create",
+            null, // Không có route values
+            new { @class = "btn btn-primary" }
+        )
+    }
+</p>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>Tên Rạp</th>
+        <th>Tên Phòng Chiếu</th>
+        <th>Sức Chứa</th>
+        <th>Kích thước (Hàng x Cột)</th>
+        <th>Chức năng</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rap.ten_rap)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ten_phong)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.suc_chua)
+            </td>
+            <td>
+                @item.so_hang x @item.so_cot
+            </td>
+            <td>
+                @Html.ActionLink("Sửa Sơ Đồ", "EditLayout", new { id = item.phong_chieu_id }, new { @class = "btn btn-sm btn-info" })
+                @Html.ActionLink("Sửa Tên", "Edit", new { id = item.phong_chieu_id }, new { @class = "btn btn-sm btn-warning" })
+                @Html.ActionLink("Xóa", "Delete", new { id = item.phong_chieu_id }, new { @class = "btn btn-sm btn-danger" })
+            </td>
+        </tr>
+    }
+
+</table>
+
+@if (rapId != null)
+{
+    @Html.ActionLink("Quay lại danh sách Rạp", "Index", "Rap", null, new { @class = "btn btn-default" })
+}

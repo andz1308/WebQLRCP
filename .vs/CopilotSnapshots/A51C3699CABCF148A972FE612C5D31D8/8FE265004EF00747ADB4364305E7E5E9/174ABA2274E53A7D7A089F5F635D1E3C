@@ -1,0 +1,281 @@
+﻿@model IEnumerable<WebCinema.Models.Suat_Chieu>
+
+@{
+    ViewBag.Title = "Quản Lý Suất Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+    
+    // Phân trang
+    int pageSize = 4;
+    int pageNumber = ViewBag.PageNumber ?? 1;
+    int totalItems = Model != null ? Model.Count() : 0;
+    int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+    var pagedModel = Model != null ? Model.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList() : new List<WebCinema.Models.Suat_Chieu>();
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-clock"></i> Danh Sách Suất Chiếu</h2>
+        <button onclick="toggleCreateForm()" class="btn btn-primary" id="btnShowCreate">
+            <i class="fas fa-plus"></i> Thêm Suất Chiếu
+        </button>
+    </div>
+
+    <!-- Filter Form -->
+    <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        @using (Html.BeginForm("Index", "ShowtimeManagement", FormMethod.Get))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Phim</label>
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- Tất cả phim --", new { @class = "form-control" })
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Rạp</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Tất cả rạp --", new { @class = "form-control" })
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Ngày Chiếu</label>
+                    <input type="date" name="date" value="@ViewBag.Date" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+
+    <!-- Create Form (Hidden by default) -->
+    <div id="createFormSection" style="display: none; margin-bottom: 2rem; padding: 2rem; background: #f0f8ff; border-radius: 8px; border: 2px solid #3498db;">
+        <h3 style="margin-bottom: 1.5rem; color: #2c3e50;"><i class="fas fa-plus-circle"></i> Thêm Suất Chiếu Mới</h3>
+        
+        @using (Html.BeginForm("Create", "ShowtimeManagement", FormMethod.Post, new { id = "createForm" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Phim *</label>
+                        @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, "-- Chọn phim --", new { @class = "form-control", required = "required" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Rạp *</label>
+                        @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Chọn rạp --", new { @class = "form-control", required = "required", id = "cinemaSelectCreate" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phòng Chiếu *</label>
+                        <select name="phong_chieu_id" id="roomSelectCreate" class="form-control" required>
+                            <option value="">-- Chọn rạp trước --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày Chiếu *</label>
+                        <input type="date" name="ngay_chieu" class="form-control" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ca Chiếu *</label>
+                        @{ var shiftsSelect = (SelectList)ViewBag.Shifts ?? new SelectList(new List<SelectListItem>()); }
+                        @Html.DropDownList("ca_chieu_id", shiftsSelect, "-- Chọn ca chiếu --", new { @class = "form-control", required = "required" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Giá Vé Gốc *</label>
+                        <input type="number" name="gia_ve" class="form-control" min="0" required placeholder="Ví dụ: 80000" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngôn Ngữ</label>
+                        <input type="text" name="ngon_ngu" class="form-control" placeholder="Ví dụ: Vietsub, Thuyết minh" />
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
+                <button type="button" onclick="toggleCreateForm()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu Suất Chiếu
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (pagedModel != null && pagedModel.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã SC</th>
+                        <th>Phim</th>
+                        <th>Rạp</th>
+                        <th>Phòng</th>
+                        <th>Ngày Chiếu</th>
+                        <th>Ca Chiếu</th>
+                        <th>Giá Vé</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var showtime in pagedModel)
+                    {
+                        <tr>
+                            <td><strong>#@showtime.suat_chieu_id</strong></td>
+                            <td>@(showtime.Phim != null ? showtime.Phim.ten_phim : "N/A")</td>
+                            <td>@(showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null ? showtime.Phong_Chieu.Rap.ten_rap : "N/A")</td>
+                            <td>@(showtime.Phong_Chieu != null ? showtime.Phong_Chieu.ten_phong : "N/A")</td>
+                            <td>@showtime.ngay_chieu.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (showtime.Ca_Chieu != null)
+                                {
+                                    var ca = showtime.Ca_Chieu;
+                                    var gioBatDau = ca.gio_bat_dau.ToString(@"hh\:mm");
+                                    var gioKetThuc = ca.gio_ket_thuc.ToString(@"hh\:mm");
+                                    var caName = $"{gioBatDau} - {gioKetThuc}";
+
+                                    <span style="padding: 0.3rem 0.8rem; background: #3498db; color: white; border-radius: 4px; font-size: 0.85rem;">
+                                        @caName
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="padding: 0.3rem 0.8rem; background: gray; color: white; border-radius: 4px; font-size: 0.85rem;">
+                                        (Chưa có ca)
+                                    </span>
+                                }
+                            </td>
+                            <td>@showtime.gia_ve.ToString("N0") VNĐ</td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = showtime.suat_chieu_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteShowtime(@showtime.suat_chieu_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        if (totalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
+                @if (pageNumber > 1)
+                {
+                    <a href="@Url.Action("Index", new { pageNumber = pageNumber - 1, movieId = ViewBag.MovieId, cinemaId = ViewBag.CinemaId, date = ViewBag.Date })" class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+
+                @{
+                    for (int i = 1; i <= totalPages; i++)
+                    {
+                        if (i == pageNumber)
+                        {
+                            <span class="btn btn-primary">@i</span>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index", new { pageNumber = i, movieId = ViewBag.MovieId, cinemaId = ViewBag.CinemaId, date = ViewBag.Date })" class="btn btn-secondary">@i</a>
+                        }
+                    }
+                }
+
+                @if (pageNumber < totalPages)
+                {
+                    <a href="@Url.Action("Index", new { pageNumber = pageNumber + 1, movieId = ViewBag.MovieId, cinemaId = ViewBag.CinemaId, date = ViewBag.Date })" class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Không có suất chiếu nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function toggleCreateForm() {
+            var form = document.getElementById('createFormSection');
+            var btn = document.getElementById('btnShowCreate');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.style.display = 'none';
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                form.style.display = 'none';
+                btn.style.display = 'inline-block';
+            }
+        }
+
+        $(document).ready(function () {
+            $('#cinemaSelectCreate').change(function () {
+                var cinemaId = $(this).val();
+                if (cinemaId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRoomsByCinema")',
+                        type: 'GET',
+                        data: { cinemaId: cinemaId },
+                        success: function (response) {
+                            if (response.success) {
+                                var roomSelect = $('#roomSelectCreate');
+                                roomSelect.empty();
+                                roomSelect.append('<option value="">-- Chọn phòng chiếu --</option>');
+                                $.each(response.rooms, function (index, room) {
+                                    roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
+                                });
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('Có lỗi xảy ra khi lấy danh sách phòng.');
+                        }
+                    });
+                } else {
+                    $('#roomSelectCreate').empty().append('<option value="">-- Chọn rạp trước --</option>');
+                }
+            });
+
+            var today = new Date().toISOString().split('T')[0];
+            $('input[name="ngay_chieu"]').attr('min', today);
+        });
+
+        function deleteShowtime(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa suất chiếu này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}
