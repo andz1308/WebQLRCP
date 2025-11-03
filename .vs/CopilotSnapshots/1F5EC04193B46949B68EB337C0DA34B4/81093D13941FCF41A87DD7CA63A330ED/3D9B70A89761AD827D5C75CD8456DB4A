@@ -1,0 +1,15 @@
+﻿using System;
+using System.Configuration;
+
+namespace WebCinema.Models
+{
+    // Add a parameterless constructor to the generated LINQ-to-SQL data context
+    // so controllers and services that call `new CSDLDataContext()` compile.
+    // The generated CSDLDataContext is a partial class; this file extends it.
+    public partial class CSDLDataContext
+    {
+        public CSDLDataContext() : base(ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString)
+        {
+        }
+    }
+}

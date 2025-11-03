@@ -151,6 +151,7 @@
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\BookingController.cs" />
     <Compile Include="Controllers\CartController.cs" />
     <Compile Include="Controllers\EvaluateController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -160,16 +161,19 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Infrastructure\AuthSessionHelper.cs" />
     <Compile Include="Infrastructure\LoggingHelper.cs" />
     <Compile Include="Infrastructure\PaymentGateway.cs" />
     <Compile Include="Infrastructure\RoleAuthorizeAttribute.cs" />
     <Compile Include="Infrastructure\SessionCartManager.cs" />
     <Compile Include="Models\AuthResult.cs" />
+    <Compile Include="Models\CartItem.cs" />
     <Compile Include="Models\CSDL.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>CSDL.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Models\CSDLDataContextExtensions.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\MovieDetailViewModel.cs" />
     <Compile Include="Models\MovieViewModel.cs" />
@@ -254,6 +258,8 @@
       <LastGenOutput>CSDL.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Areas\Admin\Views\CinemaManagement\Rooms.cshtml" />
+    <Content Include="Areas\Admin\Views\CinemaManagement\EditRoom.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -288,6 +294,13 @@
     <Content Include="Views\Account\Profile.cshtml" />
     <Content Include="Views\Person\Actor.cshtml" />
     <Content Include="Views\Person\Director.cshtml" />
+    <Content Include="Views\Booking\SelectSeats.cshtml" />
+    <Content Include="Views\Booking\SelectFood.cshtml" />
+    <Content Include="Views\Booking\Payment.cshtml" />
+    <Content Include="Views\Booking\Success.cshtml" />
+    <Content Include="Views\Shared\RequireLogin.cshtml" />
+    <Content Include="Views\Cart\Checkout.cshtml" />
+    <Content Include="Views\Cart\CheckoutSuccess.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

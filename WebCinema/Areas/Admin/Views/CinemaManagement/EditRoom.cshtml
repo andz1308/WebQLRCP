@@ -1,0 +1,108 @@
+@model WebCinema.Models.Phong_Chieu
+
+@{
+    ViewBag.Title = "S?a Phòng Chi?u";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-edit"></i> S?a Thông Tin Phòng Chi?u</h1>
+    <a href="@Url.Action("Rooms", new { id = Model.rap_id })" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay L?i
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-edit"></i> Thông Tin Phòng Chi?u</h2>
+    </div>
+
+    @using (Html.BeginForm("EditRoom", "CinemaManagement", new { id = Model.phongchieu_id }, FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.phongchieu_id)
+        @Html.HiddenFor(m => m.rap_id)
+
+        <div class="form-grid">
+            <div class="form-group">
+                @Html.LabelFor(m => m.ten_phong, "Tên Phòng *", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.ten_phong, new { @class = "form-input", placeholder = "Nh?p tên phòng", required = "required" })
+                @Html.ValidationMessageFor(m => m.ten_phong, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.so_luong_ghe, "S? L??ng Gh? *", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.so_luong_ghe, new { @class = "form-input", type = "number", placeholder = "Nh?p s? l??ng gh?", required = "required" })
+                @Html.ValidationMessageFor(m => m.so_luong_ghe, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> C?p Nh?t
+            </button>
+            <a href="@Url.Action("Rooms", new { id = Model.rap_id })" class="btn btn-secondary">
+                <i class="fas fa-times"></i> H?y
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .form-input {
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 1rem;
+        border-top: 2px solid #e0e0e0;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,4 +1,4 @@
-@model WebCinema.Models.Dien_Vien
+﻿@model WebCinema.Models.Dien_Vien
 
 @{
     ViewBag.Title = Model.ho_ten;
@@ -176,12 +176,12 @@
     @if (!string.IsNullOrEmpty(Model.tieu_su))
     {
         <div class="bio-section">
-            <h2 class="section-title">Ti?u S?</h2>
+            <h2 class="section-title">Tiểu Sử</h2>
             <p>@Model.tieu_su</p>
         </div>
     }
 
-    <h2 class="section-title">Phim ?� Tham Gia</h2>
+    <h2 class="section-title">Phim Đã Tham Gia</h2>
     <div class="movies-grid">
         @foreach (var item in ViewBag.Movies)
         {

@@ -1,0 +1,410 @@
+﻿@model List<WebCinema.Models.CartItem>
+@{
+    ViewBag.Title = "Thanh Toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+}
+
+<style>
+    .checkout-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .checkout-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+        .checkout-header h2 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+    .cart-items-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .cart-item-card {
+        background: #f9f9f9;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .cart-item-card:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.15);
+        }
+
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .movie-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .remove-btn {
+        padding: 0.5rem 1rem;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+    .item-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-row {
+        display: flex;
+        gap: 0.5rem;
+        color: #666;
+    }
+
+        .detail-row i {
+            color: #ff6b35;
+        }
+
+    .seats-section, .food-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .section-title {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .seats-list, .food-list {
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .item-price {
+        text-align: right;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ff6b35;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #e0e0e0;
+    }
+
+    .payment-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-method {
+        padding: 1.5rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+        .payment-method:hover {
+            border-color: #ff6b35;
+        }
+
+        .payment-method.selected {
+            border-color: #ff6b35;
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .payment-method i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #ff6b35;
+        }
+
+    .total-summary {
+        background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        font-size: 1.1rem;
+    }
+
+    .summary-total {
+        border-top: 3px solid #ff6b35;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ff6b35;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        padding: 1.2rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+    .empty-cart {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #999;
+    }
+
+        .empty-cart i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #ccc;
+        }
+</style>
+
+<div class="checkout-container">
+    <div class="checkout-header">
+        <h2><i class="fas fa-shopping-cart"></i> Thanh Toán Giỏ Hàng</h2>
+        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Tổng @Model.Count vé đã chọn</p>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="cart-items-section">
+            <h3><i class="fas fa-ticket-alt"></i> Chi Tiết Vé</h3>
+            @foreach (var item in Model)
+            {
+                <div class="cart-item-card" data-cart-id="@item.CartItemId">
+                    <div class="item-header">
+                        <div class="movie-title">@item.MovieName</div>
+                        <button class="remove-btn" onclick="removeCartItem('@item.CartItemId')">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+
+                    <div class="item-details">
+                        <div class="detail-row">
+                            <i class="fas fa-building"></i>
+                            <span>@item.CinemaName - @item.RoomName</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-calendar"></i>
+                            <span>@item.ShowDate.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-clock"></i>
+                            <span>@item.ShowTime</span>
+                        </div>
+                        <div class="detail-row">
+                            <i class="fas fa-language"></i>
+                            <span>@item.Language</span>
+                        </div>
+                    </div>
+
+                    <div class="seats-section">
+                        <div class="section-title"><i class="fas fa-couch"></i> Ghế đã chọn (@item.Seats.Count ghế)</div>
+                        <div class="seats-list">
+                            @foreach (var seat in item.Seats)
+                            {
+                                <span style="display: inline-block; padding: 0.3rem 0.8rem; background: #e0e0e0; border-radius: 4px; margin: 0.2rem;">
+                                    @seat.SeatNumber (@seat.SeatType) - @seat.Price.ToString("N0") ₫
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    @if (item.Foods.Any())
+                    {
+                        <div class="food-section">
+                            <div class="section-title"><i class="fas fa-utensils"></i> Đồ ăn & thức uống</div>
+                            <div class="food-list">
+                                @foreach (var food in item.Foods)
+                                {
+                                    <div>@food.FoodName x @food.Quantity = @food.TotalPrice.ToString("N0") ₫</div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="item-price">
+                        Tổng: @item.TotalPrice.ToString("N0") ₫
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="payment-section">
+            <h3><i class="fas fa-credit-card"></i> Phương Thức Thanh Toán</h3>
+            <div class="payment-methods">
+                <div class="payment-method selected" data-method="vnpay">
+                    <i class="fas fa-wallet"></i>
+                    <div><strong>VNPay</strong></div>
+                    <div style="font-size: 0.9rem; color: #666;">Thanh toán online</div>
+                </div>
+                <div class="payment-method" data-method="momo">
+                    <i class="fas fa-mobile-alt"></i>
+                    <div><strong>MoMo</strong></div>
+                    <div style="font-size: 0.9rem; color: #666;">Ví điện tử MoMo</div>
+                </div>
+                <div class="payment-method" data-method="cash">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <div><strong>Tiền mặt</strong></div>
+                    <div style="font-size: 0.9rem; color: #666;">Thanh toán tại quầy</div>
+                </div>
+            </div>
+
+            <div class="total-summary">
+                <div class="summary-row">
+                    <span>Tổng tiền vé:</span>
+                    <span>@Model.Sum(i => i.TicketTotal).ToString("N0") ₫</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tổng tiền đồ ăn:</span>
+                    <span>@Model.Sum(i => i.FoodTotal).ToString("N0") ₫</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Tổng thanh toán:</span>
+                    <span>@Model.Sum(i => i.TotalPrice).ToString("N0") ₫</span>
+                </div>
+            </div>
+
+            <button class="checkout-btn" onclick="confirmCheckout()">
+                <i class="fas fa-check-circle"></i> Xác Nhận Thanh Toán
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="empty-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Giỏ hàng trống</h3>
+            <p>Hãy chọn phim và đặt vé để tiếp tục</p>
+            <a href="@Url.Action("Index", "Home")" style="display: inline-block; margin-top: 1rem; padding: 1rem 2rem; background: #ff6b35; color: white; text-decoration: none; border-radius: 8px;">
+                Về trang chủ
+            </a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        var selectedPaymentMethod = 'vnpay';
+
+        $(document).ready(function () {
+            $('.payment-method').click(function () {
+                $('.payment-method').removeClass('selected');
+                $(this).addClass('selected');
+                selectedPaymentMethod = $(this).data('method');
+            });
+        });
+
+        function removeCartItem(cartItemId) {
+            if (!confirm('Bạn có chắc muốn xóa vé này khỏi giỏ hàng?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("Remove", "Cart")',
+                type: 'POST',
+                data: { cartItemId: cartItemId },
+                success: function (response) {
+                    if (response.success) {
+                        $('[data-cart-id="' + cartItemId + '"]').fadeOut(300, function () {
+                            $(this).remove();
+                            if ($('.cart-item-card').length === 0) {
+                                location.reload();
+                            }
+                        });
+                        $('#cartCount').text(response.count);
+                    } else {
+                        alert('Có lỗi xảy ra: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                }
+            });
+        }
+
+        function confirmCheckout() {
+            if (!confirm('Xác nhận thanh toán tất cả vé trong giỏ hàng?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ProcessCheckout", "Cart")',
+                type: 'POST',
+                data: { paymentMethod: selectedPaymentMethod },
+                success: function (response) {
+                    if (response.success) {
+                        if (response.redirectUrl) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            alert(response.message);
+                            window.location.href = '@Url.Action("Index", "Home")';
+                        }
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                }
+            });
+        }
+    </script>
+}

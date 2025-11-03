@@ -1,0 +1,21 @@
+﻿<!--  Cart Overlay -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!--  Shopping Cart Modal -->
+<div class="cart-modal" id="cartModal">
+    <div class="cart-header">
+        <span>🛒 Giỏ Hàng</span>
+        <span class="cart-close" onclick="toggleCart()">✕</span>
+    </div>
+    <div class="cart-items" id="cartItems">
+        <div class="cart-empty">Giỏ hàng trống</div>
+    </div>
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Tổng cộng:</span>
+            <span class="cart-total-price" id="cartTotal">0 đ</span>
+        </div>
+        <button class="cart-checkout">Thanh Toán</button>
+    </div>
+</div>
+

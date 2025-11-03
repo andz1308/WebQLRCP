@@ -1,0 +1,33 @@
+using System;
+using System.Configuration;
+
+namespace WebCinema.Models
+{
+    // Add a parameterless constructor to the generated LINQ-to-SQL data context
+    // so controllers and services that call `new CSDLDataContext()` compile.
+    // The generated CSDLDataContext is a partial class; this file extends it.
+    public partial class CSDLDataContext
+    {
+        public CSDLDataContext()
+            : base(GetConnectionString())
+        {
+        }
+
+        private static string GetConnectionString()
+        {
+            // Try common names used in this project, with a sensible fallback
+            string conn = ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString
+                ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString"]?.ConnectionString
+                ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString1"]?.ConnectionString;
+
+            if (string.IsNullOrWhiteSpace(conn))
+            {
+                // Provide a clear exception so it's easy to fix configuration in deployment
+                throw new InvalidOperationException(
+                    "No database connection string found. Please add a connection string named 'CSDLConnectionString' or 'CinemaDBConnectionString' to Web.config.");
+            }
+
+            return conn;
+        }
+    }
+}
