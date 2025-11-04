@@ -347,11 +347,11 @@
                             <div class="food-price">@((food.gia ?? 0).ToString("N0")) ₫</div>
                             <div class="quantity-control">
                                 <button class="qty-btn" onclick="decreaseQty(@food.Do_An_id)">
-                                    <i class="fas fa-minus"></i>
+                                    <i class="fas fa-minus">-</i>
                                 </button>
                                 <span class="qty-display" id="qty-@food.Do_An_id">0</span>
                                 <button class="qty-btn" onclick="increaseQty(@food.Do_An_id, @food.gia)">
-                                    <i class="fas fa-plus"></i>
+                                    <i class="fas fa-plus">+</i>
                                 </button>
                             </div>
                         </div>

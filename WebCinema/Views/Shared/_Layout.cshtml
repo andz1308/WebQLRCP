@@ -1199,9 +1199,9 @@
                 <label>Định Dạng</label>
                 <select>
                     <option>Tất cả định dạng</option>
-                    <option>2D</option>
-                    <option>3D</option>
-                    <option>IMAX</option>
+                    <option>Vietsub</option>
+                    <option>Thuyết Minh</option>
+                    <option>Lồng Tiếng</option>
                 </select>
             </div>
         </div>
@@ -1350,7 +1350,7 @@
                                             `).join('');
 
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            cartTotal.textContent = total.toLocaleString('vi-VN') + ' đ';
+            cartTotal.textContent = total.toLocaleString('vi-VN') + ' VND';
         }
 
         function changeQty(index, change) {

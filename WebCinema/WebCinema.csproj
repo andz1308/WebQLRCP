@@ -149,6 +149,7 @@
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShiftManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\BookingController.cs" />
@@ -260,6 +261,11 @@
     </Content>
     <Content Include="Areas\Admin\Views\CinemaManagement\Rooms.cshtml" />
     <Content Include="Areas\Admin\Views\CinemaManagement\EditRoom.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketManagement\Report.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketManagement\Details_Fixed.cshtml" />
+    <Content Include="Areas\Admin\Views\CinemaManagement\EditCinema.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

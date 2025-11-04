@@ -1,0 +1,198 @@
+@model WebCinema.Models.Rap
+
+@{
+    ViewBag.Title = Model.rap_id == 0 ? "Thêm R?p M?i" : "Ch?nh S?a R?p";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<style>
+    .form-container {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:hover,
+    .form-control:focus {
+        border-color: #ff6b35;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="form-container">
+    <div class="page-title">
+        <i class="fas fa-@(Model.rap_id == 0 ? "plus-circle" : "edit")"></i>
+        @ViewBag.Title
+    </div>
+    <p class="page-subtitle">
+        @if (Model.rap_id == 0)
+        {
+            <text>Nh?p thông tin chi ti?t cho r?p chi?u phim m?i</text>
+        }
+        else
+        {
+            <text>C?p nh?t thông tin r?p chi?u phim</text>
+        }
+    </p>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <strong><i class="fas fa-exclamation-triangle"></i> L?i Xác Th?c</strong>
+            <button type="button" style="float: right; background: none; border: none; cursor: pointer; font-size: 1.2rem;" onclick="this.parentElement.style.display='none';">&times;</button>
+            @Html.ValidationSummary(false, "Vui lòng ki?m tra các tr??ng sau:")
+        </div>
+    }
+
+    @using (Html.BeginForm(Model.rap_id == 0 ? "Create" : "Edit", "CinemaManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        if (Model.rap_id > 0)
+        {
+            @Html.HiddenFor(m => m.rap_id)
+        }
+
+        <div class="form-group">
+            <label class="form-label">Tên R?p *</label>
+            @Html.TextBoxFor(m => m.ten_rap, new { 
+                @class = "form-control", 
+                placeholder = "VD: DAV Cinema Hà N?i",
+                required = "required"
+            })
+            @Html.ValidationMessageFor(m => m.ten_rap, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">??a Ch?</label>
+            @Html.TextBoxFor(m => m.dia_chi, new { 
+                @class = "form-control", 
+                placeholder = "VD: 123 ???ng Lê L?i, Qu?n 1, TP. HCM"
+            })
+            @Html.ValidationMessageFor(m => m.dia_chi, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            @Html.TextBoxFor(m => m.email, new { 
+                @class = "form-control", 
+                type = "email",
+                placeholder = "VD: contact@davcinema.com"
+            })
+            @Html.ValidationMessageFor(m => m.email, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Mô T?</label>
+            @Html.TextAreaFor(m => m.mo_ta, new { 
+                @class = "form-control",
+                placeholder = "Nh?p mô t? v? r?p chi?u phim (ti?n ích, ??a ?i?m, vân vân...)"
+            })
+            @Html.ValidationMessageFor(m => m.mo_ta, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-@(Model.rap_id == 0 ? "plus" : "save")"></i>
+                @(Model.rap_id == 0 ? "Thêm R?p M?i" : "C?p Nh?t")
+            </button>
+            <a href="@Url.Action("Index")" class="btn btn-secondary" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-times"></i> H?y
+            </a>
+        </div>
+    }
+</div>
