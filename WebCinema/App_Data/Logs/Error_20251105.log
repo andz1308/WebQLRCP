@@ -21,3 +21,30 @@ Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exce
    at WebCinema.Areas.Admin.Controllers.AuditoriController.Delete(Int32 id) in D:\WebQLRCP\WebQLRCP\WebCinema\Areas\Admin\Controllers\AuditoriController.cs:line 218
 Inner Exception: None
 ================================================================================
+
+================================================================================
+Time: 2025-11-05 21:07:08
+Message: Operation is not valid due to the current state of the object.
+
+Stack Trace:    at WebCinema.Models.Ve.set_Dat_Ve_id(Nullable`1 value) in D:\WebQLRCP\WebQLRCP\WebCinema\Models\CSDL.designer.cs:line 568
+   at WebCinema.Controllers.BookingController.Payment(String selectedFoods) in D:\WebQLRCP\WebQLRCP\WebCinema\Controllers\BookingController.cs:line 256
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-05 21:09:51
+Message: Operation is not valid due to the current state of the object.
+
+Stack Trace:    at WebCinema.Models.Ve.set_Dat_Ve_id(Nullable`1 value) in D:\WebQLRCP\WebQLRCP\WebCinema\Models\CSDL.designer.cs:line 568
+   at WebCinema.Controllers.BookingController.Payment(String selectedFoods) in D:\WebQLRCP\WebQLRCP\WebCinema\Controllers\BookingController.cs:line 256
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-05 21:09:54
+Message: Operation is not valid due to the current state of the object.
+
+Stack Trace:    at WebCinema.Models.Ve.set_Dat_Ve_id(Nullable`1 value) in D:\WebQLRCP\WebQLRCP\WebCinema\Models\CSDL.designer.cs:line 568
+   at WebCinema.Controllers.BookingController.Payment(String selectedFoods) in D:\WebQLRCP\WebQLRCP\WebCinema\Controllers\BookingController.cs:line 256
+Inner Exception: None
+================================================================================

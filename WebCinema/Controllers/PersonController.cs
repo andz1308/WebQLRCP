@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using WebCinema.Models;
+using WebCinema.Infrastructure;
 
 namespace WebCinema.Controllers
 {
@@ -18,17 +20,28 @@ namespace WebCinema.Controllers
                 return HttpNotFound();
             }
 
-            // Get movies featuring this actor
-            var movies = db.Vai_Diens
-                .Where(v => v.dien_vien_id == id)
-                .Select(v => new
-                {
-                    Movie = v.Phim,
-                    Role = v.ten_vai_dien
-                })
-                .ToList();
+            try
+            {
+                // Get movies featuring this actor - Force load Phim data
+                var movies = db.Vai_Diens
+                    .Where(v => v.dien_vien_id == id && v.Phim != null)
+                    .ToList()  // Load to memory FIRST to avoid lazy loading
+                    .Select(v => new
+                    {
+                        Movie = v.Phim,
+                        Role = v.ten_vai_dien
+                    })
+                    .Where(x => x.Movie != null && x.Movie.phim_id > 0)  // Filter out null or invalid movies
+                    .ToList();
 
-            ViewBag.Movies = movies;
+                ViewBag.Movies = movies;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                ViewBag.Movies = new List<object>();  // Fallback to empty list
+            }
+
             return View(actor);
         }
 

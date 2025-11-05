@@ -63,9 +63,9 @@
     .section-title { font-size: 1.3rem; font-weight: 700; color: #333; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
 
     .movie-info { display: flex; gap: 1rem; }
-    .movie-poster { width: 80px; height: 110px; border-radius: 8px; object-fit: cover; }
+    .movie-poster { width: 80px, height: 110px, object-fit: cover; }
 
-    .ticket-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .ticket-list { display: flex, flex-wrap: wrap, gap: 0.5rem, margin-top: 1rem; }
     .ticket-badge { padding: 0.5rem 1rem; background: white; border: 2px solid #ff6b35; border-radius: 8px; font-weight: 600; color: #ff6b35; }
 
     .food-list { margin-top: 1rem; }
@@ -159,11 +159,24 @@
                     <h3 class="section-title">
                         <i class="fas fa-ticket-alt"></i> Vé (@tickets.Count vé)
                     </h3>
-                    <div class="ticket-list">
+                    <div class="ticket-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 0.5rem;">
                         @foreach (var ticket in tickets)
                         {
-                            <div class="ticket-badge">
-                                <i class="fas fa-chair"></i> @ticket.Ghe.so_ghe
+                            <div class="ticket-badge" style="
+                                width: 50px; 
+                                height: 50px; 
+                                border-radius: 4px;
+                                padding: 0;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border: 2px solid #ff6b35;
+                                background: white;
+                                font-weight: 700;
+                                color: #ff6b35;
+                                font-size: 0.9rem;
+                            ">
+                                @ticket.Ghe.so_ghe
                             </div>
                         }
                     </div>
@@ -209,35 +222,16 @@
             <!-- Payment Methods -->
             <div class="payment-methods">
                 <h3 class="section-title">
-                    <i class="fas fa-credit-card"></i> Phương Thức Thanh Toán
+                    <i class="fas fa-credit-card"></i> Thanh Toán Online
                 </h3>
 
-                <div class="payment-option" onclick="selectPayment('online', this)">
-                    <input type="radio" name="payment" value="online" checked />
-                    <div class="payment-icon">💳</div>
-                    <div class="payment-info">
-                        <div class="payment-name">Thanh Toán Online</div>
-                        <div class="payment-desc">Visa, Master Card, ATM, QR Code</div>
-                    </div>
+                <div style="background: #d1ecf1; padding: 1rem; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                    <p style="margin: 0; color: #0c5460;">
+                        💳 <strong>Thanh Toán Online</strong><br/>
+                        Sử dụng MoMo, ZaloPay, VNPay hoặc các phương thức thanh toán khác để hoàn tất đơn hàng.
+                  
+                    </p>
                 </div>
-
-                <div class="payment-option" onclick="selectPayment('cash', this)">
-                    <input type="radio" name="payment" value="cash" />
-                    <div class="payment-icon">💵</div>
-                    <div class="payment-info">
-                        <div class="payment-name">Thanh Toán Tại Quầy</div>
-                        <div class="payment-desc">Thanh toán bằng tiền mặt tại rạp</div>
-                    </div>
-                </div>
-
-                @*<div class="payment-option" onclick="selectPayment('wallet', this)">
-                    <input type="radio" name="payment" value="wallet" />
-                    <div class="payment-icon">📱</div>
-                    <div class="payment-info">
-                        <div class="payment-name">Ví Điện Tử</div>
-                        <div class="payment-desc">MoMo, ZaloPay, VNPay</div>
-                    </div>
-                </div>*@
             </div>
         </div>
 
@@ -264,7 +258,7 @@
             </div>
 
             <button class="btn-confirm" onclick="confirmBooking()">
-                <i class="fas fa-check-circle"></i> Xác Nhận Đặt Vé
+                <i class="fas fa-credit-card"></i> Thanh Toán
             </button>
 
             <button class="btn-back" onclick="goBack()">
@@ -276,30 +270,25 @@
 
 @section scripts {
     <script>
-        var selectedPaymentMethod = 'online';
-
-        function selectPayment(method, element) {
-            $('.payment-option').removeClass('selected');
-            $(element).addClass('selected');
-            $(element).find('input[type="radio"]').prop('checked', true);
-            selectedPaymentMethod = method;
-        }
-
         function confirmBooking() {
             var total = @grandTotal;
-            if (!confirm('Xác nhận đặt vé với tổng tiền ' + total.toLocaleString('vi-VN') + ' ₫?')) { return; }
-            $('.btn-confirm').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+            if (!confirm('Xác nhận thanh toán ' + total.toLocaleString('vi-VN') + ' ₫?')) { return; }
+            $('.btn-confirm').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang chuyển đến thanh toán...');
             $.ajax({
-                url: '@Url.Action("Confirm", "Booking")',
+                url: '@Url.Action("ProcessPayment", "Booking")',
                 type: 'POST',
-                data: { paymentMethod: selectedPaymentMethod },
                 success: function(response) {
-                    if (response.success) { window.location.href = response.redirectUrl; }
-                    else { alert(response.message); $('.btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Xác Nhận Đặt Vé'); }
+                    if (response.success) { 
+                        window.location.href = response.redirectUrl;  // Chuyển đến trang Payment Gateway
+                    }
+                    else { 
+                        alert(response.message); 
+                        $('.btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Thanh Toán');
+                    }
                 },
                 error: function() {
                     alert('Có lỗi xảy ra. Vui lòng thử lại!');
-                    $('.btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Xác Nhận Đặt Vé');
+                    $('.btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Thanh Toán');
                 }
             });
         }

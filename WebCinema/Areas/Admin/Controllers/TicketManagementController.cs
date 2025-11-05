@@ -13,7 +13,7 @@ namespace WebCinema.Areas.Admin.Controllers
         private CSDLDataContext db = new CSDLDataContext();
 
         // GET: Admin/TicketManagement
-        public ActionResult Index(int? customerId, int? movieId, string ticketStatus, DateTime? fromDate, DateTime? toDate, string searchText, int? pageNumber)
+        public ActionResult Index(int? customerId, int? movieId, string ticketStatus, string bookingPaymentStatus, DateTime? fromDate, DateTime? toDate, string searchText, int? pageNumber)
         {
             var bookings = db.Dat_Ves.AsQueryable();
 
@@ -32,10 +32,16 @@ namespace WebCinema.Areas.Admin.Controllers
             if (customerId.HasValue)
                 bookings = bookings.Where(b => b.khach_hang_id == customerId.Value);
 
-            // **FILTER BY TICKET STATUS (not booking status)**
+            // **FILTER BY TICKET STATUS (Tr?ng thái Vé) - not booking status**
             if (!string.IsNullOrEmpty(ticketStatus))
             {
                 bookings = bookings.Where(b => b.Ves.Any(v => v.trang_thai_ve == ticketStatus));
+            }
+
+            // **FILTER BY BOOKING PAYMENT STATUS (Tr?ng thái Thanh toán ??t Vé)**
+            if (!string.IsNullOrEmpty(bookingPaymentStatus))
+            {
+                bookings = bookings.Where(b => b.trang_thai_Dat_Ve == bookingPaymentStatus);
             }
 
             // Filter by date range
@@ -59,37 +65,41 @@ namespace WebCinema.Areas.Admin.Controllers
             {
                 foreach (var ticket in booking.Ves)
                 {
+                    // N?u su?t chi?u ?ã qua ngày hôm nay và vé ch?a s? d?ng => ?ã h?t h?n
                     if (ticket.Suat_Chieu != null && 
                         ticket.Suat_Chieu.ngay_chieu < now.Date && 
                         ticket.trang_thai_ve == "Ch?a s? d?ng")
                     {
-                        ticket.trang_thai_ve = "Vé ?ã h?t h?n";
+                        ticket.trang_thai_ve = "?ã h?t h?n";
                     }
                 }
             }
+            db.SubmitChanges();
 
             ViewBag.Customers = new SelectList(db.Khach_Hangs, "khach_hang_id", "ho_ten", customerId);
             ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", movieId);
             
-            // **TICKET STATUS (VÉ) - NOT BOOKING STATUS**
+            // **TICKET STATUS (Tr?ng thái Vé)**
             ViewBag.TicketStatuses = new SelectList(new[] 
             { 
                 new { value = "Ch?a s? d?ng", text = "Ch?a s? d?ng" },
                 new { value = "?ã s? d?ng", text = "?ã s? d?ng" },
                 new { value = "?ã h?t h?n", text = "?ã h?t h?n" },
-                new { value = "?ã h?y", text = "?ã h?y" }
+                new { value = "?ã H?y", text = "?ã H?y" }
             }, "value", "text", ticketStatus);
 
-            ViewBag.BookingStatuses = new SelectList(new[]
+            // **BOOKING PAYMENT STATUS (Tr?ng thái Thanh toán ??t Vé)**
+            ViewBag.BookingPaymentStatuses = new SelectList(new[]
             {
-                new { value = "Ch? xác nh?n", text = "Ch? xác nh?n" },
-                new { value = "?ã xác nh?n", text = "?ã xác nh?n" },
-                new { value = "?ã h?y", text = "?ã h?y" }
-            }, "value", "text");
+                new { value = "Ch?a thanh toán", text = "Ch?a thanh toán" },
+                new { value = "?ã Thanh toán", text = "?ã Thanh toán" },
+                new { value = "?ã H?y", text = "?ã H?y" }
+            }, "value", "text", bookingPaymentStatus);
 
             ViewBag.CustomerId = customerId;
             ViewBag.MovieId = movieId;
             ViewBag.TicketStatus = ticketStatus;
+            ViewBag.BookingPaymentStatus = bookingPaymentStatus;
             ViewBag.FromDate = fromDate.HasValue ? fromDate.Value.ToString("yyyy-MM-dd") : null;
             ViewBag.ToDate = toDate.HasValue ? toDate.Value.ToString("yyyy-MM-dd") : null;
             ViewBag.SearchText = searchText;
@@ -119,8 +129,8 @@ namespace WebCinema.Areas.Admin.Controllers
                 if (booking == null)
                     return Json(new { success = false, message = "Không tìm th?y ??n hàng" });
 
-                // Validate status
-                var validStatuses = new[] { "?ã xác nh?n", "Ch? xác nh?n", "?ã h?y" };
+                // **Validate payment status (Tr?ng thái Thanh toán)**
+                var validStatuses = new[] { "?ã Thanh toán", "Ch?a thanh toán", "?ã H?y" };
                 if (!validStatuses.Contains(newStatus))
                     return Json(new { success = false, message = "Tr?ng thái không h?p l?" });
 
@@ -150,7 +160,7 @@ namespace WebCinema.Areas.Admin.Controllers
                 foreach (var ticket in tickets)
                 {
                     ticket.Dat_Ve_id = null;
-                    ticket.trang_thai_ve = "Ch?a bán";
+                    ticket.trang_thai_ve = "Ch?a s? d?ng";
                     ticket.ma_qr_code = null;
                 }
 
@@ -183,9 +193,9 @@ namespace WebCinema.Areas.Admin.Controllers
 
             ViewBag.TotalBookings = bookings.Count;
             ViewBag.TotalRevenue = bookings.Sum(b => (decimal?)b.tong_tien) ?? 0;
-            ViewBag.ConfirmedBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "?ã xác nh?n");
-            ViewBag.PendingBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "Ch? xác nh?n");
-            ViewBag.CancelledBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "?ã h?y");
+            ViewBag.PaidBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "?ã Thanh toán");
+            ViewBag.UnpaidBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "Ch?a thanh toán");
+            ViewBag.CancelledBookings = bookings.Count(b => b.trang_thai_Dat_Ve == "?ã H?y");
 
             ViewBag.FromDate = fromDate.HasValue ? fromDate.Value.ToString("yyyy-MM-dd") : null;
             ViewBag.ToDate = toDate.HasValue ? toDate.Value.ToString("yyyy-MM-dd") : null;

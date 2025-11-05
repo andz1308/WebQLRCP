@@ -1,0 +1,293 @@
+@{
+    ViewBag.Title = "Thanh Toán Online";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .payment-gateway-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .payment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+
+    .payment-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .payment-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-method {
+        padding: 1.5rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .payment-method:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .payment-method.selected {
+        border-color: #667eea;
+        background: #f5f7ff;
+    }
+
+    .payment-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.9rem;
+    }
+
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .loading-spinner.active {
+        display: block;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .btn-pay {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-pay:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-back {
+        width: 100%;
+        padding: 0.8rem;
+        background: transparent;
+        color: #666;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .btn-back:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-text {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+</style>
+
+<div class="payment-gateway-container">
+    <div class="payment-header">
+        <h2 style="margin: 0;">?? Thanh Toán Online</h2>
+        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Ch?n ph??ng th?c thanh toán c?a b?n</p>
+    </div>
+
+    <div class="payment-content">
+        <!-- Info Box -->
+        <div class="info-box">
+            <div class="info-title">?? Thông Tin Thanh Toán</div>
+            <div class="info-text">
+                Chúng tôi h? tr? các ph??ng th?c thanh toán an toàn và ti?n l?i.
+                D? li?u c?a b?n ???c mã hóa và b?o v? tuy?t ??i.
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <h3 style="color: #333; margin-bottom: 1rem;">Ch?n Ph??ng Th?c Thanh Toán</h3>
+        <div class="payment-methods">
+            <div class="payment-method" onclick="selectPaymentMethod(this, 'momo')">
+                <div class="payment-icon">??</div>
+                <div class="payment-name">MoMo</div>
+            </div>
+            <div class="payment-method" onclick="selectPaymentMethod(this, 'zalopay')">
+                <div class="payment-icon">???</div>
+                <div class="payment-name">ZaloPay</div>
+            </div>
+            <div class="payment-method" onclick="selectPaymentMethod(this, 'vnpay')">
+                <div class="payment-icon">??</div>
+                <div class="payment-name">VNPay</div>
+            </div>
+            <div class="payment-method" onclick="selectPaymentMethod(this, 'creditcard')">
+                <div class="payment-icon">??</div>
+                <div class="payment-name">Th? Tín D?ng</div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner (hidden by default) -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>?ang x? lý thanh toán... Vui lòng ch?</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <button class="btn-pay" id="btnPay" onclick="processPayment()" disabled>
+            <i class="fas fa-lock"></i> Thanh Toán Ngay
+        </button>
+        <button class="btn-back" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Quay L?i
+        </button>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        var selectedPaymentMethod = null;
+
+        function selectPaymentMethod(element, method) {
+            // Remove selected class from all
+            $('.payment-method').removeClass('selected');
+            // Add selected class to clicked element
+            $(element).addClass('selected');
+            // Update selected method
+            selectedPaymentMethod = method;
+            // Enable pay button
+            $('#btnPay').prop('disabled', false);
+        }
+
+        function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Vui lòng ch?n ph??ng th?c thanh toán!');
+                return;
+            }
+
+            // Show loading spinner
+            $('#loadingSpinner').addClass('active');
+            $('#btnPay').prop('disabled', true);
+
+            // Simulate payment processing
+            // In real scenario, this would integrate with actual payment gateway
+            setTimeout(function() {
+                // Simulate success (in real app, this would depend on actual gateway response)
+                var success = Math.random() > 0.1; // 90% success rate for demo
+
+                if (success) {
+                    // Payment successful - call callback
+                    $.ajax({
+                        url: '@Url.Action("ProcessPaymentCallback", "Booking")',
+                        type: 'POST',
+                        data: {
+                            success: true,
+                            transactionId: 'TXN-' + Date.now(),
+                            message: 'Thanh toán thành công'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Redirect to success page
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                alert(response.message);
+                                $('#loadingSpinner').removeClass('active');
+                                $('#btnPay').prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            alert('Có l?i x?y ra. Vui lòng th? l?i!');
+                            $('#loadingSpinner').removeClass('active');
+                            $('#btnPay').prop('disabled', false);
+                        }
+                    });
+                } else {
+                    // Payment failed
+                    $.ajax({
+                        url: '@Url.Action("ProcessPaymentCallback", "Booking")',
+                        type: 'POST',
+                        data: {
+                            success: false,
+                            transactionId: '',
+                            message: 'Thanh toán b? t? ch?i'
+                        },
+                        success: function(response) {
+                            alert(response.message);
+                            $('#loadingSpinner').removeClass('active');
+                            $('#btnPay').prop('disabled', false);
+                        }
+                    });
+                }
+            }, 2000); // Simulate 2 second processing time
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        // jQuery ready
+        $(document).ready(function() {
+            // Disable pay button initially
+            $('#btnPay').prop('disabled', true);
+        });
+    </script>
+}
