@@ -1,0 +1,523 @@
+﻿@model WebCinema.Models.Dat_Ve
+
+@{
+    ViewBag.Title = "Đặt Vé Thành Công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
+    var foods = ViewBag.Foods as List<WebCinema.Models.DonHang_DoAn>;
+    var firstTicket = tickets?.FirstOrDefault();
+}
+
+<style>
+    .success-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .success-header {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+
+    .success-icon {
+        font-size: 5rem;
+        margin-bottom: 1rem;
+        animation: scaleIn 0.5s ease;
+    }
+
+    @@keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .success-message {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    .booking-details {
+        background: white;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .booking-id {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+        text-align: center;
+    }
+
+    .booking-id-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    .booking-id-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff6b35;
+        font-family: 'Courier New', monospace;
+    }
+
+    .detail-section {
+        padding: 2rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .movie-info-card {
+        display: flex;
+        gap: 1.5rem;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .movie-poster-success {
+        width: 100px;
+        height: 140px;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .movie-details {
+        flex: 1;
+    }
+
+    .movie-title-success {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.8rem;
+    }
+
+    .info-row {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #666;
+    }
+
+    .info-row i {
+        width: 20px;
+        color: #ff6b35;
+    }
+
+    .tickets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 1rem;
+    }
+
+    .ticket-card {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #ff6b35;
+        text-align: center;
+    }
+
+    .ticket-seat {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .ticket-price {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .ticket-qr {
+        font-size: 0.75rem;
+        color: #999;
+        word-break: break-all;
+        margin-top: 0.5rem;
+    }
+
+    .food-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .food-item-success {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .food-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .food-qty {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .food-price {
+        font-weight: bold;
+        color: #ff6b35;
+    }
+
+    .payment-summary {
+        background: #fff5f2;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .summary-row:last-child {
+        border-bottom: none;
+        border-top: 2px solid #333;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+    .summary-label {
+        color: #666;
+    }
+
+    .summary-value {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .summary-row:last-child .summary-value {
+        color: #ff6b35;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #666;
+        border: 2px solid #ccc;
+    }
+
+    .btn-secondary:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .status-confirmed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .note-box {
+        background: #fff3cd;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+        margin-top: 1.5rem;
+    }
+
+    .note-box strong {
+        color: #856404;
+    }
+
+    .note-box ul {
+        margin: 0.5rem 0 0 1.5rem;
+        color: #856404;
+    }
+
+    @@media (max-width: 768px) {
+        .movie-info-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .tickets-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <div class="success-header">
+        <div class="success-icon">?</div>
+        <h1 class="success-title">??t Vé Thành Công!</h1>
+        <p class="success-message">
+            C?m ?n b?n ?ã ??t vé t?i DAV Cinema. Vui lòng ki?m tra email ?? xem chi ti?t vé.
+        </p>
+    </div>
+
+    <div class="booking-details">
+        <!-- Booking ID -->
+        <div class="booking-id">
+            <div class="booking-id-label">Mã ??t Vé</div>
+            <div class="booking-id-value">#@Model.Dat_Ve_id</div>
+            <div>
+                <span class="status-badge @(Model.trang_thai_Dat_Ve == "?ã xác nh?n" ? "status-confirmed" : "status-pending")">
+                    @Model.trang_thai_Dat_Ve
+                </span>
+            </div>
+        </div>
+
+        <!-- Movie Information -->
+        @if (firstTicket != null && firstTicket.Suat_Chieu != null)
+        {
+            var showtime = firstTicket.Suat_Chieu;
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-film"></i>
+                    Thông Tin Phim
+                </h3>
+                <div class="movie-info-card">
+                    @if (!string.IsNullOrEmpty(showtime.Phim.hinh_anh))
+                    {
+                        <img src="@Url.Content(showtime.Phim.hinh_anh)" alt="@showtime.Phim.ten_phim" class="movie-poster-success" />
+                    }
+                    <div class="movie-details">
+                        <div class="movie-title-success">@showtime.Phim.ten_phim</div>
+                        <div class="info-row">
+                            <i class="fas fa-building"></i>
+                            <span><strong>R?p:</strong> @showtime.Phong_Chieu.Rap.ten_rap</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-door-open"></i>
+                            <span><strong>Phòng:</strong> @showtime.Phong_Chieu.ten_phong</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-calendar"></i>
+                            <span><strong>Ngày:</strong> @showtime.ngay_chieu.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-clock"></i>
+                            <span><strong>Gi?:</strong> @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") - @showtime.Ca_Chieu.gio_ket_thuc.ToString(@"hh\:mm")</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-money-bill"></i>
+                            <span><strong>Thanh toán:</strong> @Model.phuong_thuc_thanh_toan</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Tickets -->
+        @if (tickets != null && tickets.Any())
+        {
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    Vé C?a B?n (@tickets.Count vé)
+                </h3>
+                <div class="tickets-grid">
+                    @foreach (var ticket in tickets)
+                    {
+                        <div class="ticket-card">
+                            <div class="ticket-seat">
+                                <i class="fas fa-chair"></i>
+                                @ticket.Ghe.so_ghe
+                            </div>
+                            <div class="ticket-price">@((ticket.gia_ve ?? 0).ToString("N0")) ?</div>
+                            @if (!string.IsNullOrEmpty(ticket.ma_qr_code))
+                            {
+                                <div class="ticket-qr" title="@ticket.ma_qr_code">
+                                    <i class="fas fa-qrcode"></i>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Food Items -->
+        @if (foods != null && foods.Any())
+        {
+            <div class="detail-section">
+                <h3 class="section-title">
+                    <i class="fas fa-utensils"></i>
+                    ?? ?n & Th?c U?ng
+                </h3>
+                <div class="food-list">
+                    @foreach (var food in foods)
+                    {
+                        <div class="food-item-success">
+                            <div>
+                                <div class="food-name">@food.Do_An.ten_do_an</div>
+                                <div class="food-qty">S? l??ng: @food.so_luong</div>
+                            </div>
+                            <div class="food-price">
+                                @(((food.gia_ban ?? 0) * food.so_luong).ToString("N0")) ?
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Payment Summary -->
+        <div class="detail-section">
+            <h3 class="section-title">
+                <i class="fas fa-receipt"></i>
+                T?ng Thanh Toán
+            </h3>
+            <div class="payment-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Ti?n vé</span>
+                    <span class="summary-value">
+                        @((tickets?.Sum(t => t.gia_ve) ?? 0).ToString("N0")) ?
+                    </span>
+                </div>
+                @if (foods != null && foods.Any())
+                {
+                    <div class="summary-row">
+                        <span class="summary-label">?? ?n & th?c u?ng</span>
+                        <span class="summary-value">
+                            @(foods.Sum(f => (f.gia_ban ?? 0) * f.so_luong).ToString("N0")) ?
+                        </span>
+                    </div>
+                }
+                <div class="summary-row">
+                    <span class="summary-label">T?ng C?ng</span>
+                    <span class="summary-value">@Model.tong_tien.ToString("N0") ?</span>
+                </div>
+            </div>
+
+            @if (Model.trang_thai_Dat_Ve == "Ch? xác nh?n")
+            {
+                <div class="note-box">
+                    <strong><i class="fas fa-info-circle"></i> L?u ý quan tr?ng:</strong>
+                    <ul>
+                        <li>Vui lòng thanh toán t?i qu?y tr??c gi? chi?u ít nh?t 15 phút</li>
+                        <li>Mang theo mã ??t vé ?? nh?n vé</li>
+                        <li>Vé s? b? h?y n?u không thanh toán ?úng h?n</li>
+                    </ul>
+                </div>
+            }
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-section">
+            <div class="action-buttons">
+                <a href="@Url.Action("Index", "Home")" class="btn-action btn-secondary">
+                    <i class="fas fa-home"></i>
+                    V? Trang Ch?
+                </a>
+                <a href="#" class="btn-action btn-primary" onclick="window.print(); return false;">
+                    <i class="fas fa-print"></i>
+                    In Vé
+                </a>
+                <a href="@Url.Action("Detail", "Home", new { id = firstTicket?.Suat_Chieu?.Phim?.phim_id })" class="btn-action btn-secondary">
+                    <i class="fas fa-film"></i>
+                    Xem Phim Khác
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@@section scripts {
+    <script>
+        $(document).ready(function() {
+            // Animation
+            $('.success-icon').hide().fadeIn(500);
+            
+            // Show success message
+            setTimeout(function() {
+                $('.success-message').css('opacity', '0').animate({ opacity: 1 }, 800);
+            }, 300);
+        });
+    </script>
+}

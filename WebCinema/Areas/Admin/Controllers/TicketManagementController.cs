@@ -13,7 +13,7 @@ namespace WebCinema.Areas.Admin.Controllers
         private CSDLDataContext db = new CSDLDataContext();
 
         // GET: Admin/TicketManagement
-        public ActionResult Index(int? customerId, int? movieId, string status, DateTime? fromDate, DateTime? toDate, string searchText, int? pageNumber)
+        public ActionResult Index(int? customerId, int? movieId, string ticketStatus, DateTime? fromDate, DateTime? toDate, string searchText, int? pageNumber)
         {
             var bookings = db.Dat_Ves.AsQueryable();
 
@@ -32,9 +32,11 @@ namespace WebCinema.Areas.Admin.Controllers
             if (customerId.HasValue)
                 bookings = bookings.Where(b => b.khach_hang_id == customerId.Value);
 
-            // Filter by status
-            if (!string.IsNullOrEmpty(status))
-                bookings = bookings.Where(b => b.trang_thai_Dat_Ve == status);
+            // **FILTER BY TICKET STATUS (not booking status)**
+            if (!string.IsNullOrEmpty(ticketStatus))
+            {
+                bookings = bookings.Where(b => b.Ves.Any(v => v.trang_thai_ve == ticketStatus));
+            }
 
             // Filter by date range
             if (fromDate.HasValue)
@@ -51,13 +53,15 @@ namespace WebCinema.Areas.Admin.Controllers
                 .OrderByDescending(b => b.ngay_tao)
                 .ToList();
 
-            // Update expired tickets
+            // **Update expired tickets automatically**
             var now = DateTime.Now;
             foreach (var booking in result)
             {
                 foreach (var ticket in booking.Ves)
                 {
-                    if (ticket.Suat_Chieu != null && ticket.Suat_Chieu.ngay_chieu < now.Date && ticket.trang_thai_ve == "Ch?a s? d?ng")
+                    if (ticket.Suat_Chieu != null && 
+                        ticket.Suat_Chieu.ngay_chieu < now.Date && 
+                        ticket.trang_thai_ve == "Ch?a s? d?ng")
                     {
                         ticket.trang_thai_ve = "Vé ?ã h?t h?n";
                     }
@@ -66,17 +70,26 @@ namespace WebCinema.Areas.Admin.Controllers
 
             ViewBag.Customers = new SelectList(db.Khach_Hangs, "khach_hang_id", "ho_ten", customerId);
             ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", movieId);
-            ViewBag.Statuses = new SelectList(new[] 
+            
+            // **TICKET STATUS (VÉ) - NOT BOOKING STATUS**
+            ViewBag.TicketStatuses = new SelectList(new[] 
             { 
                 new { value = "Ch?a s? d?ng", text = "Ch?a s? d?ng" },
                 new { value = "?ã s? d?ng", text = "?ã s? d?ng" },
-                new { value = "Vé ?ã h?t h?n", text = "Vé ?ã h?t h?n" },
+                new { value = "?ã h?t h?n", text = "?ã h?t h?n" },
                 new { value = "?ã h?y", text = "?ã h?y" }
-            }, "value", "text", status);
+            }, "value", "text", ticketStatus);
+
+            ViewBag.BookingStatuses = new SelectList(new[]
+            {
+                new { value = "Ch? xác nh?n", text = "Ch? xác nh?n" },
+                new { value = "?ã xác nh?n", text = "?ã xác nh?n" },
+                new { value = "?ã h?y", text = "?ã h?y" }
+            }, "value", "text");
 
             ViewBag.CustomerId = customerId;
             ViewBag.MovieId = movieId;
-            ViewBag.Status = status;
+            ViewBag.TicketStatus = ticketStatus;
             ViewBag.FromDate = fromDate.HasValue ? fromDate.Value.ToString("yyyy-MM-dd") : null;
             ViewBag.ToDate = toDate.HasValue ? toDate.Value.ToString("yyyy-MM-dd") : null;
             ViewBag.SearchText = searchText;
