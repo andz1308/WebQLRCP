@@ -468,6 +468,8 @@ namespace WebCinema.Models
 		
 		private decimal _gia_ve;
 		
+		private string _trang_thai_thanh_toan;
+		
 		private EntitySet<Danh_Gia> _Danh_Gias;
 		
 		private EntityRef<Dat_Ve> _Dat_Ve;
@@ -494,6 +496,8 @@ namespace WebCinema.Models
     partial void Ontrang_thai_veChanged();
     partial void Ongia_veChanging(decimal value);
     partial void Ongia_veChanged();
+    partial void Ontrang_thai_thanh_toanChanging(string value);
+    partial void Ontrang_thai_thanh_toanChanged();
     #endregion
 		
 		public Ve()
@@ -653,6 +657,26 @@ namespace WebCinema.Models
 					this._gia_ve = value;
 					this.SendPropertyChanged("gia_ve");
 					this.Ongia_veChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trang_thai_thanh_toan", DbType="NVarChar(50)")]
+		public string trang_thai_thanh_toan
+		{
+			get
+			{
+				return this._trang_thai_thanh_toan;
+			}
+			set
+			{
+				if ((this._trang_thai_thanh_toan != value))
+				{
+					this.Ontrang_thai_thanh_toanChanging(value);
+					this.SendPropertyChanging();
+					this._trang_thai_thanh_toan = value;
+					this.SendPropertyChanged("trang_thai_thanh_toan");
+					this.Ontrang_thai_thanh_toanChanged();
 				}
 			}
 		}

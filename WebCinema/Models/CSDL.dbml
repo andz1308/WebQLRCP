@@ -16,6 +16,7 @@
       <Column Name="ma_qr_code" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="trang_thai_ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="gia_ve" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
+      <Column Name="trang_thai_thanh_toan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Ve_Danh_Gia" Member="Danh_Gias" ThisKey="ve_id" OtherKey="ve_id" Type="Danh_Gia" />
       <Association Name="Dat_Ve_Ve" Member="Dat_Ve" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Dat_Ve" IsForeignKey="true" />
       <Association Name="Ghe_Ve" Member="Ghe" ThisKey="ghe_id" OtherKey="ghe_id" Type="Ghe" IsForeignKey="true" />
