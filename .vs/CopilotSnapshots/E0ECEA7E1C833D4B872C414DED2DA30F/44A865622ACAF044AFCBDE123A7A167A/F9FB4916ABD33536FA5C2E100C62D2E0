@@ -1,0 +1,268 @@
+﻿@model WebCinema.Models.Suat_Chieu
+
+@{
+    ViewBag.Title = "Thêm Suất Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus"></i> Thêm Suất Chiếu</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @using (Html.BeginForm("Create", "ShowtimeManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">1. Chọn Rạp *</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Chọn rạp --",
+                        new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">2. Chọn Phòng Chiếu *</label>
+                    @Html.DropDownList("phong_chieu_id",
+                        (SelectList)ViewBag.Rooms ?? new SelectList(Enumerable.Empty<SelectListItem>()),
+                        "-- Chọn rạp trước --",
+                        new { @class = "form-control", id = "roomSelect", required = "required", disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.phong_chieu_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">3. Chọn Ngày Chiếu *</label>
+                    @Html.TextBoxFor(model => model.ngay_chieu,
+                        new { @class = "form-control", type = "date", required = "required", id = "ngay_chieu", disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.ngay_chieu, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">4. Chọn Ca Chiếu *</label>
+                    @Html.DropDownList("ca_chieu_id",
+                        new SelectList(Enumerable.Empty<SelectListItem>()),
+                        "-- Chọn ngày trước --",
+                        new { @class = "form-control", id = "shiftSelect", required = "required", disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.ca_chieu_id, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">5. Chọn Phim *</label>
+                    @Html.DropDownList("phim_id",
+                        new SelectList(Enumerable.Empty<SelectListItem>()),
+                        "-- Chọn ca chiếu trước --",
+                        new { @class = "form-control", id = "movieSelect", required = "required", disabled = "disabled" })
+                    @Html.ValidationMessageFor(model => model.phim_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">6. Giá Vé Gốc *</label>
+                    @Html.TextBoxFor(model => model.gia_ve,
+                        new
+                        {
+                            @class = "form-control",
+                            type = "number",
+                            min = "0",
+                            required = "required",
+                            placeholder = "Ví dụ: 80000",
+                            disabled = "disabled",
+                            id = "priceInput"
+                        })
+                    @Html.ValidationMessageFor(model => model.gia_ve, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">7. Ngôn Ngữ</label>
+                    @Html.TextBoxFor(model => model.ngon_ngu,
+                        new { @class = "form-control", placeholder = "Ví dụ: Vietsub, Thuyết minh", disabled = "disabled", id = "languageInput" })
+                    @Html.ValidationMessageFor(model => model.ngon_ngu, "", new { @class = "text-danger" })
+                </div>
+
+                <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; border-left: 4px solid #2196f3;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1976d2;">📋 Hướng Dẫn</h4>
+                    <ul style="margin: 0; padding-left: 1.5rem; color: #555; font-size: 0.9rem;">
+                        <li>Chọn theo thứ tự từ 1 → 7</li>
+                        <li>Chỉ hiển thị các lựa chọn còn trống</li>
+                        <li>Tránh trùng suất chiếu</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-end" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary px-4 py-2" id="submitBtn" disabled>
+                <i class="fas fa-save"></i> Lưu Suất Chiếu
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var today = new Date().toISOString().split("T")[0];
+
+            // Bước 1: Chọn Rạp → Load Phòng
+            $("#cinemaSelect").change(function () {
+                var cinemaId = $(this).val();
+                
+                // Reset các field phía sau
+                resetField("roomSelect", "-- Chọn phòng chiếu --");
+                resetField("ngay_chieu", "");
+                resetField("shiftSelect", "-- Chọn ngày trước --");
+                resetField("movieSelect", "-- Chọn ca chiếu trước --");
+                resetField("priceInput", "");
+                resetField("languageInput", "");
+                $("#submitBtn").prop("disabled", true);
+
+                if (cinemaId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRoomsByCinema")',
+                        type: 'GET',
+                        data: { cinemaId: cinemaId },
+                        success: function (response) {
+                            if (response.success && response.rooms.length > 0) {
+                                $("#roomSelect").empty().append('<option value="">-- Chọn phòng chiếu --</option>');
+                                $.each(response.rooms, function (index, room) {
+                                    $("#roomSelect").append('<option value="' + room.value + '">' + room.text + '</option>');
+                                });
+                                $("#roomSelect").prop("disabled", false);
+                            } else {
+                                $("#roomSelect").empty().append('<option value="">Không có phòng chiếu</option>');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Bước 2: Chọn Phòng → Mở khóa Ngày
+            $("#roomSelect").change(function () {
+                var roomId = $(this).val();
+                
+                resetField("ngay_chieu", "");
+                resetField("shiftSelect", "-- Chọn ngày trước --");
+                resetField("movieSelect", "-- Chọn ca chiếu trước --");
+                resetField("priceInput", "");
+                resetField("languageInput", "");
+                $("#submitBtn").prop("disabled", true);
+
+                if (roomId) {
+                    $("#ngay_chieu").attr("min", today).prop("disabled", false);
+                }
+            });
+
+            // Bước 3: Chọn Ngày → Load Ca Chiếu còn trống
+            $("#ngay_chieu").change(function () {
+                var roomId = $("#roomSelect").val();
+                var date = $(this).val();
+                
+                resetField("shiftSelect", "-- Chọn ca chiếu --");
+                resetField("movieSelect", "-- Chọn ca chiếu trước --");
+                resetField("priceInput", "");
+                resetField("languageInput", "");
+                $("#submitBtn").prop("disabled", true);
+
+                if (roomId && date) {
+                    $.ajax({
+                        url: '@Url.Action("GetAvailableShifts")',
+                        type: 'GET',
+                        data: { roomId: roomId, date: date },
+                        success: function (response) {
+                            if (response.success && response.shifts.length > 0) {
+                                $("#shiftSelect").empty().append('<option value="">-- Chọn ca chiếu --</option>');
+                                $.each(response.shifts, function (index, shift) {
+                                    $("#shiftSelect").append('<option value="' + shift.value + '">' + shift.text + '</option>');
+                                });
+                                $("#shiftSelect").prop("disabled", false);
+                            } else {
+                                $("#shiftSelect").empty().append('<option value="">Không còn ca trống</option>');
+                                alert('⚠️ Phòng này không còn ca chiếu trống trong ngày đã chọn!');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Bước 4: Chọn Ca Chiếu → Load Phim còn trống
+            $("#shiftSelect").change(function () {
+                var roomId = $("#roomSelect").val();
+                var shiftId = $(this).val();
+                var date = $("#ngay_chieu").val();
+                
+                resetField("movieSelect", "-- Chọn phim --");
+                resetField("priceInput", "");
+                resetField("languageInput", "");
+                $("#submitBtn").prop("disabled", true);
+
+                if (roomId && shiftId && date) {
+                    $.ajax({
+                        url: '@Url.Action("GetAvailableMovies")',
+                        type: 'GET',
+                        data: { roomId: roomId, shiftId: shiftId, date: date },
+                        success: function (response) {
+                            if (response.success && response.movies.length > 0) {
+                                $("#movieSelect").empty().append('<option value="">-- Chọn phim --</option>');
+                                $.each(response.movies, function (index, movie) {
+                                    $("#movieSelect").append('<option value="' + movie.value + '">' + movie.text + '</option>');
+                                });
+                                $("#movieSelect").prop("disabled", false);
+                            } else {
+                                $("#movieSelect").empty().append('<option value="">Không còn phim nào</option>');
+                                alert('⚠️ Tất cả phim đã có suất chiếu tại ca này!');
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Bước 5: Chọn Phim → Mở khóa Giá và Ngôn ngữ
+            $("#movieSelect").change(function () {
+                var movieId = $(this).val();
+                
+                if (movieId) {
+                    $("#priceInput").prop("disabled", false).focus();
+                    $("#languageInput").prop("disabled", false);
+                }
+            });
+
+            // Bước 6: Nhập Giá → Mở nút Submit
+            $("#priceInput").on("input", function () {
+                var price = $(this).val();
+                
+                if (price && parseInt(price) > 0) {
+                    $("#submitBtn").prop("disabled", false);
+                } else {
+                    $("#submitBtn").prop("disabled", true);
+                }
+            });
+
+            // Helper function
+            function resetField(id, placeholder) {
+                if (id === "ngay_chieu" || id === "priceInput" || id === "languageInput") {
+                    $("#" + id).val("").prop("disabled", true);
+                } else {
+                    $("#" + id).empty().append('<option value="">' + placeholder + '</option>').prop("disabled", true);
+                }
+            }
+        });
+    </script>
+}

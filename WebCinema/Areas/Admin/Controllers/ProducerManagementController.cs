@@ -12,8 +12,12 @@ namespace WebCinema.Areas.Admin.Controllers
         private CSDLDataContext db = new CSDLDataContext();
 
         // GET: Admin/ProducerManagement
-        public ActionResult Index(string searchTerm)
+        public ActionResult Index(string searchTerm, int? page)
         {
+            // Phân trang - 10 nhà s?n xu?t m?i trang
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
             var producers = db.Nha_San_Xuats.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -21,8 +25,19 @@ namespace WebCinema.Areas.Admin.Controllers
                 producers = producers.Where(p => p.ten_nha_san_xuat.Contains(searchTerm));
             }
 
-            var result = producers.OrderBy(p => p.ten_nha_san_xuat).ToList();
+            int totalProducers = producers.Count();
+            int totalPages = (int)Math.Ceiling(totalProducers / (double)pageSize);
+
+            var result = producers.OrderBy(p => p.ten_nha_san_xuat)
+                                  .Skip((pageNumber - 1) * pageSize)
+                                  .Take(pageSize)
+                                  .ToList();
+
             ViewBag.SearchTerm = searchTerm;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalProducers = totalProducers;
+
             return View(result);
         }
 

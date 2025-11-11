@@ -60,3 +60,22 @@
 [2025-11-11 11:01:20] ? BookingExpirationService started
 [2025-11-11 11:04:21] ? BookingExpirationService started
 [2025-11-11 11:25:22] ? BookingExpirationService started
+[2025-11-11 18:54:07] ? BookingExpirationService started
+[2025-11-11 19:05:20] ? BookingExpirationService started
+[2025-11-11 19:11:42] ? BookingExpirationService started
+[2025-11-11 19:21:56] ? BookingExpirationService started
+[2025-11-11 19:41:28] ? BookingExpirationService started
+[2025-11-11 20:17:27] ? BookingExpirationService started
+[2025-11-11 20:23:37] ? BookingExpirationService started
+[2025-11-11 20:29:49] ? BookingExpirationService started
+[2025-11-11 20:34:58] ✅ Delete: Xóa Dat_Ve ID=44, đã xóa 2 vé và 0 đồ ăn
+[2025-11-11 20:43:13] ? BookingExpirationService started
+[2025-11-11 20:50:01] ? BookingExpirationService started
+[2025-11-11 20:50:47] Actor 4: Found 1 movies
+[2025-11-11 20:51:01] Actor 4: Found 1 movies
+[2025-11-11 21:04:40] ? BookingExpirationService started
+[2025-11-11 21:09:08] ? Deleted showtime 1 with 1 tickets
+[2025-11-11 21:18:09] ? BookingExpirationService started
+[2025-11-11 21:32:01] ? BookingExpirationService started
+[2025-11-11 21:46:50] ? BookingExpirationService started
+[2025-11-11 21:55:15] Actor 2: Found 1 movies

@@ -1,0 +1,185 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin,Staff")]
+    public class ShowtimeTicketManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ShowtimeTicketManagement
+        public ActionResult Index(int? movieId, int? cinemaId, DateTime? date, int? page)
+        {
+            // Lấy danh sách suất chiếu
+            var showtimes = db.Suat_Chieus.AsQueryable();
+
+            // Filter by movie
+            if (movieId.HasValue)
+            {
+                showtimes = showtimes.Where(sc => sc.phim_id == movieId.Value);
+            }
+
+            // Filter by cinema
+            if (cinemaId.HasValue)
+            {
+                showtimes = showtimes.Where(sc => sc.Phong_Chieu != null && sc.Phong_Chieu.rap_id == cinemaId.Value);
+            }
+
+            // Filter by date
+            if (date.HasValue)
+            {
+                var targetDate = date.Value.Date;
+                showtimes = showtimes.Where(sc => sc.ngay_chieu.Date == targetDate);
+            }
+
+            // Phân trang - 10 suất chiếu mỗi trang
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
+            var allShowtimes = showtimes
+                .OrderByDescending(sc => sc.ngay_chieu)
+                .ThenBy(sc => sc.ca_chieu_id)
+                .ToList();
+
+            int totalShowtimes = allShowtimes.Count;
+            int totalPages = (int)Math.Ceiling(totalShowtimes / (double)pageSize);
+
+            var result = allShowtimes
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Truyền thông tin cho View
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", movieId);
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", cinemaId);
+            ViewBag.MovieId = movieId;
+            ViewBag.CinemaId = cinemaId;
+            ViewBag.Date = date.HasValue ? date.Value.ToString("yyyy-MM-dd") : null;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalShowtimes = totalShowtimes;
+
+            return View(result);
+        }
+
+        // GET: Admin/ShowtimeTicketManagement/Details/5
+        public ActionResult Details(int id)
+        {
+            var showtime = db.Suat_Chieus.FirstOrDefault(sc => sc.suat_chieu_id == id);
+            if (showtime == null)
+            {
+                return HttpNotFound();
+            }
+
+            // ✅ LẤY TẤT CẢ VÉ - KHÔNG LỌC BỎ VÉ CHƯA THANH TOÁN
+            var tickets = db.Ves
+                .Where(v => v.suat_chieu_id == id)
+                .OrderBy(v => v.Ghe.hang)
+                .ThenBy(v => v.Ghe.cot)
+                .ToList();
+
+            // Thống kê - ✅ CHỈ TÍNH VÉ ĐÃ THANH TOÁN
+            ViewBag.TotalTickets = tickets.Count;
+            ViewBag.AvailableTickets = tickets.Count(v => 
+                v.Dat_Ve_id == null || 
+                (v.Dat_Ve != null && v.Dat_Ve.trang_thai_Dat_Ve == "Chưa thanh toán"));
+            
+            // ✅ VÉ ĐÃ ĐẶT = ĐÃ THANH TOÁN VÀ CHƯA HỦY
+            ViewBag.BookedTickets = tickets.Count(v => 
+                v.Dat_Ve_id != null && 
+                v.Dat_Ve != null && 
+                v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" &&
+                v.trang_thai_ve != "Đã Hủy"
+            );
+            
+            ViewBag.UsedTickets = tickets.Count(v => v.trang_thai_ve == "Đã sử dụng");
+            ViewBag.CanceledTickets = tickets.Count(v => v.trang_thai_ve == "Đã Hủy");
+            ViewBag.ExpiredTickets = tickets.Count(v => v.trang_thai_ve == "Đã hết hạn");
+            
+            // ✅ VÉ CHỜ THANH TOÁN (để biết)
+            ViewBag.PendingTickets = tickets.Count(v => 
+                v.Dat_Ve_id != null && 
+                v.Dat_Ve != null && 
+                v.Dat_Ve.trang_thai_Dat_Ve == "Chưa thanh toán"
+            );
+
+            ViewBag.Showtime = showtime;
+            ViewBag.Tickets = tickets;
+
+            return View(showtime);
+        }
+
+        // POST: Admin/ShowtimeTicketManagement/DeleteAllTickets/5
+        [HttpPost]
+        public ActionResult DeleteAllTickets(int id)
+        {
+            try
+            {
+                var showtime = db.Suat_Chieus.FirstOrDefault(sc => sc.suat_chieu_id == id);
+                if (showtime == null)
+                {
+                    return Json(new { success = false, message = "Suất chiếu không tồn tại." });
+                }
+
+                // Kiểm tra xem có vé nào đã được sử dụng không
+                var usedTickets = db.Ves
+                    .Where(v => v.suat_chieu_id == id && v.trang_thai_ve == "Đã sử dụng")
+                    .ToList();
+
+                if (usedTickets.Any())
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = $"Không thể xóa! Có {usedTickets.Count} vé đã được sử dụng." 
+                    });
+                }
+
+                // Lấy tất cả vé của suất chiếu này
+                var allTickets = db.Ves.Where(v => v.suat_chieu_id == id).ToList();
+
+                // Xóa tất cả đánh giá liên quan đến các vé này
+                foreach (var ticket in allTickets)
+                {
+                    var reviews = db.Danh_Gias.Where(dg => dg.ve_id == ticket.ve_id).ToList();
+                    db.Danh_Gias.DeleteAllOnSubmit(reviews);
+                }
+
+                // Xóa tất cả vé
+                db.Ves.DeleteAllOnSubmit(allTickets);
+
+                // Xóa suất chiếu
+                db.Suat_Chieus.DeleteOnSubmit(showtime);
+                
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Deleted showtime {id} with {allTickets.Count} tickets");
+
+                return Json(new { 
+                    success = true, 
+                    message = $"Đã xóa suất chiếu và {allTickets.Count} vé thành công!" 
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { 
+                    success = false, 
+                    message = "Có lỗi xảy ra: " + ex.Message 
+                });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

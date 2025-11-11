@@ -13,6 +13,13 @@
         </a>
     </div>
 
+    @if (ViewBag.TotalMovies > 0)
+    {
+        <div style="margin-bottom: 1rem; color: #666;">
+            <strong>Tổng số:</strong> @ViewBag.TotalMovies phim | <strong>Trang:</strong> @ViewBag.CurrentPage / @ViewBag.TotalPages
+        </div>
+    }
+
     @if (Model != null && Model.Any())
     {
         <div style="overflow-x: auto;">
@@ -61,6 +68,48 @@
                 </tbody>
             </table>
         </div>
+
+        @* PHÂN TRANG *@
+        if (ViewBag.TotalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+                
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="btn btn-primary" style="pointer-events: none;">
+                            @i
+                        </span>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = i })" class="btn btn-secondary">
+                            @i
+                        </a>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
+                    {
+                        <span style="padding: 0.6rem; color: #999;">...</span>
+                    }
+                }
+                
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })" 
+                       class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
     }
     else
     {
@@ -71,7 +120,7 @@
 @section scripts {
     <script>
         function deleteMovie(id, name) {
-            if (confirmDelete('Bạn có chắc chắn muốn xóa phim "' + name + '"?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa phim "' + name + '"?')) {
                 $.ajax({
                     url: '@Url.Action("Delete")',
                     type: 'POST',
@@ -81,7 +130,7 @@
                             alert(response.message);
                             location.reload();
                         } else {
-                            alert(response.message);
+                            alert('Lỗi: ' + (response.message || 'Không thể xóa phim'));
                         }
                     },
                     error: function () {

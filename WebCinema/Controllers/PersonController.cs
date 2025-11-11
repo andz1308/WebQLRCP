@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
@@ -22,24 +22,35 @@ namespace WebCinema.Controllers
 
             try
             {
-                // Get movies featuring this actor - Force load Phim data
-                var movies = db.Vai_Diens
-                    .Where(v => v.dien_vien_id == id && v.Phim != null)
-                    .ToList()  // Load to memory FIRST to avoid lazy loading
-                    .Select(v => new
-                    {
-                        Movie = v.Phim,
-                        Role = v.ten_vai_dien
-                    })
-                    .Where(x => x.Movie != null && x.Movie.phim_id > 0)  // Filter out null or invalid movies
+                // ✅ Use strongly-typed ViewModel instead of anonymous type
+                var vaiDiens = db.Vai_Diens
+                    .Where(v => v.dien_vien_id == id && v.phim_id.HasValue)
                     .ToList();
 
+                var movies = new List<ActorMovieViewModel>();
+                
+                foreach (var vaiDien in vaiDiens)
+                {
+                    var phim = db.Phims.FirstOrDefault(p => p.phim_id == vaiDien.phim_id);
+                    
+                    if (phim != null)
+                    {
+                        movies.Add(new ActorMovieViewModel
+                        {
+                            Movie = phim,
+                            Role = vaiDien.ten_vai_dien
+                        });
+                    }
+                }
+
                 ViewBag.Movies = movies;
+                
+                LoggingHelper.LogInfo($"Actor {id}: Found {movies.Count} movies");
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                ViewBag.Movies = new List<object>();  // Fallback to empty list
+                ViewBag.Movies = new List<ActorMovieViewModel>();
             }
 
             return View(actor);

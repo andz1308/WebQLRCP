@@ -161,6 +161,7 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\ActorManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\AuditoriController.cs" />
+    <Compile Include="Areas\Admin\Controllers\BookingExpirationController.cs" />
     <Compile Include="Areas\Admin\Controllers\BookingManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\CinemaManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
@@ -173,6 +174,7 @@
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShiftManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ShowtimeTicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -189,6 +191,7 @@
     <Compile Include="Infrastructure\LoggingHelper.cs" />
     <Compile Include="Infrastructure\PaymentGateway.cs" />
     <Compile Include="Infrastructure\RoleAuthorizeAttribute.cs" />
+    <Compile Include="Models\ActorMovieViewModel.cs" />
     <Compile Include="Models\AuthResult.cs" />
     <Compile Include="Models\CSDL.designer.cs">
       <AutoGen>True</AutoGen>
@@ -296,6 +299,9 @@
     <Content Include="Areas\Admin\Views\PurchaseOrder\Details.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\StockWarnings.cshtml" />
     <Content Include="Areas\Admin\Views\BookingManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\ShowtimeTicketManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ShowtimeTicketManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\BookingExpiration\Index.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

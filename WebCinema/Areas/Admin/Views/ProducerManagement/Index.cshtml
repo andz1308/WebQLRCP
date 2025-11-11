@@ -28,6 +28,13 @@
         }
     </div>
 
+    @if (ViewBag.TotalProducers > 0)
+    {
+        <div style="margin-bottom: 1rem; color: #666;">
+            <strong>Tổng số:</strong> @ViewBag.TotalProducers nhà sản xuất | <strong>Trang:</strong> @ViewBag.CurrentPage / @ViewBag.TotalPages
+        </div>
+    }
+
     @if (Model != null && Model.Any())
     {
         <div style="overflow-x: auto;">
@@ -51,7 +58,7 @@
                                 <a href="@Url.Action("Edit", new { id = producer.nha_san_xuat_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
                                     <i class="fas fa-edit"></i> Sửa
                                 </a>
-                                <button onclick="deleteProducer(@producer.nha_san_xuat_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                <button onclick="deleteProducer(@producer.nha_san_xuat_id, '@producer.ten_nha_san_xuat')" class="btn btn-danger" style="padding: 0.5rem 1rem;">
                                     <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </td>
@@ -60,6 +67,48 @@
                 </tbody>
             </table>
         </div>
+
+        @* PHÂN TRANG *@
+        if (ViewBag.TotalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+                
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="btn btn-primary" style="pointer-events: none;">
+                            @i
+                        </span>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = i })" class="btn btn-secondary">
+                            @i
+                        </a>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
+                    {
+                        <span style="padding: 0.6rem; color: #999;">...</span>
+                    }
+                }
+                
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })" 
+                       class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
     }
     else
     {
@@ -69,8 +118,8 @@
 
 @section scripts {
     <script>
-        function deleteProducer(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa nhà sản xuất này?')) {
+        function deleteProducer(id, name) {
+            if (confirm('Bạn có chắc chắn muốn xóa nhà sản xuất "' + name + '"?')) {
                 $.ajax({
                     url: '@Url.Action("Delete")',
                     type: 'POST',
@@ -80,11 +129,11 @@
                             alert(response.message);
                             location.reload();
                         } else {
-                            alert(response.message);
+                            alert('Lỗi: ' + (response.message || 'Không thể xóa nhà sản xuất'));
                         }
                     },
                     error: function () {
-                        alert('Có lỗi xảy ra.');
+                        alert('Có lỗi xảy ra khi xóa nhà sản xuất.');
                     }
                 });
             }

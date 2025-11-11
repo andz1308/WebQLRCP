@@ -1001,25 +1001,58 @@
         }
 
         .partner-logo {
-            min-width: 150px;
+            position: relative;
+            width: 150px;
             height: 80px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
             background: white;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            color: #ff6b35;
-            transition: all 0.3s ease;
-            cursor: pointer;
         }
 
+            .partner-logo img {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: opacity 0.3s ease;
+                z-index: 1;
+            }
+
+            .partner-logo span {
+                position: relative;
+                z-index: 2;
+                color: #ff6b35;
+                font-weight: bold;
+                font-size: 0.9rem;
+                text-align: center;
+                padding: 0.3rem 0.6rem;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
             .partner-logo:hover {
-                background: #f9f9f9;
-                border-color: #ff6b35;
                 transform: scale(1.1);
+                border-color: #ff6b35;
                 box-shadow: 0 5px 20px rgba(255, 107, 53, 0.2);
+            }
+
+            .partner-logo:hover img {
+                opacity: 0.3;
+            }
+
+            .partner-logo:hover span {
+                opacity: 1;
             }
 
         @@keyframes scroll {
@@ -1286,18 +1319,67 @@
             <h2 class="partners-title">Đối Tác Của Chúng Tôi</h2>
             <div class="partners-slider">
                 <div class="partners-track">
-                    <div class="partner-logo">Netflix</div>
-                    <div class="partner-logo">Disney</div>
-                    <div class="partner-logo">Warner Bros</div>
-                    <div class="partner-logo">Universal</div>
-                    <div class="partner-logo">Sony Pictures</div>
-                    <div class="partner-logo">Paramount</div>
-                    <div class="partner-logo">20th Century</div>
-                    <div class="partner-logo">Lionsgate</div>
-                    <div class="partner-logo">Netflix</div>
-                    <div class="partner-logo">Disney</div>
-                    <div class="partner-logo">Warner Bros</div>
-                    <div class="partner-logo">Universal</div>
+                    <div class="partner-logo">
+                        <img src="https://resize.indiatvnews.com/en/resize/newbucket/1200_-/2022/05/netflix-1652854501.jpg" alt="Netflix" 
+                             onerror="this.style.display='none';">
+                        <span>Netflix</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://images.thedirect.com/media/tag_thumbnail/disney_GRkVpyt.png" alt="Disney" 
+                             onerror="this.style.display='none';">
+                        <span>Disney</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://spaces.filmstories.co.uk/uploads/2020/01/warner-bros-logo.jpg" alt="Warner Bros" 
+                             onerror="this.style.display='none';">
+                        <span>Warner Bros</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://3.bp.blogspot.com/-a-jgR6emGgU/Ubhfl4NID7I/AAAAAAAAAZg/TUzl4sOG1i4/s1600/universal.jpg" alt="Universal" 
+                             onerror="this.style.display='none';">
+                        <span>Universal</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://logos-world.net/wp-content/uploads/2023/04/Sony-Pictures-Entertainment-Logo.jpg" alt="Sony Pictures" 
+                             onerror="this.style.display='none';">
+                        <span>Sony Pictures</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://cdn.vox-cdn.com/thumbor/a621G0y179vuA2ZE6_zTVKHNAIs=/63x0:635x381/2120x1413/filters:focal(63x0:635x381)/cdn.vox-cdn.com/uploads/chorus_image/image/46695848/Paramount_logo.0.jpeg" alt="Paramount" 
+                             onerror="this.style.display='none';">
+                        <span>Paramount</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://www.premiere.fr/sites/default/files/styles/scale_crop_1280x720/public/2020-02/maxresdefault_0.jpg" alt="20th Century" 
+                             onerror="this.style.display='none';">
+                        <span>20th Century</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://i.ytimg.com/vi/J7r22MlmkMQ/maxresdefault.jpg" alt="Lionsgate" 
+                             onerror="this.style.display='none';">
+                        <span>Lionsgate</span>
+                    </div>
+                    <!-- Duplicate để animation smooth -->
+                    <div class="partner-logo">
+                        <img src="https://resize.indiatvnews.com/en/resize/newbucket/1200_-/2022/05/netflix-1652854501.jpg" alt="Netflix" 
+                             onerror="this.style.display='none';">
+                        <span>Netflix</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://images.thedirect.com/media/tag_thumbnail/disney_GRkVpyt.png" alt="Disney" 
+                             onerror="this.style.display='none';">
+                        <span>Disney</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://spaces.filmstories.co.uk/uploads/2020/01/warner-bros-logo.jpg" alt="Warner Bros" 
+                             onerror="this.style.display='none';">
+                        <span>Warner Bros</span>
+                    </div>
+                    <div class="partner-logo">
+                        <img src="https://3.bp.blogspot.com/-a-jgR6emGgU/Ubhfl4NID7I/AAAAAAAAAZg/TUzl4sOG1i4/s1600/universal.jpg" alt="Universal" 
+                             onerror="this.style.display='none';">
+                        <span>Universal</span>
+                    </div>
                 </div>
             </div>
         </div>

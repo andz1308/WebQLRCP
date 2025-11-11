@@ -17,9 +17,9 @@
 <div class="content-card">
     <div class="card-header">
         <h2 class="card-title"><i class="fas fa-clock"></i> Danh Sách Suất Chiếu</h2>
-        <button onclick="toggleCreateForm()" class="btn btn-primary" id="btnShowCreate">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
             <i class="fas fa-plus"></i> Thêm Suất Chiếu
-        </button>
+        </a>
     </div>
 
     <!-- Filter Form -->
@@ -41,76 +41,6 @@
                 </div>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-search"></i> Lọc
-                </button>
-            </div>
-        }
-    </div>
-
-    <!-- Create Form (Hidden by default) -->
-    <div id="createFormSection" style="display: none; margin-bottom: 2rem; padding: 2rem; background: #f0f8ff; border-radius: 8px; border: 2px solid #3498db;">
-        <h3 style="margin-bottom: 1.5rem; color: #2c3e50;"><i class="fas fa-plus-circle"></i> Thêm Suất Chiếu Mới</h3>
-        
-        @using (Html.BeginForm("Create", "ShowtimeManagement", FormMethod.Post, new { id = "createForm" }))
-        {
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">Phim *</label>
-                        @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, "-- Chọn phim --", new { @class = "form-control", required = "required" })
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Rạp *</label>
-                        @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Chọn rạp --", new { @class = "form-control", required = "required", id = "cinemaSelectCreate" })
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Phòng Chiếu *</label>
-                        <select name="phong_chieu_id" id="roomSelectCreate" class="form-control" required>
-                            <option value="">-- Chọn rạp trước --</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="form-group">
-                        <label class="form-label">Ngày Chiếu *</label>
-                        <input type="date" name="ngay_chieu" class="form-control" required />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Ca Chiếu *</label>
-                        @{ 
-                            var shiftsObj = ViewBag.Shifts as IEnumerable<System.Web.Mvc.SelectListItem>;
-                            if (shiftsObj == null)
-                            {
-                                shiftsObj = new List<System.Web.Mvc.SelectListItem>();
-                            }
-                        }
-                        @Html.DropDownList("ca_chieu_id", shiftsObj, "-- Chọn ca chiếu --", new { @class = "form-control", required = "required" })
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Giá Vé Gốc *</label>
-                        <input type="number" name="gia_ve" class="form-control" min="0" required placeholder="Ví dụ: 80000" />
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Ngôn Ngữ</label>
-                        <input type="text" name="ngon_ngu" class="form-control" placeholder="Ví dụ: Vietsub, Thuyết minh" />
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 1.5rem; text-align: right; display: flex; gap: 1rem; justify-content: flex-end;">
-                <button type="button" onclick="toggleCreateForm()" class="btn btn-secondary">
-                    <i class="fas fa-times"></i> Hủy
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Lưu Suất Chiếu
                 </button>
             </div>
         }
@@ -165,9 +95,9 @@
                                 <a href="@Url.Action("Edit", new { id = showtime.suat_chieu_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
                                     <i class="fas fa-edit"></i> Sửa
                                 </a>
-                                <button onclick="deleteShowtime(@showtime.suat_chieu_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                @*<button onclick="deleteShowtime(@showtime.suat_chieu_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
                                     <i class="fas fa-trash"></i> Xóa
-                                </button>
+                                </button>*@
                             </td>
                         </tr>
                     }
@@ -217,52 +147,6 @@
 
 @section scripts {
     <script>
-        function toggleCreateForm() {
-            var form = document.getElementById('createFormSection');
-            var btn = document.getElementById('btnShowCreate');
-            if (form.style.display === 'none') {
-                form.style.display = 'block';
-                btn.style.display = 'none';
-                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                form.style.display = 'none';
-                btn.style.display = 'inline-block';
-            }
-        }
-
-        $(document).ready(function () {
-            $('#cinemaSelectCreate').change(function () {
-                var cinemaId = $(this).val();
-                if (cinemaId) {
-                    $.ajax({
-                        url: '@Url.Action("GetRoomsByCinema")',
-                        type: 'GET',
-                        data: { cinemaId: cinemaId },
-                        success: function (response) {
-                            if (response.success) {
-                                var roomSelect = $('#roomSelectCreate');
-                                roomSelect.empty();
-                                roomSelect.append('<option value="">-- Chọn phòng chiếu --</option>');
-                                $.each(response.rooms, function (index, room) {
-                                    roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
-                                });
-                            } else {
-                                alert(response.message);
-                            }
-                        },
-                        error: function () {
-                            alert('Có lỗi xảy ra khi lấy danh sách phòng.');
-                        }
-                    });
-                } else {
-                    $('#roomSelectCreate').empty().append('<option value="">-- Chọn rạp trước --</option>');
-                }
-            });
-
-            var today = new Date().toISOString().split('T')[0];
-            $('input[name="ngay_chieu"]').attr('min', today);
-        });
-
         function deleteShowtime(id) {
             if (confirm('Bạn có chắc chắn muốn xóa suất chiếu này?')) {
                 $.ajax({
@@ -271,14 +155,14 @@
                     data: { id: id },
                     success: function (response) {
                         if (response.success) {
-                            alert(response.message);
+                            alert('Xóa suất chiếu thành công!');
                             location.reload();
                         } else {
-                            alert(response.message);
+                            alert('Lỗi: ' + (response.message || 'Không thể xóa suất chiếu'));
                         }
                     },
                     error: function () {
-                        alert('Có lỗi xảy ra.');
+                        alert('Có lỗi xảy ra khi xóa suất chiếu.');
                     }
                 });
             }
