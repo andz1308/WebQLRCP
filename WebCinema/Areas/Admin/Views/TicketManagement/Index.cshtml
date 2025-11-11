@@ -145,7 +145,9 @@
                                 <span class="badge badge-@paymentStatusClass">@booking.trang_thai_Dat_Ve</span>
                             </td>
                             <td>
-                                <small>@booking.ngay_tao.ToString("dd/MM/yyyy HH:mm")</small>
+                                @*<small>@booking.ngay_tao.ToString("dd/MM/yyyy HH:mm")</small>*@
+                                <small>@(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa có ngày")</small>
+
                             </td>
                             <td>
                                 <a href="@Url.Action("Details", new { id = booking.Dat_Ve_id })" class="btn btn-sm btn-info" title="Xem chi tiết">

@@ -1,0 +1,223 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web;
+using WebCinema.Models;
+
+namespace WebCinema.Infrastructure
+{
+    /// <summary>
+    /// VNPAY Payment Gateway Integration
+    /// </summary>
+    public class PaymentGateway
+    {
+        // VNPAY Configuration
+        private readonly string _vnpayUrl = "https://sandbox.vnpayment.vn/paygate"; // ✅ URL đúng cho API 2.1.0
+        private readonly string _tmnCode = "OOI636PL"; // Replace with your TMN Code
+        private readonly string _hashSecret = "WN5E5HSY2APFHRCL7R1U1C3MLTTLTNW2"; // Replace with your Hash Secret
+        private readonly string _returnUrl = "http://localhost:44300/Invoice/PaymentCallback"; // ✅ URL callback đúng
+
+        /// <summary>
+        /// Tạo URL thanh toán VNPAY
+        /// </summary>
+        public string CreatePaymentUrl(decimal amount, string orderInfo, string customerId)
+        {
+            try
+            {
+                var vnpayData = new SortedDictionary<string, string>
+                {
+                    { "vnp_Version", "2.1.0" },
+                    { "vnp_Command", "pay" },
+                    { "vnp_TmnCode", _tmnCode },
+                    { "vnp_Amount", ((long)(amount * 100)).ToString() }, // Amount in cents
+                    { "vnp_CurrCode", "VND" },
+                    { "vnp_TxnRef", GenerateTransactionRef() },
+                    { "vnp_OrderInfo", orderInfo },
+                    { "vnp_OrderType", "billpayment" },
+                    { "vnp_Locale", "vn" },
+                    { "vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss") },
+                    { "vnp_IpAddr", GetClientIP() },
+                    { "vnp_ReturnUrl", _returnUrl }
+                };
+
+                string querystring = "";
+                foreach (KeyValuePair<string, string> kv in vnpayData)
+                {
+                    if (!string.IsNullOrEmpty(kv.Value))
+                    {
+                        querystring += kv.Key + "=" + HttpUtility.UrlEncode(kv.Value) + "&";
+                    }
+                }
+
+                string hashInput = querystring.Substring(0, querystring.Length - 1);
+                string signature = HmacSHA512(hashInput, _hashSecret);
+
+                string paymentUrl = _vnpayUrl + "?" + hashInput + "&vnp_SecureHash=" + signature;
+                LoggingHelper.LogInfo($"✅ Tạo URL thanh toán VNPAY thành công: {paymentUrl}");
+                return paymentUrl;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra và xác nhận thanh toán từ VNPAY
+        /// </summary>
+        public PaymentResponse VerifyPayment(Dictionary<string, string> responseData)
+        {
+            try
+            {
+                var response = new PaymentResponse();
+
+                // Lấy và loại bỏ signature khỏi dữ liệu
+                string signature = responseData["vnp_SecureHash"] ?? "";
+                responseData.Remove("vnp_SecureHash");
+                responseData.Remove("vnp_SecureHashType");
+
+                // Sắp xếp dữ liệu để kiểm tra chữ ký
+                var sortedData = new SortedDictionary<string, string>(responseData);
+                string querystring = "";
+                foreach (KeyValuePair<string, string> kv in sortedData)
+                {
+                    if (!string.IsNullOrEmpty(kv.Value))
+                    {
+                        querystring += kv.Key + "=" + HttpUtility.UrlEncode(kv.Value) + "&";
+                    }
+                }
+
+                string hashInput = querystring.Substring(0, querystring.Length - 1);
+                string computedSignature = HmacSHA512(hashInput, _hashSecret);
+
+                // Kiểm tra chữ ký
+                if (computedSignature.Equals(signature, StringComparison.OrdinalIgnoreCase))
+                {
+                    response.IsValid = true;
+                    response.ResponseCode = responseData.ContainsKey("vnp_ResponseCode") ? responseData["vnp_ResponseCode"] : "";
+                    response.TransactionNo = responseData.ContainsKey("vnp_TransactionNo") ? responseData["vnp_TransactionNo"] : "";
+                    response.BankCode = responseData.ContainsKey("vnp_BankCode") ? responseData["vnp_BankCode"] : "";
+                    response.OrderInfo = responseData.ContainsKey("vnp_OrderInfo") ? responseData["vnp_OrderInfo"] : "";
+
+                    // Kiểm tra mã phản hồi từ VNPAY
+                    if (response.ResponseCode == "00")
+                    {
+                        response.Success = true;
+                        LoggingHelper.LogInfo($"✅ Xác nhận thanh toán thành công: {response.TransactionNo}");
+                    }
+                    else
+                    {
+                        response.Success = false;
+                        response.Message = GetResponseMessage(response.ResponseCode);
+                        LoggingHelper.LogInfo($"⚠️ Thanh toán thất bại. Mã: {response.ResponseCode}");
+                    }
+                }
+                else
+                {
+                    response.IsValid = false;
+                    response.Success = false;
+                    response.Message = "Chữ ký không hợp lệ";
+                    LoggingHelper.LogInfo($"❌ Chữ ký thanh toán không hợp lệ");
+                }
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Tạo Reference Transaction cho mỗi lần thanh toán
+        /// </summary>
+        private string GenerateTransactionRef()
+        {
+            return DateTime.Now.ToString("yyyyMMddHHmmss") + new Random().Next(1000, 9999);
+        }
+
+        /// <summary>
+        /// Lấy IP của khách hàng
+        /// </summary>
+        private string GetClientIP()
+        {
+            try
+            {
+                var context = System.Web.HttpContext.Current;
+                if (context != null)
+                {
+                    string ip = context.Request.ServerVariables["HTTP_CF_CONNECTING_IP"];
+                    if (string.IsNullOrEmpty(ip))
+                    {
+                        ip = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+                    }
+                    if (string.IsNullOrEmpty(ip))
+                    {
+                        ip = context.Request.ServerVariables["REMOTE_ADDR"];
+                    }
+                    return ip;
+                }
+            }
+            catch { }
+            return "0.0.0.0";
+        }
+
+        /// <summary>
+        /// Tính toán HMAC SHA512
+        /// </summary>
+        private string HmacSHA512(string input, string key)
+        {
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] messageBytes = Encoding.UTF8.GetBytes(input);
+
+            using (var hmac = new HMACSHA512(keyBytes))
+            {
+                byte[] hashBytes = hmac.ComputeHash(messageBytes);
+                return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+            }
+        }
+
+        /// <summary>
+        /// Lấy thông báo lỗi từ mã phản hồi
+        /// </summary>
+        private string GetResponseMessage(string responseCode)
+        {
+            var messages = new Dictionary<string, string>
+            {
+                { "00", "Giao dịch thành công" },
+                { "07", "Trừ tiền thành công. Giao dịch bị nghi ngờ (liên hệ với ngân hàng)" },
+                { "09", "Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking" },
+                { "10", "Giao dịch không thành công do: Khách hàng xác thực Secure Password lần 1 không đúng" },
+                { "11", "Giao dịch không thành công do: Đã hết hạn chờ Khách hàng xác thực Secure Password (30 phút)" },
+                { "12", "Giao dịch không thành công do: Khách hàng từ chối Giao dịch" },
+                { "13", "Giao dịch không thành công do: Khách hàng xác thực Secure Password lần 2 không đúng" },
+                { "24", "Giao dịch không thành công do: Khách hàng hủy Giao dịch" },
+                { "51", "Giao dịch không thành công do: Tài khoản của khách hàng không đủ số dư để thực hiện giao dịch" },
+                { "65", "Giao dịch không thành công do: Tài khoản của Khách hàng đã vượt quá hạn mức giao dịch trong ngày" },
+                { "75", "Ngân hàng phát hành thẻ từ chối giao dịch" },
+                { "79", "Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định. Xin vui lòng thực hiện lại giao dịch" },
+                { "99", "Các lỗi khác" }
+            };
+
+            return messages.ContainsKey(responseCode) ? messages[responseCode] : "Lỗi không xác định";
+        }
+    }
+
+    /// <summary>
+    /// Dữ liệu phản hồi thanh toán từ VNPAY
+    /// </summary>
+    public class PaymentResponse
+    {
+        public bool IsValid { get; set; } // Chữ ký có hợp lệ
+        public bool Success { get; set; } // Thanh toán có thành công
+        public string ResponseCode { get; set; } // Mã phản hồi từ VNPAY
+        public string TransactionNo { get; set; } // Mã giao dịch tại VNPAY
+        public string BankCode { get; set; } // Mã ngân hàng
+        public string OrderInfo { get; set; } // Thông tin đơn hàng
+        public string Message { get; set; } // Thông báo lỗi (nếu có)
+    }
+}

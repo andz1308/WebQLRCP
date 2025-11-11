@@ -57,7 +57,13 @@ D:\WebQLRCP\WebQLRCP\WebCinema\bin\Microsoft.Web.Infrastructure.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\Newtonsoft.Json.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.LinqToSql.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.Server.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\QRCoder.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\SixLabors.ImageSharp.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Buffers.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Memory.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Numerics.Vectors.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Runtime.CompilerServices.Unsafe.dll
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Text.Encoding.CodePages.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Threading.Tasks.Extensions.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Web.Helpers.dll
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Web.Mvc.dll
@@ -76,7 +82,12 @@ D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.LinqToSql.pdb
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.LinqToSql.xml
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.Server.pdb
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\OpenRiaServices.Server.xml
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\SixLabors.ImageSharp.xml
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Buffers.xml
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Memory.xml
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Numerics.Vectors.xml
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Runtime.CompilerServices.Unsafe.xml
+D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Text.Encoding.CodePages.xml
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Threading.Tasks.Extensions.xml
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Web.Helpers.xml
 D:\WebQLRCP\WebQLRCP\WebCinema\bin\System.Web.Mvc.xml

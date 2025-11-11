@@ -1,0 +1,195 @@
+﻿@{
+    ViewBag.Title = "Thanh Toán Thất Bại";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<style>
+    .failed-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .failed-header {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(231, 76, 60, 0.3);
+    }
+
+    .failed-header i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    .failed-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2.5rem;
+    }
+
+    .failed-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        border: 2px solid #f5c6cb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        color: #721c24;
+        margin-bottom: 2rem;
+    }
+
+    .error-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .error-text {
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .help-section {
+        background: #e8f4f8;
+        border-left: 4px solid #3498db;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .help-section h3 {
+        color: #2c3e50;
+        margin-top: 0;
+    }
+
+    .help-section ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: #555;
+        line-height: 1.8;
+    }
+
+    .help-section li {
+        margin-bottom: 0.5rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-retry {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+
+    .btn-retry:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-home {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-home:hover {
+        background: #d0d0d0;
+    }
+
+    .contact-info {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
+
+    .contact-info h3 {
+        color: #856404;
+        margin-top: 0;
+    }
+
+    .contact-info p {
+        margin: 0.5rem 0;
+        color: #856404;
+    }
+</style>
+
+<div class="failed-container">
+    <div class="failed-header">
+        <i class="fas fa-times-circle"></i>
+        <h1>Thanh Toán Thất Bại!</h1>
+        <p>Có lỗi xảy ra trong quá trình thanh toán</p>
+    </div>
+
+    <div class="failed-content">
+        <div class="error-message">
+            <div class="error-title"><i class="fas fa-exclamation-triangle"></i> Chi Tiết Lỗi</div>
+            <p class="error-text">
+                @(ViewBag.ErrorMessage ?? "Thanh toán không thành công. Vui lòng thử lại hoặc liên hệ bộ phận hỗ trợ.")
+            </p>
+        </div>
+
+        <div class="help-section">
+            <h3><i class="fas fa-lightbulb"></i> Tôi Có Thể Làm Gì?</h3>
+            <ul>
+                <li><strong>Th? l?i thanh toán:</strong> Quay l?i và ti?p t?c th?c hi?n thanh toán</li>
+                <li><strong>Ki?m tra tài kho?n:</strong> ??m b?o tài kho?n ngân hàng c?a b?n có ?? s? d?</li>
+                <li><strong>Th? ph??ng th?c khác:</strong> S? d?ng th? ngân hàng khác ho?c ví ?i?n t?</li>
+                <li><strong>Liên h? h? tr?:</strong> N?u v?n ?? v?n ti?p di?n, vui lòng liên h? ??i h? tr? khách hàng</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <a href="@Url.Action("Index", "Home")" class="action-btn btn-retry">
+                <i class="fas fa-redo"></i> Th? L?i
+            </a>
+            <a href="@Url.Action("Index", "Home")" class="action-btn btn-home">
+                <i class="fas fa-home"></i> V? Trang Ch?
+            </a>
+        </div>
+
+        <div class="contact-info">
+            <h3><i class="fas fa-headset"></i> C?n H? Tr??</h3>
+            <p><strong>Email H? Tr?:</strong> support@davcinema.com</p>
+            <p><strong>Hotline:</strong> 1900 XXXX (24/7)</p>
+            <p><strong>Th?i gian h? tr?:</strong> Th? Hai - Ch? Nh?t, 8:00 - 22:00</p>
+        </div>
+    </div>
+</div>

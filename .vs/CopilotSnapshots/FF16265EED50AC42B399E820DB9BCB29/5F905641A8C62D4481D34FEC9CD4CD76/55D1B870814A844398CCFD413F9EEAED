@@ -1,0 +1,258 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Services
+{
+    /// <summary>
+    /// Service xử lý logic nghiệp vụ cho quản lý đồ ăn & nhập hàng
+    /// 
+    /// ⚠️ LƯU Ý: Service này yêu cầu cấu trúc database đầy đủ
+    /// Để sử dụng đầy đủ chức năng, cần:
+    /// 1. Chạy script DATABASE_SCHEMA_NHAP_HANG.sql
+    /// 2. Update LINQ-to-SQL model (CSDL.dbml)
+    /// 
+    /// Xem chi tiết: INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md
+    /// </summary>
+    public class FoodService
+    {
+        private readonly CSDLDataContext _db;
+
+        public FoodService()
+        {
+            _db = new CSDLDataContext();
+        }
+
+        public FoodService(CSDLDataContext db)
+        {
+            _db = db;
+        }
+
+        #region THỐNG KÊ CƠ BẢN (Không cần cột so_luong)
+
+        /// <summary>
+        /// Thống kê sản phẩm bán chạy (chỉ tính đơn đã thanh toán)
+        /// </summary>
+        public List<dynamic> GetTopSellingItems(int? month, int? year, int take = 10)
+        {
+            var query = _db.DonHang_DoAns
+                .Where(dh => dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" 
+                       && dh.Dat_Ve.ngay_tao.HasValue);
+
+            if (year.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Year == year.Value);
+            }
+
+            if (month.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Month == month.Value);
+            }
+
+            var result = query
+                .GroupBy(dh => dh.Do_An_id)
+                .Select(g => new
+                {
+                    Do_An_id = g.Key,
+                    TotalQuantity = g.Sum(dh => dh.so_luong),
+                    TotalRevenue = g.Sum(dh => dh.so_luong * (dh.Do_An.gia ?? 0))
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(take)
+                .ToList()
+                .Select(x => new
+                {
+                    DoAn = _db.Do_Ans.FirstOrDefault(d => d.Do_An_id == x.Do_An_id),
+                    x.TotalQuantity,
+                    x.TotalRevenue
+                })
+                .Where(x => x.DoAn != null)
+                .ToList<dynamic>();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Thống kê theo loại sản phẩm
+        /// </summary>
+        public List<dynamic> GetSalesByCategory(int? month, int? year)
+        {
+            var query = _db.DonHang_DoAns
+                .Where(dh => dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" 
+                       && dh.Dat_Ve.ngay_tao.HasValue
+                       && dh.Do_An.loai != null);
+
+            if (year.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Year == year.Value);
+            }
+
+            if (month.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Month == month.Value);
+            }
+
+            var result = query
+                .GroupBy(dh => dh.Do_An.loai)
+                .Select(g => new
+                {
+                    Category = g.Key,
+                    TotalQuantity = g.Sum(dh => dh.so_luong),
+                    TotalRevenue = g.Sum(dh => dh.so_luong * (dh.Do_An.gia ?? 0))
+                })
+                .OrderByDescending(x => x.TotalRevenue)
+                .ToList<dynamic>();
+
+            return result;
+        }
+
+        #endregion
+
+        #region KIỂM TRA TỒN KHO (Cần cột so_luong - Chưa triển khai)
+
+        /// <summary>
+        /// ⚠️ YÊU CẦU: Cần thêm cột 'so_luong' vào bảng Do_An
+        /// Xem hướng dẫn: INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md
+        /// </summary>
+        public int GetStockQuantity(int doAnId)
+        {
+            // TODO: Uncomment sau khi chạy DATABASE_SCHEMA_NHAP_HANG.sql
+            // var doAn = _db.Do_Ans.FirstOrDefault(d => d.Do_An_id == doAnId);
+            // return doAn?.so_luong ?? 0;
+            
+            throw new NotImplementedException(
+                "Chức năng này yêu cầu cột 'so_luong' trong bảng Do_An. " +
+                "Vui lòng chạy script DATABASE_SCHEMA_NHAP_HANG.sql và update DBML."
+            );
+        }
+
+        /// <summary>
+        /// ⚠️ YÊU CẦU: Cần thêm cột 'so_luong' vào bảng Do_An
+        /// </summary>
+        public List<Do_An> GetLowStockItems(int threshold = 10)
+        {
+            // TODO: Uncomment sau khi chạy DATABASE_SCHEMA_NHAP_HANG.sql
+            // return _db.Do_Ans
+            //     .Where(d => d.so_luong <= threshold && d.so_luong > 0)
+            //     .OrderBy(d => d.so_luong)
+            //     .ToList();
+            
+            throw new NotImplementedException(
+                "Chức năng này yêu cầu cột 'so_luong' trong bảng Do_An. " +
+                "Vui lòng chạy script DATABASE_SCHEMA_NHAP_HANG.sql và update DBML."
+            );
+        }
+
+        /// <summary>
+        /// ⚠️ YÊU CẦU: Cần thêm cột 'so_luong' vào bảng Do_An
+        /// </summary>
+        public List<Do_An> GetOutOfStockItems()
+        {
+            // TODO: Uncomment sau khi chạy DATABASE_SCHEMA_NHAP_HANG.sql
+            // return _db.Do_Ans
+            //     .Where(d => d.so_luong == 0)
+            //     .ToList();
+            
+            throw new NotImplementedException(
+                "Chức năng này yêu cầu cột 'so_luong' trong bảng Do_An. " +
+                "Vui lòng chạy script DATABASE_SCHEMA_NHAP_HANG.sql và update DBML."
+            );
+        }
+
+        #endregion
+
+        #region TÍNH GIÁ VỐN (Cần cột gia_von - Chưa triển khai)
+
+        /// <summary>
+        /// ⚠️ YÊU CẦU: Cần thêm cột 'gia_von' vào bảng Do_An
+        /// </summary>
+        public decimal GetAverageCost(int doAnId)
+        {
+            // TODO: Uncomment sau khi chạy DATABASE_SCHEMA_NHAP_HANG.sql
+            // var doAn = _db.Do_Ans.FirstOrDefault(d => d.Do_An_id == doAnId);
+            // return doAn?.gia_von ?? 0;
+            
+            throw new NotImplementedException(
+                "Chức năng này yêu cầu cột 'gia_von' trong bảng Do_An. " +
+                "Vui lòng chạy script DATABASE_SCHEMA_NHAP_HANG.sql và update DBML."
+            );
+        }
+
+        /// <summary>
+        /// ⚠️ YÊU CẦU: Cần thêm cột 'gia_von' vào bảng Do_An
+        /// </summary>
+        public decimal GetGrossProfit(int doAnId, int? month, int? year)
+        {
+            // TODO: Uncomment sau khi chạy DATABASE_SCHEMA_NHAP_HANG.sql
+            /*
+            var doAn = _db.Do_Ans.FirstOrDefault(d => d.Do_An_id == doAnId);
+            if (doAn == null) return 0;
+
+            var query = _db.DonHang_DoAns
+                .Where(dh => dh.Do_An_id == doAnId 
+                       && dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán"
+                       && dh.Dat_Ve.ngay_tao.HasValue);
+
+            if (year.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Year == year.Value);
+            }
+
+            if (month.HasValue)
+            {
+                query = query.Where(dh => dh.Dat_Ve.ngay_tao.Value.Month == month.Value);
+            }
+
+            decimal totalRevenue = query.Sum(dh => (decimal?)(dh.so_luong * (doAn.gia ?? 0))) ?? 0;
+            decimal totalCost = query.Sum(dh => (decimal?)(dh.so_luong * (doAn.gia_von ?? 0))) ?? 0;
+
+            return totalRevenue - totalCost;
+            */
+            
+            throw new NotImplementedException(
+                "Chức năng này yêu cầu cột 'gia_von' trong bảng Do_An. " +
+                "Vui lòng chạy script DATABASE_SCHEMA_NHAP_HANG.sql và update DBML."
+            );
+        }
+
+        #endregion
+
+        #region CẢNH BÁO
+
+        /// <summary>
+        /// Lấy danh sách cảnh báo tồn kho
+        /// ⚠️ YÊU CẦU: Cần cột 'so_luong'
+        /// </summary>
+        public List<string> GetStockWarnings()
+        {
+            // TODO: Uncomment sau khi triển khai đầy đủ
+            /*
+            var warnings = new List<string>();
+
+            var outOfStock = GetOutOfStockItems();
+            if (outOfStock.Any())
+            {
+                warnings.Add($"Có {outOfStock.Count} sản phẩm hết hàng!");
+            }
+
+            var lowStock = GetLowStockItems();
+            if (lowStock.Any())
+            {
+                warnings.Add($"Có {lowStock.Count} sản phẩm sắp hết hàng (dưới 10 sản phẩm)!");
+            }
+
+            return warnings;
+            */
+            
+            return new List<string>
+            {
+                "⚠️ Hệ thống quản lý kho chưa được triển khai đầy đủ.",
+                "📋 Xem hướng dẫn: INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md"
+            };
+        }
+
+        #endregion
+    }
+}

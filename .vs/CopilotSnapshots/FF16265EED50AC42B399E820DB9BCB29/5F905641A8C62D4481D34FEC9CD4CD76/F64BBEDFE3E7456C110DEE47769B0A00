@@ -1,0 +1,86 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Optimization;
+using System.Web.Routing;
+using WebCinema.Services;
+
+namespace WebCinema
+{
+    public class MvcApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            AreaRegistration.RegisterAllAreas();
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            // ✅ BẮT ĐẦU DỊCH VỤ HỦY ĐƠN QUÁ HẠN
+            // TODO: Uncomment after ensuring BookingExpirationService compiles
+            try
+            {
+                BookingExpirationService.StartExpirationCheck();
+            }
+            catch (Exception ex)
+            {
+                // Log startup error but don't crash app
+                System.Diagnostics.Debug.WriteLine($"Error starting BookingExpirationService: {ex.Message}");
+            }
+        }
+
+        // Restore session values from authenticated identity when Session becomes available
+        protected void Application_AcquireRequestState(object sender, EventArgs e)
+        {
+            try
+            {
+                var context = HttpContext.Current;
+                if (context == null) return;
+
+                // Ensure session state is available
+                var session = context.Session;
+                if (session == null) return;
+
+                // If user is authenticated but session does not have CustomerId, try to rehydrate from identity name
+                if (context.User != null && context.User.Identity != null && context.User.Identity.IsAuthenticated)
+                {
+                    if (session["CustomerId"] == null)
+                    {
+                        var email = context.User.Identity.Name;
+                        if (!string.IsNullOrEmpty(email))
+                        {
+                            try
+                            {
+                                var authService = new Services.AuthService();
+                                var customer = authService.GetCustomerByEmail(email);
+                                if (customer != null)
+                                {
+                                    session["CustomerId"] = customer.khach_hang_id;
+                                    session["CustomerName"] = customer.ho_ten;
+                                    session["CustomerEmail"] = customer.email;
+                                    session["UserRole"] = "Customer";
+                                }
+                            }
+                            catch
+                            {
+                                // ignore errors while restoring session
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // swallow exceptions to avoid breaking pipeline
+            }
+        }
+
+        // ✅ DỪNG DỊCH VỤ KHI APP TẮT
+        protected void Application_End()
+        {
+            BookingExpirationService.StopExpirationCheck();
+        }
+    }
+}

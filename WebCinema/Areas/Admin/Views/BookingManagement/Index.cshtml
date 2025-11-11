@@ -51,6 +51,10 @@
 
     @if (Model != null && Model.Any())
     {
+        <div style="margin-bottom: 1rem; color: #666;">
+            Hiển thị @Model.Count() / @ViewBag.TotalItems đơn đặt (Trang @ViewBag.CurrentPage / @ViewBag.TotalPages)
+        </div>
+
         <div style="overflow-x: auto;">
             <table class="data-table">
                 <thead>
@@ -69,14 +73,24 @@
                     {
                         // Get first ticket status to show
                         var firstTicket = booking.Ves.FirstOrDefault();
-                        var ticketStatus = firstTicket?.trang_thai_ve ?? "Chưa sử dụng";
+                        var ticketStatus = firstTicket != null ? firstTicket.trang_thai_ve : "Chưa sử dụng";
+                        if (string.IsNullOrEmpty(ticketStatus))
+                        {
+                            ticketStatus = "Chưa sử dụng";
+                        }
+                        
                         var ticketStatusColor = ticketStatus == "Chưa sử dụng" ? "#3498db" :
                                               ticketStatus == "Đã sử dụng" ? "#27ae60" :
                                               ticketStatus == "Đã hết hạn" ? "#f39c12" :
                                               ticketStatus == "Đã Hủy" ? "#e74c3c" : "#95a5a6";
                         
                         // Trạng thái thanh toán từ booking (Chưa thanh toán, Đã Thanh toán, Đã Hủy)
-                        var bookingStatus = booking.trang_thai_Dat_Ve ?? "Chưa thanh toán";
+                        var bookingStatus = booking.trang_thai_Dat_Ve;
+                        if (string.IsNullOrEmpty(bookingStatus))
+                        {
+                            bookingStatus = "Chưa thanh toán";
+                        }
+                        
                         var bookingStatusColor = bookingStatus == "Chưa thanh toán" ? "#f39c12" :
                                                bookingStatus == "Đã Thanh toán" ? "#27ae60" :
                                                bookingStatus == "Đã Hủy" ? "#e74c3c" : "#95a5a6";
@@ -102,16 +116,70 @@
                                 </a>
                                 @if (booking.trang_thai_Dat_Ve != "Đã Hủy")
                                 {
-                                    <button onclick="cancelBooking(@booking.Dat_Ve_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <button onclick="cancelBooking(@booking.Dat_Ve_id)" class="btn btn-danger" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
                                         <i class="fas fa-times"></i> Hủy
                                     </button>
                                 }
+                                <button onclick="deleteBooking(@booking.Dat_Ve_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+
+        <!-- ✅ PHÂN TRANG -->
+        if (ViewBag.TotalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { 
+                        page = ViewBag.CurrentPage - 1, 
+                        searchDate = ViewBag.SearchDate,
+                        ticketStatus = ViewBag.TicketStatus,
+                        bookingPaymentStatus = ViewBag.BookingPaymentStatus
+                    })" class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="btn btn-primary">@i</span>
+                    }
+                    else if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                    {
+                        <a href="@Url.Action("Index", new { 
+                            page = i,
+                            searchDate = ViewBag.SearchDate,
+                            ticketStatus = ViewBag.TicketStatus,
+                            bookingPaymentStatus = ViewBag.BookingPaymentStatus
+                        })" class="btn btn-secondary">@i</a>
+                    }
+                    else if (i == ViewBag.CurrentPage - 3 || i == ViewBag.CurrentPage + 3)
+                    {
+                        <span style="padding: 0.6rem;">...</span>
+                    }
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { 
+                        page = ViewBag.CurrentPage + 1,
+                        searchDate = ViewBag.SearchDate,
+                        ticketStatus = ViewBag.TicketStatus,
+                        bookingPaymentStatus = ViewBag.BookingPaymentStatus
+                    })" class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
     }
     else
     {
@@ -122,7 +190,7 @@
 @section scripts {
     <script>
         function cancelBooking(id) {
-            if (confirmDelete('Bạn có chắc chắn muốn hủy đơn đặt này?')) {
+            if (confirm('Bạn có chắc chắn muốn hủy đơn đặt này?\n\nGhế sẽ được giải phóng và trạng thái sẽ chuyển về "Đã Hủy".')) {
                 $.ajax({
                     url: '@Url.Action("Cancel")',
                     type: 'POST',
@@ -137,6 +205,27 @@
                     },
                     error: function () {
                         alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+
+        function deleteBooking(id) {
+            if (confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA HOÀN TOÀN ĐƠN ĐẶT NÀY?\n\nThao tác này sẽ:\n- Xóa vĩnh viễn đơn đặt\n- Xóa tất cả vé\n- Xóa tất cả đồ ăn\n- Xóa đánh giá liên quan\n\nKHÔNG THỂ KHÔI PHỤC!')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi xóa đơn đặt.');
                     }
                 });
             }

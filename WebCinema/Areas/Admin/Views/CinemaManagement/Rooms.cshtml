@@ -1,10 +1,11 @@
-@model List<WebCinema.Models.Phong_Chieu>
+﻿@model List<WebCinema.Models.Phong_Chieu>
 
 @{
-    ViewBag.Title = "Qu?n L� Ph�ng Chi?u - " + ViewBag.CinemaName;
+    ViewBag.Title = "Quản Lý Phòng Chiếu - " + ViewBag.CinemaName;
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
+
     var cinemaId = ViewBag.CinemaId;
 }
 
@@ -173,15 +174,15 @@
 
 <div class="content-header">
     <h1>
-        <i class="fas fa-person-booth"></i> 
-        Qu?n L� Ph�ng Chi?u: <span style="color: #fff;">@ViewBag.CinemaName</span>
+        <i class="fas fa-door-open"></i> 
+        Quản Lý Phòng Chiếu: <span style="color: #fff;">@ViewBag.CinemaName</span>
     </h1>
     <div>
         <a href="@Url.Action("Index")" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay L?i Danh S�ch R?p
+            <i class="fas fa-arrow-left"></i> Quay Lại Danh Sách Rạp
         </a>
-        <a href="@Url.Action("CreateRoom", new { cinemaId = cinemaId })" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Th�m Ph�ng Chi?u M?i
+        <a href="@Url.Action("Create", "Auditori", new { rapId = cinemaId })" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Phòng Chiếu Mới
         </a>
     </div>
 </div>
@@ -206,7 +207,7 @@
     <div class="card-header">
         <h2 class="card-title">
             <i class="fas fa-list"></i> 
-            Danh S�ch Ph�ng Chi?u
+            Danh Sách Phòng Chiếu
         </h2>
     </div>
     <div class="card-body">
@@ -216,9 +217,9 @@
                 <thead>
                     <tr>
                         <th style="width: 10%;">ID</th>
-                        <th style="width: 40%;">T�n Ph�ng</th>
-                        <th style="width: 20%;">S?c Ch?a</th>
-                        <th style="width: 30%; text-align: center;">H�nh ??ng</th>
+                        <th style="width: 40%;">Tên Phòng</th>
+                        <th style="width: 20%;">Sức Chứa</th>
+                        <th style="width: 30%; text-align: center;">Hành Động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -229,11 +230,11 @@
                             <td>@room.ten_phong</td>
                             <td>@room.suc_chua</td>
                             <td class="text-center">
-                                <a href="@Url.Action("EditRoom", new { id = room.phong_chieu_id })" class="btn btn-sm btn-info" title="S?a">
-                                    <i class="fas fa-edit"></i> S?a
+                                <a href="@Url.Action("EditLayout", "Auditori", new { id = room.phong_chieu_id })" class="btn btn-sm btn-info" title="Chỉnh sửa sơ đồ ghế">
+                                    <i class="fas fa-th"></i> Sơ Đồ Ghế
                                 </a>
-                                <button class="btn btn-sm btn-danger btn-delete" data-id="@room.phong_chieu_id" title="X�a">
-                                    <i class="fas fa-trash"></i> X�a
+                                <button class="btn btn-sm btn-danger btn-delete" data-id="@room.phong_chieu_id" title="Xóa">
+                                    <i class="fas fa-trash"></i> Xóa
                                 </button>
                             </td>
                         </tr>
@@ -245,7 +246,7 @@
         {
             <div style="text-align: center; padding: 2rem; color: #999;">
                 <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
-                <p>Ch?a c� ph�ng chi?u n�o. H�y nh?n "Th�m Ph�ng Chi?u M?i" ?? t?o.</p>
+                <p>Chưa có phòng chiếu nào. Hãy nhấn "Thêm Phòng Chiếu Mới" để tạo.</p>
             </div>
         }
     </div>
@@ -257,9 +258,9 @@
             $('.btn-delete').click(function (e) {
                 e.preventDefault();
                 var roomId = $(this).data('id');
-                if (confirm("B?n c� ch?c ch?n mu?n x�a ph�ng chi?u n�y kh�ng?")) {
+                if (confirm("Bạn có chắc chắn muốn xóa phòng chiếu này không?")) {
                     $.ajax({
-                        url: '@Url.Action("DeleteRoom")',
+                        url: '@Url.Action("Delete", "Auditori")',
                         type: 'POST',
                         data: { id: roomId },
                         success: function (response) {
@@ -267,11 +268,11 @@
                                 alert(response.message);
                                 location.reload();
                             } else {
-                                alert(response.message || "C� l?i x?y ra");
+                                alert(response.message || "Có lỗi xảy ra");
                             }
                         },
                         error: function () {
-                            alert("?� x?y ra l?i khi c? g?ng x�a ph�ng chi?u.");
+                            alert("Đã xảy ra lỗi khi cố gắng xóa phòng chiếu.");
                         }
                     });
                 }

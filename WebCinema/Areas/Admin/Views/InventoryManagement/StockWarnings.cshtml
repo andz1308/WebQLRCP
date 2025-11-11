@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "Cảnh Báo Tồn Kho";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    var outOfStock = ViewBag.OutOfStock as System.Collections.Generic.List<WebCinema.Models.Do_An>;
+    var lowStock = ViewBag.LowStock as System.Collections.Generic.List<WebCinema.Models.Do_An>;
+}
+
+<div class="container-fluid">
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fas fa-exclamation-triangle"></i> Cảnh Báo Tồn Kho
+            </h2>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+
+        <!-- Statistics -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); padding: 2rem; border-radius: 8px; color: white; box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-times-circle" style="font-size: 3rem; opacity: 0.8;"></i>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold;">@(outOfStock != null ? outOfStock.Count : 0)</div>
+                        <div style="font-size: 1.1rem; opacity: 0.9;">Sản phẩm hết hàng</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); padding: 2rem; border-radius: 8px; color: white; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; opacity: 0.8;"></i>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: bold;">@(lowStock != null ? lowStock.Count : 0)</div>
+                        <div style="font-size: 1.1rem; opacity: 0.9;">Sản phẩm sắp hết</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Out of Stock Items -->
+        @if (outOfStock != null && outOfStock.Any())
+        {
+            <div style="background: white; border-radius: 8px; padding: 2rem; margin-bottom: 1.5rem; border-left: 4px solid #dc3545;">
+                <h5 style="color: #dc3545; margin-bottom: 1.5rem;">
+                    <i class="fas fa-times-circle"></i> Sản Phẩm Hết Hàng
+                </h5>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tên Sản Phẩm</th>
+                                <th>Loại</th>
+                                <th>Số Lượng</th>
+                                <th>Giá Vốn</th>
+                                <th>Giá Bán</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in outOfStock)
+                            {
+                                <tr>
+                                    <td><strong>@item.ten_san_pham</strong></td>
+                                    <td>@item.loai</td>
+                                    <td>
+                                        <span style="padding: 0.3rem 0.8rem; background: #dc3545; color: white; border-radius: 4px; font-weight: 600;">
+                                            @(item.so_luong ?? 0)
+                                        </span>
+                                    </td>
+                                    <td>@((item.gia_von ?? 0).ToString("N0")) VNĐ</td>
+                                    <td>@((item.gia ?? 0).ToString("N0")) VNĐ</td>
+                                    <td>
+                                        <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; color: #155724;">
+                <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <p style="margin: 0; font-weight: 600;">Không có sản phẩm nào hết hàng!</p>
+            </div>
+        }
+
+        <!-- Low Stock Items -->
+        @if (lowStock != null && lowStock.Any())
+        {
+            <div style="background: white; border-radius: 8px; padding: 2rem; border-left: 4px solid #ffc107;">
+                <h5 style="color: #ffc107; margin-bottom: 1.5rem;">
+                    <i class="fas fa-exclamation-circle"></i> Sản Phẩm Sắp Hết Hàng (Dưới 10)
+                </h5>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Tên Sản Phẩm</th>
+                                <th>Loại</th>
+                                <th>Số Lượng</th>
+                                <th>Giá Vốn</th>
+                                <th>Giá Bán</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in lowStock)
+                            {
+                                <tr>
+                                    <td><strong>@item.ten_san_pham</strong></td>
+                                    <td>@item.loai</td>
+                                    <td>
+                                        <span style="padding: 0.3rem 0.8rem; background: #ffc107; color: white; border-radius: 4px; font-weight: 600;">
+                                            @(item.so_luong ?? 0)
+                                        </span>
+                                    </td>
+                                    <td>@((item.gia_von ?? 0).ToString("N0")) VNĐ</td>
+                                    <td>@((item.gia ?? 0).ToString("N0")) VNĐ</td>
+                                    <td>
+                                        <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 1.5rem; text-align: center; color: #155724;">
+                <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                <p style="margin: 0; font-weight: 600;">Tất cả sản phẩm đều còn hàng đầy đủ!</p>
+            </div>
+        }
+
+        <!-- Action Button -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="@Url.Action("Create", "PurchaseOrder")" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;">
+                <i class="fas fa-plus-circle"></i> Tạo Phiếu Nhập Hàng
+            </a>
+        </div>
+    </div>
+</div>
