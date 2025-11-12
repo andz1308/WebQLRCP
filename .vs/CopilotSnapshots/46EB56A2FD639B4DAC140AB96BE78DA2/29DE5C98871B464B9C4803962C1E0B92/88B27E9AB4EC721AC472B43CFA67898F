@@ -1,0 +1,180 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Staff")]
+    public class StaffPurchaseOrderController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/StaffPurchaseOrder/Create
+        public ActionResult Create()
+        {
+            Response.ContentEncoding = System.Text.Encoding.UTF8;
+            Response.Charset = "utf-8";
+
+            // Lấy danh sách sản phẩm để thêm vào phiếu nhập
+            var products = db.Do_Ans.OrderBy(d => d.loai).ThenBy(d => d.ten_san_pham).ToList();
+            ViewBag.Products = products;
+
+            return View();
+        }
+
+        // POST: Admin/StaffPurchaseOrder/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(FormCollection form)
+        {
+            try
+            {
+                Response.ContentEncoding = System.Text.Encoding.UTF8;
+                Response.Charset = "utf-8";
+
+                // Validate input
+                string supplier = form["supplier"];
+                if (string.IsNullOrWhiteSpace(supplier))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập tên nhà cung cấp!";
+                    return RedirectToAction("Create");
+                }
+
+                if (!DateTime.TryParse(form["expectedDate"], out DateTime expectedDate))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập ngày dự kiến hợp lệ!";
+                    return RedirectToAction("Create");
+                }
+
+                // Get current staff from session
+                string staffName = Session["EmployeeName"] as string ?? "Staff";
+
+                // Parse order items from form
+                var orderItems = new System.Collections.Generic.List<dynamic>();
+                int itemCount = 0;
+
+                // Get item count
+                for (int i = 1; i <= 50; i++)
+                {
+                    if (!string.IsNullOrEmpty(form[$"product_{i}"]))
+                    {
+                        itemCount = i;
+                    }
+                }
+
+                // Parse each item
+                for (int i = 1; i <= itemCount; i++)
+                {
+                    string productId = form[$"product_{i}"];
+                    string quantity = form[$"quantity_{i}"];
+                    string price = form[$"price_{i}"];
+                    string notes = form[$"notes_{i}"];
+
+                    if (!string.IsNullOrEmpty(productId) && !string.IsNullOrEmpty(quantity))
+                    {
+                        if (int.TryParse(productId, out int pId) && int.TryParse(quantity, out int qty) && decimal.TryParse(price, out decimal unitPrice))
+                        {
+                            if (qty > 0 && unitPrice >= 0)
+                            {
+                                orderItems.Add(new
+                                {
+                                    ProductId = pId,
+                                    Quantity = qty,
+                                    UnitPrice = unitPrice,
+                                    Notes = notes ?? "",
+                                    TotalPrice = qty * unitPrice
+                                });
+                            }
+                        }
+                    }
+                }
+
+                if (orderItems.Count == 0)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng thêm ít nhất 1 sản phẩm!";
+                    return RedirectToAction("Create");
+                }
+
+                // ✅ TẠO PHIẾU NHẬP (PURCHASEORDER)
+                // Ghi chú: Bảng này cần được tạo nếu chưa có trong database
+                // Cơ cấu: ID, SupplierName, CreatedDate, ExpectedDate, Status, CreatedByStaff, TotalAmount, Notes
+                // Tạm thời lưu vào Session để hiển thị confirm
+                Session["PendingPurchaseOrder"] = new
+                {
+                    Supplier = supplier,
+                    ExpectedDate = expectedDate,
+                    CreatedByStaff = staffName,
+                    CreatedDate = DateTime.Now,
+                    Items = orderItems,
+                    TotalAmount = orderItems.Cast<dynamic>().Sum(item => (decimal)item.TotalPrice)
+                };
+
+                return RedirectToAction("ConfirmOrder");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("Create");
+            }
+        }
+
+        // GET: Admin/StaffPurchaseOrder/ConfirmOrder
+        public ActionResult ConfirmOrder()
+        {
+            Response.ContentEncoding = System.Text.Encoding.UTF8;
+            Response.Charset = "utf-8";
+
+            if (Session["PendingPurchaseOrder"] == null)
+            {
+                return RedirectToAction("Create");
+            }
+
+            return View();
+        }
+
+        // POST: Admin/StaffPurchaseOrder/SubmitOrder
+        [HttpPost]
+        public ActionResult SubmitOrder()
+        {
+            try
+            {
+                if (Session["PendingPurchaseOrder"] == null)
+                {
+                    return Json(new { success = false, message = "Dữ liệu phiếu nhập không tồn tại!" });
+                }
+
+                // ✅ LƯU PHIẾU NHẬP VÀO DATABASE
+                // Tạm thời log thông tin để xác nhận được gửi
+                var orderData = Session["PendingPurchaseOrder"];
+
+                LoggingHelper.LogInfo($"✅ Staff tạo phiếu nhập: Supplier={orderData.GetType().GetProperty("Supplier")?.GetValue(orderData)}");
+
+                Session.Remove("PendingPurchaseOrder");
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Phiếu nhập đã được gửi thành công! Admin sẽ duyệt trong thời gian sớm nhất.",
+                    redirectUrl = Url.Action("Index", "StaffInventoryManagement")
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

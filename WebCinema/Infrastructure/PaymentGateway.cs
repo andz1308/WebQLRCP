@@ -30,8 +30,8 @@ namespace WebCinema.Infrastructure
         public PaymentGateway()
         {
             // ✅ Đọc toàn bộ cấu hình từ Web.config
-            _tmnCode = ConfigurationManager.AppSettings["VNPay:TmnCode"] ?? "OOI636PL";
-            _hashSecret = ConfigurationManager.AppSettings["VNPay:HashSecret"] ?? "WN5E5HSY2APFHRCL7R1U1C3MLTTLTNW2";
+            _tmnCode = ConfigurationManager.AppSettings["VNPay:TmnCode"] ?? "NJJ0R8FS";
+            _hashSecret = ConfigurationManager.AppSettings["VNPay:HashSecret"] ?? "BYKJBHPPZKQMKBIBGGXIYKWYFAYSJXCW";
             _baseUrl = ConfigurationManager.AppSettings["VNPay:BaseUrl"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
             _command = ConfigurationManager.AppSettings["VNPay:Command"] ?? "pay";
             _currCode = ConfigurationManager.AppSettings["VNPay:CurrCode"] ?? "VND";

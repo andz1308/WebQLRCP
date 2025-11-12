@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Linq;
 using System.Timers;
 using WebCinema.Models;
@@ -7,13 +7,13 @@ using WebCinema.Infrastructure;
 namespace WebCinema.Services
 {
     /// <summary>
-    /// Service t? ??ng h?y ??n ??t vÈ ch?a thanh to·n sau 10 ph˙t
+    /// Service t? ??ng h?y ??n ??t v√© ch?a thanh to√°n sau 10 ph√∫t
     /// </summary>
     public class BookingExpirationService
     {
         private static Timer _expirationTimer;
         private CSDLDataContext db;
-        private const int EXPIRATION_MINUTES = 10;  // ? 10 ph˙t
+        private const int EXPIRATION_MINUTES = 10;  // ? 10 ph√∫t
 
         public BookingExpirationService()
         {
@@ -28,7 +28,7 @@ namespace WebCinema.Services
             try
             {
                 _expirationTimer = new Timer();
-                _expirationTimer.Interval = 60000;  // Ki?m tra m?i 1 ph˙t
+                _expirationTimer.Interval = 60000;  // Ki?m tra m?i 1 ph√∫t
                 _expirationTimer.Elapsed += OnTimerElapsed;
                 _expirationTimer.AutoReset = true;
                 _expirationTimer.Start();
@@ -70,7 +70,7 @@ namespace WebCinema.Services
         }
 
         /// <summary>
-        /// H?y c·c ??n ??t vÈ qu· h?n (ch?a thanh to·n sau 10 ph˙t)
+        /// H?y c√°c ??n ??t v√© qu√° h?n (ch?a thanh to√°n sau 10 ph√∫t)
         /// </summary>
         private static void CancelExpiredBookings()
         {
@@ -81,16 +81,16 @@ namespace WebCinema.Services
                     var now = DateTime.Now;
                     var expirationTime = now.AddMinutes(-EXPIRATION_MINUTES);
 
-                    // ?? TÏm c·c ??n "Ch?a thanh to·n" ???c t?o tr??c 10 ph˙t
+                    // ?? T√¨m c√°c ??n "Ch?a thanh to√°n" ???c t?o tr??c 10 ph√∫t
                     var expiredBookings = db.Dat_Ves
-                        .Where(b => b.trang_thai_Dat_Ve == "Ch?a thanh to·n" &&
+                        .Where(b => b.trang_thai_Dat_Ve == "Ch∆∞a thanh to√°n" &&
                                     b.ngay_tao.HasValue &&
                                     b.ngay_tao.Value <= expirationTime)
                         .ToList();
 
                     if (expiredBookings.Count == 0)
                     {
-                        return;  // KhÙng cÛ ??n n‡o h?t h?n
+                        return;  // Kh√¥ng c√≥ ??n n√†o h?t h?n
                     }
 
                     LoggingHelper.LogInfo($"? Found {expiredBookings.Count} expired bookings to cancel");
@@ -99,19 +99,19 @@ namespace WebCinema.Services
                     {
                         try
                         {
-                            // ? C?P NH?T TR?NG TH¡I ??NG TH¿NH "?√ H?Y"
-                            booking.trang_thai_Dat_Ve = "?„ H?y";
+                            // ? C?P NH?T TR?NG TH√ÅI ??NG TH√ÄNH "?√É H?Y"
+                            booking.trang_thai_Dat_Ve = "ƒê√£ H·ªßy";
 
-                            // ? QUAY L?I V… V? TR?NG TH¡I "TR?NG" - B??C THI?T Y?U
+                            // ? QUAY L?I V√â V? TR?NG TH√ÅI "TR?NG" - B??C THI?T Y?U
                             var bookingVes = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
                             foreach (var ticket in bookingVes)
                             {
-                                ticket.Dat_Ve_id = null;  // ? GI?I PH”NG V…
-                                ticket.trang_thai_ve = "Ch?a s? d?ng";
+                                ticket.Dat_Ve_id = null;  // ? GI?I PH√ìNG V√â
+                                ticket.trang_thai_ve = "Ch∆∞a s·ª≠ d·ª±ng";
                                 ticket.ma_qr_code = null;
                             }
 
-                            // ? X”A C¡C ?? ?N LI N QUAN
+                            // ? X√ìA C√ÅC ?? ?N LI√äN QUAN
                             var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == booking.Dat_Ve_id).ToList();
                             foreach (var food in foodOrders)
                             {

@@ -1,0 +1,72 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin,Staff")]
+    public class InvoiceController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/Invoice/ViewInvoice/5
+        [HttpGet]
+        public ActionResult ViewInvoice(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                var tickets = booking.Ves.ToList();
+                var firstTicket = tickets.FirstOrDefault();
+                var showtime = firstTicket?.Suat_Chieu;
+
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+                List<dynamic> foodItems = new List<dynamic>();
+
+                foreach (var foodOrder in booking.DonHang_DoAns)
+                {
+                    var food = foodOrder.Do_An;
+                    decimal unitPrice = food.gia ?? 0m;
+                    decimal itemTotal = unitPrice * foodOrder.so_luong;
+                    foodTotal += itemTotal;
+
+                    foodItems.Add(new
+                    {
+                        FoodId = food.Do_An_id,
+                        FoodName = food.ten_san_pham,
+                        Price = unitPrice,
+                        Quantity = foodOrder.so_luong,
+                        TotalPrice = itemTotal
+                    });
+                }
+
+                ViewBag.Booking = booking;
+                ViewBag.Showtime = showtime;
+                ViewBag.Tickets = tickets;
+                ViewBag.FoodItems = foodItems;
+                ViewBag.TicketTotal = ticketTotal;
+                ViewBag.FoodTotal = foodTotal;
+                ViewBag.GrandTotal = ticketTotal + foodTotal;
+                ViewBag.InvoiceDate = DateTime.Now;
+
+                LoggingHelper.LogInfo($"✅ Admin ViewInvoice: Booking ID {bookingId}");
+                return View("~/Areas/Admin/Views/Invoice/ViewInvoice.cshtml");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi xem hóa đơn";
+                return RedirectToAction("Index", "StaffOfflineBooking");
+            }
+        }
+    }
+}
