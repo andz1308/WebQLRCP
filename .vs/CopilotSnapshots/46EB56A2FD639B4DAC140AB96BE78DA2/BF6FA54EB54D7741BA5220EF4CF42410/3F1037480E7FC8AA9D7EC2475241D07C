@@ -1,0 +1,582 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class InvoiceController : Controller
+    {
+        private CSDLDataContext db;
+
+        public InvoiceController()
+        {
+            try
+            {
+                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    db = new CSDLDataContext(connString);
+                }
+                else
+                {
+                    db = new CSDLDataContext();
+                }
+            }
+            catch
+            {
+                db = new CSDLDataContext();
+            }
+        }
+
+        // GET: Invoice
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// GET: Trang hóa đơn cho một đơn đặt vé
+        /// </summary>
+        [HttpGet]
+        public ActionResult ViewInvoice(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                // Kiểm tra quyền truy cập
+                var customerId = Session["CustomerId"] as int? ?? 0;
+                if (booking.khach_hang_id != customerId && !User.IsInRole("Admin"))
+                {
+                    return new HttpUnauthorizedResult();
+                }
+
+                var tickets = booking.Ves.ToList();
+                var firstTicket = tickets.FirstOrDefault();
+                var showtime = firstTicket?.Suat_Chieu;
+
+                // Tính toán thông tin hóa đơn
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+                List<dynamic> foodItems = new List<dynamic>();
+
+                foreach (var foodOrder in booking.DonHang_DoAns)
+                {
+                    var food = foodOrder.Do_An;
+                    decimal unitPrice = food.gia ?? 0m;
+                    decimal itemTotal = unitPrice * foodOrder.so_luong;
+                    foodTotal += itemTotal;
+
+                    foodItems.Add(new
+                    {
+                        FoodId = food.Do_An_id,
+                        FoodName = food.ten_san_pham,
+                        Price = unitPrice,
+                        Quantity = foodOrder.so_luong,
+                        TotalPrice = itemTotal
+                    });
+                }
+
+                ViewBag.Booking = booking;
+                ViewBag.Showtime = showtime;
+                ViewBag.Tickets = tickets;
+                ViewBag.FoodItems = foodItems;
+                ViewBag.TicketTotal = ticketTotal;
+                ViewBag.FoodTotal = foodTotal;
+                ViewBag.GrandTotal = ticketTotal + foodTotal;
+                ViewBag.InvoiceDate = DateTime.Now;
+
+                LoggingHelper.LogInfo($"✅ Xem hóa đơn: Booking ID {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi xem hóa đơn";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// POST: Bắt đầu thanh toán VNPAY
+        /// </summary>
+        // WebCinema\Controllers\InvoiceController.cs
+        [HttpPost]
+        public ActionResult InitiatePayment(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                // Kiểm tra trạng thái đơn hàng
+                if (booking.trang_thai_Dat_Ve != "Chưa thanh toán")
+                {
+                    return Json(new { success = false, message = "Đơn hàng đã được thanh toán hoặc bị hủy" });
+                }
+
+                // ✅ LƯU BOOKING ID VÀO SESSION (backup nếu OrderInfo bị mất)
+                Session["CurrentPaymentBookingId"] = bookingId;
+                Session.Timeout = 30; // Session tồn tại 30 phút
+
+                // Tạo URL thanh toán
+                var paymentGateway = new PaymentGateway();
+                string orderInfo = $"Thanh toán vé xem phim - Mã đơn: {bookingId}";
+                string paymentUrl = paymentGateway.CreatePaymentUrl(booking.tong_tien, orderInfo, booking.khach_hang_id.ToString());
+
+                LoggingHelper.LogInfo($"✅ Khởi tạo thanh toán VNPAY: Booking ID {bookingId}, Amount {booking.tong_tien}");
+                LoggingHelper.LogInfo($"✅ Lưu Session: CurrentPaymentBookingId = {bookingId}");
+                return Json(new { success = true, redirectUrl = paymentUrl });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+
+                return Json(new { success = false, message = "Có lỗi xảy ra khi khởi tạo thanh toán" });
+            }
+        }
+
+        /// <summary>
+        /// GET: VNPAY Callback - Xử lý kết quả thanh toán từ VNPAY
+        /// /// ✅ Hỗ trợ cả Return (localhost) và IPN (public server)
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentCallback()
+        {
+            try
+            {
+                LoggingHelper.LogInfo($"=== PaymentCallback - URL: {Request.Url}");
+                LoggingHelper.LogInfo($"=== Query String: {Request.QueryString}");
+
+                // Lấy dữ liệu từ query string
+                var responseData = new Dictionary<string, string>();
+                foreach (string key in Request.QueryString.Keys)
+                {
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        responseData[key] = Request.QueryString[key];
+                        LoggingHelper.LogInfo($"   {key} = {Request.QueryString[key]}");
+                    }
+                }
+
+                // ✅ FALLBACK: Nếu không có vnp_SecureHash (localhost mode), bỏ qua xác minh chữ ký
+                if (!responseData.ContainsKey("vnp_SecureHash"))
+                {
+                    LoggingHelper.LogInfo($"⚠️ Không có vnp_SecureHash - Chế độ localhost (không xác minh chữ ký)");
+
+                    // Tạo response fake thành công để test trên localhost
+                    var localHostResponse = new PaymentResponse
+                    {
+                        IsValid = true,
+                        Success = true,
+                        ResponseCode = responseData.ContainsKey("vnp_ResponseCode") ? responseData["vnp_ResponseCode"] : "00",
+                        TransactionNo = responseData.ContainsKey("vnp_TransactionNo") ? responseData["vnp_TransactionNo"] : "TEST_" + DateTime.Now.Ticks,
+                        BankCode = responseData.ContainsKey("vnp_BankCode") ? responseData["vnp_BankCode"] : "TESTING",
+                        OrderInfo = responseData.ContainsKey("vnp_OrderInfo") ? responseData["vnp_OrderInfo"] : "",
+                        Amount = responseData.ContainsKey("vnp_Amount") ? responseData["vnp_Amount"] : "0",
+                        PayDate = responseData.ContainsKey("vnp_PayDate") ? responseData["vnp_PayDate"] : DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        Message = "Giao dịch test thành công (localhost mode)"
+                    };
+
+                    var paymentResponse = localHostResponse;
+                    LoggingHelper.LogInfo($"✅ Localhost Mode: Giả lập response thành công");
+
+                    // Tiếp tục xử lý...
+                    if (paymentResponse.Success && paymentResponse.ResponseCode == "00")
+                    {
+                        string orderInfo = paymentResponse.OrderInfo;
+                        int bookingId = ExtractBookingIdFromOrderInfo(orderInfo);
+
+                        LoggingHelper.LogInfo($"Extracted Booking ID: {bookingId}");
+
+                        // ✅ FALLBACK: Nếu không trích xuất được từ OrderInfo, dùng Session
+                        if (bookingId == 0)
+                        {
+                            var sessionBookingId = Session["CurrentPaymentBookingId"] as int?;
+                            if (sessionBookingId.HasValue)
+                            {
+                                bookingId = sessionBookingId.Value;
+                                LoggingHelper.LogInfo($"✅ Fallback: Lấy Booking ID từ Session: {bookingId}");
+                            }
+                            else
+                            {
+                                LoggingHelper.LogInfo($"❌ Không thể trích xuất Booking ID từ: {orderInfo}");
+                                return RedirectToAction("PaymentFailed", "Invoice", new { message = "Không thể xác định đơn hàng" });
+                            }
+                        }
+
+                        var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                        if (booking == null)
+                        {
+                            LoggingHelper.LogInfo($"❌ Không tìm thấy đơn hàng: {bookingId}");
+                            return RedirectToAction("PaymentFailed", "Invoice", new { message = "Không tìm thấy đơn hàng" });
+                        }
+
+                        // ✅ Cập nhật booking
+                        booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+                        db.SubmitChanges();
+
+                        var tickets = booking.Ves.ToList();
+                        foreach (var ticket in tickets)
+                        {
+                            ticket.trang_thai_ve = "Chưa sử dụng";
+                        }
+                        db.SubmitChanges();
+
+                        LoggingHelper.LogInfo($"✅ Thanh toán localhost thành công!");
+                        LoggingHelper.LogInfo($"   - Booking ID: {bookingId}");
+                        LoggingHelper.LogInfo($"   - Số tiền: {paymentResponse.Amount}");
+
+                        // ✅ Xóa Session sau khi thanh toán thành công
+                        Session.Remove("CurrentPaymentBookingId");
+
+                        return RedirectToAction("PaymentSuccess", "Invoice", new { bookingId = bookingId, transactionNo = paymentResponse.TransactionNo });
+                    }
+                    else
+                    {
+                        return RedirectToAction("PaymentFailed", "Invoice", new { message = "Thanh toán localhost thất bại" });
+                    }
+                }
+
+                // ✅ NORMAL MODE: Xác minh chữ ký từ VNPay server
+                var paymentGateway = new PaymentGateway();
+                var paymentResponse2 = paymentGateway.VerifyPayment(responseData);
+
+                LoggingHelper.LogInfo($"PaymentCallback Result:");
+                LoggingHelper.LogInfo($"   IsValid: {paymentResponse2.IsValid}");
+                LoggingHelper.LogInfo($"   Success: {paymentResponse2.Success}");
+                LoggingHelper.LogInfo($"   ResponseCode: {paymentResponse2.ResponseCode}");
+                LoggingHelper.LogInfo($"   Message: {paymentResponse2.Message}");
+
+                // Kiểm tra chữ ký
+                if (!paymentResponse2.IsValid)
+                {
+                    LoggingHelper.LogInfo($"❌ Chữ ký thanh toán không hợp lệ!");
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = paymentResponse2.Message });
+                }
+
+                // Trích xuất Booking ID từ OrderInfo
+                string orderInfo2 = paymentResponse2.OrderInfo;
+                int bookingId2 = ExtractBookingIdFromOrderInfo(orderInfo2);
+
+                LoggingHelper.LogInfo($"Extracted Booking ID: {bookingId2}");
+
+                // ✅ FALLBACK: Nếu không trích xuất được từ OrderInfo, dùng Session
+                if (bookingId2 == 0)
+                {
+                    var sessionBookingId = Session["CurrentPaymentBookingId"] as int?;
+                    if (sessionBookingId.HasValue)
+                    {
+                        bookingId2 = sessionBookingId.Value;
+                        LoggingHelper.LogInfo($"✅ Fallback: Lấy Booking ID từ Session: {bookingId2}");
+                    }
+                    else
+                    {
+                        LoggingHelper.LogInfo($"❌ Không thể trích xuất Booking ID từ: {orderInfo2}");
+                        return RedirectToAction("PaymentFailed", "Invoice", new { message = "Không thể xác định đơn hàng" });
+                    }
+                }
+
+                var booking2 = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId2);
+                if (booking2 == null)
+                {
+                    LoggingHelper.LogInfo($"❌ Không tìm thấy đơn hàng: {bookingId2}");
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = "Không tìm thấy đơn hàng" });
+                }
+
+                if (paymentResponse2.Success && paymentResponse2.ResponseCode == "00")
+                {
+                    // ✅ Thanh toán thành công
+                    booking2.trang_thai_Dat_Ve = "Đã Thanh toán";
+                    db.SubmitChanges();
+
+                    // Cập nhật trạng thái vé
+                    var tickets = booking2.Ves.ToList();
+                    foreach (var ticket in tickets)
+                    {
+                        ticket.trang_thai_ve = "Chưa sử dụng";
+                    }
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"✅ Thanh toán VNPAY thành công!");
+                    LoggingHelper.LogInfo($"   - Booking ID: {bookingId2}");
+                    LoggingHelper.LogInfo($"   - Số tiền: {paymentResponse2.Amount}");
+                    LoggingHelper.LogInfo($"   - Giao dịch: {paymentResponse2.TransactionNo}");
+                    LoggingHelper.LogInfo($"   - Ngân hàng: {paymentResponse2.BankCode}");
+
+                    // ✅ Xóa Session sau khi thanh toán thành công
+                    Session.Remove("CurrentPaymentBookingId");
+
+                    return RedirectToAction("PaymentSuccess", "Invoice", new { bookingId = bookingId2, transactionNo = paymentResponse2.TransactionNo });
+                }
+                else
+                {
+                    // ❌ Thanh toán thất bại
+                    LoggingHelper.LogInfo($"❌ Thanh toán VNPAY thất bại!");
+                    LoggingHelper.LogInfo($"   - Booking ID: {bookingId2}");
+                    LoggingHelper.LogInfo($"   - Mã lỗi: {paymentResponse2.ResponseCode}");
+                    LoggingHelper.LogInfo($"   - Thông báo: {paymentResponse2.Message}");
+
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = paymentResponse2.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "PaymentCallback");
+                return RedirectToAction("PaymentFailed", "Invoice", new { message = "Có lỗi xảy ra khi xử lý thanh toán" });
+            }
+        }
+
+        /// <summary>
+        /// GET: Trang thanh toán thành công
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentSuccess(int bookingId, string transactionNo)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                var tickets = booking.Ves.ToList();
+                var showtime = tickets.FirstOrDefault()?.Suat_Chieu;
+
+                ViewBag.Booking = booking;
+                ViewBag.Showtime = showtime;
+                ViewBag.Tickets = tickets;
+                ViewBag.TransactionNo = transactionNo;
+
+                LoggingHelper.LogInfo($"✅ Hiển thị trang thanh toán thành công: Booking {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// GET: Trang thanh toán thất bại
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentFailed(string message)
+        {
+            ViewBag.ErrorMessage = message ?? "Thanh toán thất bại. Vui lòng thử lại";
+            LoggingHelper.LogInfo($"⚠️ Hiển thị trang thanh toán thất bại: {message}");
+            return View();
+        }
+
+        /// <summary>
+        /// In hóa đơn PDF
+        /// </summary>
+        [HttpGet]
+        public ActionResult PrintInvoice(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                ViewBag.Booking = booking;
+                ViewBag.Tickets = booking.Ves.ToList();
+                ViewBag.FoodItems = booking.DonHang_DoAns.ToList();
+
+                LoggingHelper.LogInfo($"✅ In hóa đơn: Booking {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// Helper: Trích xuất Booking ID từ OrderInfo
+        /// ✅ Support multiple formats
+        /// </summary>
+        private int ExtractBookingIdFromOrderInfo(string orderInfo)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(orderInfo))
+                {
+                    LoggingHelper.LogInfo($"⚠️ OrderInfo rỗng");
+                    return 0;
+                }
+
+                LoggingHelper.LogInfo($"🔍 Trích xuất Booking ID từ OrderInfo: '{orderInfo}'");
+
+                // ✅ Format 1: "Thanh toán vé xem phim - Mã đơn: {bookingId}"
+                int lastColonIndex = orderInfo.LastIndexOf(":");
+                if (lastColonIndex != -1 && lastColonIndex < orderInfo.Length - 1)
+                {
+                    string bookingIdStr = orderInfo.Substring(lastColonIndex + 1).Trim();
+                    if (int.TryParse(bookingIdStr, out int bookingId))
+                    {
+                        LoggingHelper.LogInfo($"✅ Format 1 matched: Booking ID = {bookingId}");
+                        return bookingId;
+                    }
+                }
+
+                // ✅ Format 2: Nếu là số thuần (ví dụ: "12345")
+                if (int.TryParse(orderInfo.Trim(), out int directBookingId))
+                {
+                    LoggingHelper.LogInfo($"✅ Format 2 matched: Booking ID = {directBookingId}");
+                    return directBookingId;
+                }
+
+                // ✅ Format 3: Tìm số đầu tiên trong chuỗi (fallback)
+                System.Text.RegularExpressions.MatchCollection matches = 
+                    System.Text.RegularExpressions.Regex.Matches(orderInfo, @"\d+");
+                
+                if (matches.Count > 0)
+                {
+                    string firstNumberStr = matches[matches.Count - 1].Value;  // Lấy số cuối cùng (thường là Booking ID)
+                    if (int.TryParse(firstNumberStr, out int fallbackBookingId))
+                    {
+                        LoggingHelper.LogInfo($"✅ Format 3 (fallback) matched: Booking ID = {fallbackBookingId}");
+                        return fallbackBookingId;
+                    }
+                }
+
+                LoggingHelper.LogInfo($"❌ Không thể trích xuất Booking ID từ: '{orderInfo}'");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"ExtractBookingIdFromOrderInfo - OrderInfo: {orderInfo}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// POST: VNPAY IPN (Server-to-Server) - Xử lý xác nhận thanh toán từ VNPAY
+        /// </summary>
+        [HttpPost]
+        public ActionResult PaymentIpn()
+        {
+            try
+            {
+                LoggingHelper.LogInfo($"=== PaymentIpn (Server-to-Server) ===");
+                LoggingHelper.LogInfo($"Method: {Request.HttpMethod}");
+                LoggingHelper.LogInfo($"URL: {Request.Url}");
+
+                // Lấy dữ liệu từ POST/GET
+                var responseData = new Dictionary<string, string>();
+                foreach (string key in Request.QueryString.Keys)
+                {
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        responseData[key] = Request.QueryString[key];
+                    }
+                }
+                foreach (string key in Request.Form.Keys)
+                {
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        responseData[key] = Request.Form[key];
+                    }
+                }
+
+                LoggingHelper.LogInfo($"Received {responseData.Count} parameters");
+                foreach (var kv in responseData)
+                {
+                    LoggingHelper.LogInfo($"   {kv.Key} = {kv.Value}");
+                }
+
+                // Xác minh thanh toán
+                var paymentGateway = new PaymentGateway();
+                var paymentResponse = paymentGateway.VerifyPayment(responseData);
+
+                // Kiểm tra chữ ký
+                if (!paymentResponse.IsValid)
+                {
+                    LoggingHelper.LogInfo($"❌ IPN: Invalid signature");
+                    return Json(new { RspCode = "97", Message = "Invalid signature" });
+                }
+
+                // Trích xuất Booking ID
+                string orderInfo = paymentResponse.OrderInfo;
+                int bookingId = ExtractBookingIdFromOrderInfo(orderInfo);
+
+                if (bookingId == 0)
+                {
+                    LoggingHelper.LogInfo($"❌ IPN: Cannot extract booking ID from '{orderInfo}'");
+                    return Json(new { RspCode = "99", Message = "Invalid order info" });
+                }
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    LoggingHelper.LogInfo($"❌ IPN: Booking not found: {bookingId}");
+                    return Json(new { RspCode = "01", Message = "Order not found" });
+                }
+
+                // Xử lý kết quả thanh toán
+                if (paymentResponse.Success && paymentResponse.ResponseCode == "00")
+                {
+                    // ✅ Thanh toán thành công
+                    booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+
+                    var tickets = booking.Ves.ToList();
+                    foreach (var ticket in tickets)
+                    {
+                        ticket.trang_thai_ve = "Chưa sử dụng";
+                    }
+
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"✅ IPN: Payment successful");
+                    LoggingHelper.LogInfo($"   - Booking ID: {bookingId}");
+                    LoggingHelper.LogInfo($"   - Amount: {paymentResponse.Amount}");
+                    LoggingHelper.LogInfo($"   - Transaction: {paymentResponse.TransactionNo}");
+
+                    return Json(new { RspCode = "00", Message = "Confirm success" });
+                }
+                else
+                {
+                    // ❌ Thanh toán thất bại
+                    LoggingHelper.LogInfo($"❌ IPN: Payment failed");
+                    LoggingHelper.LogInfo($"   - Booking ID: {bookingId}");
+                    LoggingHelper.LogInfo($"   - Response Code: {paymentResponse.ResponseCode}");
+                    LoggingHelper.LogInfo($"   - Message: {paymentResponse.Message}");
+
+                    return Json(new { RspCode = "02", Message = "Payment failed" });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "PaymentIpn");
+                return Json(new { RspCode = "99", Message = "Internal error" });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

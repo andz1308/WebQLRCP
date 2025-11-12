@@ -196,6 +196,7 @@
     <Compile Include="Infrastructure\AuthSessionHelper.cs" />
     <Compile Include="Infrastructure\LoggingHelper.cs" />
     <Compile Include="Infrastructure\PaymentGateway.cs" />
+    <Compile Include="Infrastructure\QRCodePaymentService.cs" />
     <Compile Include="Infrastructure\RoleAuthorizeAttribute.cs" />
     <Compile Include="Models\ActorMovieViewModel.cs" />
     <Compile Include="Models\AuthResult.cs" />

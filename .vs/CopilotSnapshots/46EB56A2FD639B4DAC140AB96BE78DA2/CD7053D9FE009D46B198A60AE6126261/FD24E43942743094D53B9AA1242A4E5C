@@ -1,0 +1,403 @@
+﻿@{
+    ViewBag.Title = "Thanh Toán Thành Công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    var booking = ViewBag.Booking as WebCinema.Models.Dat_Ve;
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
+    var foodItems = ViewBag.FoodItems as List<dynamic>;
+    var ticketTotal = (decimal)ViewBag.TicketTotal;
+    var foodTotal = (decimal)ViewBag.FoodTotal;
+    var grandTotal = (decimal)ViewBag.GrandTotal;
+}
+
+<style>
+    .success-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .success-header {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+
+    .success-header h1 {
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .success-header p {
+        margin: 0;
+        font-size: 1rem;
+        opacity: 0.95;
+    }
+
+    .invoice-box {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .invoice-header-section {
+        background: #f8f9fa;
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .invoice-header-section h2 {
+        margin: 0;
+        color: #333;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .invoice-body {
+        padding: 2rem;
+    }
+
+    .invoice-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .invoice-info-left {
+        flex: 1;
+    }
+
+    .invoice-info-right {
+        text-align: right;
+        min-width: 200px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        font-size: 0.95rem;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 600;
+        margin-left: 1rem;
+    }
+
+    .status-badge {
+        display: inline-block;
+        background: #27ae60;
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 6px;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+    }
+
+    .amount-display {
+        color: #ff6b35;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+    }
+
+    .divider {
+        height: 1px;
+        background: #f0f0f0;
+        border: none;
+        margin: 1.5rem 0;
+    }
+
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .movie-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .movie-info div {
+        padding: 0.4rem 0;
+        font-size: 0.95rem;
+    }
+
+    .movie-info strong {
+        color: #333;
+    }
+
+    /* Ticket Display */
+    .ticket-list {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        margin-top: 0.8rem;
+    }
+
+    .ticket-badge {
+        background: white;
+        border: 2px solid #667eea;
+        color: #667eea;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        min-width: 50px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    /* Ticket Code Display */
+    .ticket-codes-section {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        border-radius: 4px;
+        margin-top: 1rem;
+    }
+
+    .ticket-codes-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.8rem;
+    }
+
+    .ticket-code-list {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .ticket-code-item {
+        background: white;
+        border: 1px solid #ddd;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #333;
+        word-break: break-all;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .btn-action {
+        padding: 1rem 2.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-size: 1rem;
+        text-decoration: none;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #667eea 0%, #5568d3 100%);
+        color: white;
+    }
+
+    .btn-print:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        color: white;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(149, 165, 166, 0.4);
+    }
+
+    .btn-action:active {
+        transform: translateY(-1px);
+    }
+
+    /* Print Styles */
+    @media print {
+        body * {
+            visibility: hidden !important;
+        }
+
+        .invoice-box,
+        .invoice-box * {
+            visibility: visible !important;
+        }
+
+        .invoice-box {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .invoice-header-section {
+            background: white !important;
+            border: none !important;
+        }
+
+        .invoice-header-section h2 {
+            color: #333 !important;
+        }
+
+        .action-buttons {
+            display: none !important;
+        }
+    }
+</style>
+
+<div class="success-container">
+    <!-- ✅ Success Header -->
+    <div class="success-header">
+        <h1><i class="fas fa-check-circle"></i> Thanh Toán Thành Công!</h1>
+        <p>Đơn hàng của bạn đã được xác nhận</p>
+    </div>
+
+    @if (booking != null)
+    {
+        <!-- ✅ Invoice Box -->
+        <div class="invoice-box">
+            <div class="invoice-header-section">
+                <h2><i class="fas fa-receipt"></i> HÓA ĐƠN ĐẶT VÉ #@booking.Dat_Ve_id</h2>
+            </div>
+
+            <div class="invoice-body">
+                <!-- Thông Tin Hóa Đơn -->
+                <div class="invoice-info">
+                    <div class="invoice-info-left">
+                        <div class="info-item">
+                            <span class="info-label">Khách Hàng:</span>
+                            <span class="info-value">@booking.Khach_Hang.ho_ten</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">@booking.Khach_Hang.email</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Điện Thoại:</span>
+                            <span class="info-value">@(booking.Khach_Hang.so_dien_thoai ?? "N/A")</span>
+                        </div>
+                    </div>
+                    <div class="invoice-info-right">
+                        <div class="status-badge">
+                            ✅ Đã Thanh Toán
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">Ngày: @(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")</div>
+                        <div class="amount-display">
+                            @grandTotal.ToString("N0") ₫
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider" />
+
+                <!-- Thông Tin Phim -->
+                @if (showtime != null)
+                {
+                    <h3 class="section-title">
+                        <i class="fas fa-film"></i> Thông Tin Phim
+                    </h3>
+                    <div class="movie-info">
+                        <div><strong>Tên Phim:</strong> @showtime.Phim.ten_phim</div>
+                        <div><strong>Rạp:</strong> @showtime.Phong_Chieu.Rap.ten_rap</div>
+                        <div><strong>Phòng:</strong> @showtime.Phong_Chieu.ten_phong</div>
+                        <div><strong>Ngày & Giờ:</strong> @showtime.ngay_chieu.ToString("dd/MM/yyyy") lúc @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</div>
+                    </div>
+
+                    <h3 class="section-title">
+                        <i class="fas fa-ticket-alt"></i> Ghế Đã Đặt (@(tickets != null ? tickets.Count : 0) ghế)
+                    </h3>
+                    <div class="ticket-list">
+                        @if (tickets != null)
+                        {
+                            foreach (var ticket in tickets)
+                            {
+                                <div class="ticket-badge">@ticket.Ghe.so_ghe</div>
+                            }
+                        }
+                    </div>
+
+                    <h3 class="section-title" style="margin-top: 1.5rem;">
+                        <i class="fas fa-barcode"></i> Mã Vé
+                    </h3>
+                    <div class="ticket-codes-section">
+                        @if (tickets != null && tickets.Count > 0)
+                        {
+                            <div class="ticket-code-list">
+                                @foreach (var ticket in tickets)
+                                {
+                                    var ticketCode = ticket.ma_qr_code ?? ("CODE-" + ticket.ve_id);
+                                    <div class="ticket-code-item">
+                                        @ticketCode
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-action btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> In Hóa Đơn
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn-action btn-home">
+                <i class="fas fa-arrow-left"></i> Về Trang Chủ
+            </a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            // Optional: Auto-open print dialog
+            // window.print();
+        });
+    </script>
+}
