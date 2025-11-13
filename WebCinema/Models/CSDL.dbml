@@ -70,6 +70,7 @@
       <Column Name="tong_tien" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
       <Column Name="trang_thai_Dat_Ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="ma_giam_gia_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="phuong_thuc_thanh_toan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Dat_Ve_Ve" Member="Ves" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Ve" />
       <Association Name="Dat_Ve_DonHang_DoAn" Member="DonHang_DoAns" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="DonHang_DoAn" />
       <Association Name="Dat_Ve_Lich_Su_Ton_Kho" Member="Lich_Su_Ton_Khos" ThisKey="Dat_Ve_id" OtherKey="dat_ve_id" Type="Lich_Su_Ton_Kho" />
@@ -133,10 +134,11 @@
     <Type Name="Khach_Hang">
       <Column Name="khach_hang_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="ho_ten" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Column Name="email" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="so_dien_thoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
-      <Column Name="mat_khau" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="mat_khau" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="ngay_dang_ky" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
+      <Column Name="diem_tich_luy" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Khach_Hang_Danh_Gia" Member="Danh_Gias" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Danh_Gia" />
       <Association Name="Khach_Hang_Dat_Ve" Member="Dat_Ves" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Dat_Ve" />
     </Type>
@@ -152,6 +154,7 @@
       <Column Name="so_luong_ban_dau" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="so_luong_con_lai" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="mo_ta" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="ma_khuyen_mai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Khuyen_Mai_Dat_Ve" Member="Dat_Ves" ThisKey="ma_giam_gia_id" OtherKey="ma_giam_gia_id" Type="Dat_Ve" />
     </Type>
   </Table>

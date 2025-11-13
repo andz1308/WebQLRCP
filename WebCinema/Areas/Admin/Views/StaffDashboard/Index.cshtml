@@ -280,36 +280,6 @@
         </div>
     </div>
 
-    <!-- Filter Section -->
-    <div class="filter-section">
-        @using (Html.BeginForm("Index", "StaffDashboard", FormMethod.Get))
-        {
-            <div class="filter-group">
-                <div class="form-group" style="width: 150px;">
-                    <label>Chọn Tháng</label>
-                    <select name="month" class="form-control">
-                        <option value="">-- Tất cả tháng --</option>
-                        @for (int i = 1; i <= 12; i++)
-                        {
-                            <option value="@i" @(ViewBag.SelectedMonth == i ? "selected" : "")>Tháng @i</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group" style="width: 150px;">
-                    <label>Chọn Năm</label>
-                    <select name="year" class="form-control">
-                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
-                        {
-                            <option value="@i" @(ViewBag.SelectedYear == i ? "selected" : "")>Năm @i</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn-filter">
-                    <i class="fas fa-filter"></i> Lọc
-                </button>
-            </div>
-        }
-    </div>
 
     <!-- Main Stats -->
     <div class="stats-grid">
@@ -349,6 +319,37 @@
                 <div class="ticket-stat-label">Vé Chưa Soát</div>
             </div>
         </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        @using (Html.BeginForm("Index", "StaffDashboard", FormMethod.Get))
+        {
+            <div class="filter-group">
+                <div class="form-group" style="width: 150px;">
+                    <label>Chọn Tháng</label>
+                    <select name="month" class="form-control">
+                        <option value="">-- Tất cả tháng --</option>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" @(ViewBag.SelectedMonth == i ? "selected" : "")>Tháng @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group" style="width: 150px;">
+                    <label>Chọn Năm</label>
+                    <select name="year" class="form-control">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i" @(ViewBag.SelectedYear == i ? "selected" : "")>Năm @i</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn-filter">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        }
     </div>
 
     <!-- Charts -->

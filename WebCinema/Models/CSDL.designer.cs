@@ -1720,6 +1720,8 @@ namespace WebCinema.Models
 		
 		private System.Nullable<int> _ma_giam_gia_id;
 		
+		private string _phuong_thuc_thanh_toan;
+		
 		private EntitySet<Ve> _Ves;
 		
 		private EntitySet<DonHang_DoAn> _DonHang_DoAns;
@@ -1750,6 +1752,8 @@ namespace WebCinema.Models
     partial void Ontrang_thai_Dat_VeChanged();
     partial void Onma_giam_gia_idChanging(System.Nullable<int> value);
     partial void Onma_giam_gia_idChanged();
+    partial void Onphuong_thuc_thanh_toanChanging(string value);
+    partial void Onphuong_thuc_thanh_toanChanged();
     #endregion
 		
 		public Dat_Ve()
@@ -1911,6 +1915,26 @@ namespace WebCinema.Models
 					this._ma_giam_gia_id = value;
 					this.SendPropertyChanged("ma_giam_gia_id");
 					this.Onma_giam_gia_idChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_phuong_thuc_thanh_toan", DbType="NVarChar(50)")]
+		public string phuong_thuc_thanh_toan
+		{
+			get
+			{
+				return this._phuong_thuc_thanh_toan;
+			}
+			set
+			{
+				if ((this._phuong_thuc_thanh_toan != value))
+				{
+					this.Onphuong_thuc_thanh_toanChanging(value);
+					this.SendPropertyChanging();
+					this._phuong_thuc_thanh_toan = value;
+					this.SendPropertyChanged("phuong_thuc_thanh_toan");
+					this.Onphuong_thuc_thanh_toanChanged();
 				}
 			}
 		}
@@ -3211,6 +3235,8 @@ namespace WebCinema.Models
 		
 		private System.Nullable<System.DateTime> _ngay_dang_ky;
 		
+		private System.Nullable<int> _diem_tich_luy;
+		
 		private EntitySet<Danh_Gia> _Danh_Gias;
 		
 		private EntitySet<Dat_Ve> _Dat_Ves;
@@ -3231,6 +3257,8 @@ namespace WebCinema.Models
     partial void Onmat_khauChanged();
     partial void Onngay_dang_kyChanging(System.Nullable<System.DateTime> value);
     partial void Onngay_dang_kyChanged();
+    partial void Ondiem_tich_luyChanging(System.Nullable<int> value);
+    partial void Ondiem_tich_luyChanged();
     #endregion
 		
 		public Khach_Hang()
@@ -3280,7 +3308,7 @@ namespace WebCinema.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_email", DbType="NVarChar(255) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_email", DbType="NVarChar(100)")]
 		public string email
 		{
 			get
@@ -3320,7 +3348,7 @@ namespace WebCinema.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_khau", DbType="NVarChar(255) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_khau", DbType="NVarChar(100)")]
 		public string mat_khau
 		{
 			get
@@ -3356,6 +3384,26 @@ namespace WebCinema.Models
 					this._ngay_dang_ky = value;
 					this.SendPropertyChanged("ngay_dang_ky");
 					this.Onngay_dang_kyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_diem_tich_luy", DbType="Int")]
+		public System.Nullable<int> diem_tich_luy
+		{
+			get
+			{
+				return this._diem_tich_luy;
+			}
+			set
+			{
+				if ((this._diem_tich_luy != value))
+				{
+					this.Ondiem_tich_luyChanging(value);
+					this.SendPropertyChanging();
+					this._diem_tich_luy = value;
+					this.SendPropertyChanged("diem_tich_luy");
+					this.Ondiem_tich_luyChanged();
 				}
 			}
 		}
@@ -3455,6 +3503,8 @@ namespace WebCinema.Models
 		
 		private string _mo_ta;
 		
+		private string _ma_khuyen_mai;
+		
 		private EntitySet<Dat_Ve> _Dat_Ves;
 		
     #region Extensibility Method Definitions
@@ -3479,6 +3529,8 @@ namespace WebCinema.Models
     partial void Onso_luong_con_laiChanged();
     partial void Onmo_taChanging(string value);
     partial void Onmo_taChanged();
+    partial void Onma_khuyen_maiChanging(string value);
+    partial void Onma_khuyen_maiChanged();
     #endregion
 		
 		public Khuyen_Mai()
@@ -3663,6 +3715,26 @@ namespace WebCinema.Models
 					this._mo_ta = value;
 					this.SendPropertyChanged("mo_ta");
 					this.Onmo_taChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ma_khuyen_mai", DbType="NVarChar(50)")]
+		public string ma_khuyen_mai
+		{
+			get
+			{
+				return this._ma_khuyen_mai;
+			}
+			set
+			{
+				if ((this._ma_khuyen_mai != value))
+				{
+					this.Onma_khuyen_maiChanging(value);
+					this.SendPropertyChanging();
+					this._ma_khuyen_mai = value;
+					this.SendPropertyChanged("ma_khuyen_mai");
+					this.Onma_khuyen_maiChanged();
 				}
 			}
 		}

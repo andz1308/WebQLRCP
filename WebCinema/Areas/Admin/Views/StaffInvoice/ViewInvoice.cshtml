@@ -27,7 +27,30 @@
     .qr-text { font-size:0.85rem; color:#333; word-break:break-all; }
     .copy-btn { padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #ddd; background:#fff; cursor:pointer; }
 
-    @@media print { .buttons{ display:none; } }
+    /* Print: hide everything except the invoice content when printing */
+    @@media print {
+        /* hide all elements first */
+        body * {
+            visibility: hidden !important;
+        }
+        /* show only the invoice and its children */
+        .staff-invoice, .staff-invoice * {
+            visibility: visible !important;
+        }
+        /* position invoice at top-left for printing */
+        .staff-invoice {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            padding: 0.5rem !important;
+        }
+        /* hide print buttons inside invoice as well */
+        .staff-invoice .buttons { display: none !important; }
+    }
 </style>
 
 <div class="staff-invoice">
@@ -57,7 +80,7 @@
                         <div class="ticket-box">
                             <div style="flex:0 0 auto;">
                                 @{ var code = t.ma_qr_code ?? ""; }
-                                <img class="qr-image" src="https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=@System.Web.HttpUtility.UrlEncode(code)" alt="QR" />
+                                @*<img class="qr-image" src="https://chart.googleapis.com/chart?cht=qr&chs=150x150&chl=@System.Web.HttpUtility.UrlEncode(code)" alt="QR" />*@
                             </div>
                             <div style="flex:1 1 auto;">
                                 <div><strong>Ghế @t.Ghe.so_ghe</strong></div>

@@ -98,7 +98,9 @@
                 </div>
             </div>
 
-            <div style="background:white; padding:1rem; border-radius:8px;">
+
+
+            <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
                 <h3 style="margin:0 0 0.5rem 0;">Đặt đồ ăn</h3>
                 <div id="foodList" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.75rem;">
                     @if (ViewBag.Foods != null && ((System.Collections.IList)ViewBag.Foods).Count > 0)
@@ -122,6 +124,41 @@
                     }
                 </div>
             </div>
+            <!-- Phương Thức Thanh Toán -->
+            <div style="background:white; padding:1rem; border-radius:8px; ">
+                <h3 style="margin:0 0 0.8rem 0;">Phương thức thanh toán</h3>
+                <div style="display:flex; gap:2rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="radio" name="paymentMethod" value="cash" checked onchange="togglePaymentMethod()" />
+                        <span>💵 Tiền Mặt</span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="radio" name="paymentMethod" value="online" onchange="togglePaymentMethod()" />
+                        <span>💳 Thanh Toán Online</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- QR Code Section (Ẩn theo mặc định) -->
+            @if (!string.IsNullOrEmpty(ViewBag.QRCodeUrl))
+            {
+                <div id="qrCodeSection" style="background:white; padding:1rem; border-radius:8px; margin-bottom:1rem; display:none;">
+                    <h3 style="margin:0 0 0.8rem 0; text-align:center;">
+                        <i class="fas fa-qrcode"></i> Mã QR Thanh Toán
+                    </h3>
+                    <div style="text-align:center; padding:1rem; background:#f8f9fa; border-radius:8px;">
+                        <img src="@ViewBag.QRCodeUrl" alt="QR Code Payment" style="max-width:280px; height:auto; border-radius:8px;" />
+                    </div>
+                    <div style="font-size:0.9rem; color:#666; margin-top:0.8rem; line-height:1.5;">
+                        <strong>📱 Hướng Dẫn:</strong>
+                        <ol style="margin:0.5rem 0 0 1.2rem; padding:0;">
+                            <li>Mở ứng dụng ngân hàng/Momo/ZaloPay</li>
+                            <li>Quét mã QR ở trên</li>
+                            <li>Xác nhận thanh toán</li>
+                        </ol>
+                    </div>
+                </div>
+            }
         </div>
 
         <div>
@@ -152,6 +189,15 @@
 
 @section scripts {
     <script>
+        window.togglePaymentMethod = function(){
+            var method = $('input[name="paymentMethod"]:checked').val();
+            if (method === 'online') {
+                $('#qrCodeSection').show();
+            } else {
+                $('#qrCodeSection').hide();
+            }
+        };
+
         $(function() {
             var selectedSeats = [];
             var maxSeats = 10;
@@ -229,15 +275,21 @@
             window.confirmBooking = function(){
                 var name = $('#customerName').val().trim();
                 var phone = $('#customerPhone').val().trim();
+                var paymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cash';
+                
                 if (!name) { alert('Nhập tên khách hàng'); return; }
                 if (!phone) { alert('Nhập số điện thoại'); return; }
                 if (selectedSeats.length === 0) { alert('Chọn ghế'); return; }
+                
                 var seatIds = selectedSeats.map(s=>s.id).join(',');
                 // build food xml
                 var foodXml = '<orders>';
                 $('.food-quantity').each(function(){ var q = parseInt($(this).val())||0; if(q>0){ foodXml += '<item><id>' + $(this).data('food-id') + '</id><quantity>' + q + '</quantity></item>'; } });
                 foodXml += '</orders>';
-                var btn = $('#confirmBtn'); btn.prop('disabled',true).text('Đang xử lý...');
+                
+                var btn = $('#confirmBtn'); 
+                btn.prop('disabled',true).text('Đang xử lý...');
+                
                 $.ajax({
                     url: '@Url.Action("CreateOfflineBooking", "StaffOfflineBooking")',
                     type: 'POST',
@@ -246,7 +298,8 @@
                         selectedSeats: seatIds,
                         customerPhone: phone,
                         customerName: name,
-                        foodOrders: foodXml
+                        foodOrders: foodXml,
+                        paymentMethod: paymentMethod
                     },
                     success: function(res){
                         if(res.success){ 
