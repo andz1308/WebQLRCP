@@ -1,0 +1,68 @@
+﻿using System;
+using System.Web.Http;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers.API
+{
+    /// <summary>
+    /// Base API Controller - Tất cả API Controllers đều kế thừa từ đây
+    /// </summary>
+    public class BaseApiController : ApiController
+    {
+        protected CSDLDataContext db;
+
+        public BaseApiController()
+        {
+            try
+            {
+                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    db = new CSDLDataContext(connString);
+                }
+                else
+                {
+                    db = new CSDLDataContext();
+                }
+            }
+            catch
+            {
+                db = new CSDLDataContext();
+            }
+        }
+
+        /// <summary>
+        /// API Response wrapper
+        /// </summary>
+        protected IHttpActionResult ApiResponse(bool success, string message, object data = null, int statusCode = 200)
+        {
+            try
+            {
+                var response = new
+                {
+                    success = success,
+                    message = message,
+                    data = data,
+                    timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                };
+
+                LoggingHelper.LogInfo($"API Response: Success={success}, Message={message}");
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}
