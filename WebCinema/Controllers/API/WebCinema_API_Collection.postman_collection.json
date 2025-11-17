@@ -1,0 +1,270 @@
+﻿{
+  "info": {
+    "_postman_id": "webcinema-api-v1",
+    "name": "WebCinema API",
+    "description": "Complete Cinema Booking System API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 AUTH",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@test.com\",\n  \"password\": \"123456\",\n  \"name\": \"Người Dùng Mới\",\n  \"phone\": \"0987654321\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/auth/profile/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "auth", "profile", "{{user_id}}"]}
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Tên Mới\",\n  \"phone\": \"0912345678\"\n}"},
+            "url": {"raw": "{{base_url}}/api/auth/profile/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "auth", "profile", "{{user_id}}"]}
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"current_password\": \"123456\",\n  \"new_password\": \"123456789\"\n}"},
+            "url": {"raw": "{{base_url}}/api/auth/change-password", "host": ["{{base_url}}"], "path": ["api", "auth", "change-password"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 CUSTOMER",
+      "item": [
+        {
+          "name": "Get Movies",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/movies?page=1&pageSize=10", "host": ["{{base_url}}"], "path": ["api", "customer", "movies"], "query": [{"key": "page", "value": "1"}, {"key": "pageSize", "value": "10"}]}
+          }
+        },
+        {
+          "name": "Get Movie Detail",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/movie/{{movie_id}}", "host": ["{{base_url}}"], "path": ["api", "customer", "movie", "{{movie_id}}"]}
+          }
+        },
+        {
+          "name": "Get Showtimes",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/showtimes/{{movie_id}}", "host": ["{{base_url}}"], "path": ["api", "customer", "showtimes", "{{movie_id}}"]}
+          }
+        },
+        {
+          "name": "Get Trending",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/trending", "host": ["{{base_url}}"], "path": ["api", "customer", "trending"]}
+          }
+        },
+        {
+          "name": "Get Reviews",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/reviews/{{movie_id}}", "host": ["{{base_url}}"], "path": ["api", "customer", "reviews", "{{movie_id}}"]}
+          }
+        },
+        {
+          "name": "Get Foods",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/foods", "host": ["{{base_url}}"], "path": ["api", "customer", "foods"]}
+          }
+        },
+        {
+          "name": "Get Cinemas",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/cinemas", "host": ["{{base_url}}"], "path": ["api", "customer", "cinemas"]}
+          }
+        },
+        {
+          "name": "Get Bookings",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/bookings/{{customer_id}}", "host": ["{{base_url}}"], "path": ["api", "customer", "bookings", "{{customer_id}}"]}
+          }
+        },
+        {
+          "name": "Get Booking Detail",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/customer/booking/{{booking_id}}", "host": ["{{base_url}}"], "path": ["api", "customer", "booking", "{{booking_id}}"]}
+          }
+        },
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"customer_id\": 1,\n  \"showtime_id\": 1,\n  \"seat_ids\": [1, 2],\n  \"food_items\": []\n}"},
+            "url": {"raw": "{{base_url}}/api/customer/create-booking", "host": ["{{base_url}}"], "path": ["api", "customer", "create-booking"]}
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"booking_id\": {{booking_id}}\n}"},
+            "url": {"raw": "{{base_url}}/api/customer/cancel-booking", "host": ["{{base_url}}"], "path": ["api", "customer", "cancel-booking"]}
+          }
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"customer_id\": 1,\n  \"movie_id\": 1,\n  \"rating\": 5,\n  \"content\": \"Phim hay lắm!\",\n  \"ticket_id\": 1\n}"},
+            "url": {"raw": "{{base_url}}/api/customer/create-review", "host": ["{{base_url}}"], "path": ["api", "customer", "create-review"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💼 STAFF",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/dashboard/{{staff_id}}", "host": ["{{base_url}}"], "path": ["api", "staff", "dashboard", "{{staff_id}}"]}
+          }
+        },
+        {
+          "name": "Get Showtimes",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/showtimes?date=2024-01-15", "host": ["{{base_url}}"], "path": ["api", "staff", "showtimes"], "query": [{"key": "date", "value": "2024-01-15"}]}
+          }
+        },
+        {
+          "name": "Get Seats",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/seats/{{showtime_id}}", "host": ["{{base_url}}"], "path": ["api", "staff", "seats", "{{showtime_id}}"]}
+          }
+        },
+        {
+          "name": "Create Offline Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"showtime_id\": 1,\n  \"seat_ids\": [10, 11],\n  \"customer_name\": \"Khách Hàng A\",\n  \"customer_phone\": \"0987654321\",\n  \"payment_method\": \"cash\"\n}"},
+            "url": {"raw": "{{base_url}}/api/staff/create-booking", "host": ["{{base_url}}"], "path": ["api", "staff", "create-booking"]}
+          }
+        },
+        {
+          "name": "Get Bookings",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/bookings?status=Đã%20Thanh%20toán", "host": ["{{base_url}}"], "path": ["api", "staff", "bookings"], "query": [{"key": "status", "value": "Đã Thanh toán"}]}
+          }
+        },
+        {
+          "name": "Get Booking Detail",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/booking/{{booking_id}}", "host": ["{{base_url}}"], "path": ["api", "staff", "booking", "{{booking_id}}"]}
+          }
+        },
+        {
+          "name": "Get Ticket Statistics",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/ticket-statistics", "host": ["{{base_url}}"], "path": ["api", "staff", "ticket-statistics"]}
+          }
+        },
+        {
+          "name": "Get Revenue by Date",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/revenue-by-date?startDate=2024-01-01&endDate=2024-01-31", "host": ["{{base_url}}"], "path": ["api", "staff", "revenue-by-date"], "query": [{"key": "startDate", "value": "2024-01-01"}, {"key": "endDate", "value": "2024-01-31"}]}
+          }
+        },
+        {
+          "name": "Verify Ticket",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"qr_code\": \"abc-xyz-123\"\n}"},
+            "url": {"raw": "{{base_url}}/api/staff/verify-ticket", "host": ["{{base_url}}"], "path": ["api", "staff", "verify-ticket"]}
+          }
+        },
+        {
+          "name": "Get Movie by Showtime",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/api/staff/movies-by-showtime/{{showtime_id}}", "host": ["{{base_url}}"], "path": ["api", "staff", "movies-by-showtime", "{{showtime_id}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚖️ ADMIN",
+      "item": [
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"status\": \"Đã Hủy\"\n}"},
+            "url": {"raw": "{{base_url}}/api/staff/booking/{{booking_id}}/status", "host": ["{{base_url}}"], "path": ["api", "staff", "booking", "{{booking_id}}", "status"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "https://localhost:44300", "type": "string"},
+    {"key": "user_id", "value": "1", "type": "string"},
+    {"key": "customer_id", "value": "1", "type": "string"},
+    {"key": "staff_id", "value": "1", "type": "string"},
+    {"key": "booking_id", "value": "1", "type": "string"},
+    {"key": "movie_id", "value": "1", "type": "string"},
+    {"key": "showtime_id", "value": "1", "type": "string"}
+  ]
+}

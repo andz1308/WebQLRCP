@@ -173,6 +173,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\ActorManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\AuditoriController.cs" />
@@ -199,6 +200,7 @@
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\API\AuthApiController.cs" />
     <Compile Include="Controllers\API\CustomerApiController.cs" />
     <Compile Include="Controllers\API\StaffApiController.cs" />
     <Compile Include="Controllers\BookingController.cs" />
@@ -243,6 +245,7 @@
     <Compile Include="Services\FoodService.cs" />
     <Compile Include="Services\InvoiceService.cs" />
     <Compile Include="Services\ShowtimeService.cs" />
+    <Compile Include="System\Net\Http\MediaTypeHeaderValue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />
@@ -255,6 +258,7 @@
     <Content Include="Content\js\booking.js" />
     <Content Include="Content\js\cart.js" />
     <Content Include="Content\js\site.js" />
+    <Content Include="Controllers\API\API_READY.txt" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -340,18 +344,7 @@
     <Content Include="Areas\Admin\Views\StaffInventoryManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Create.cshtml" />
     <Content Include="Areas\Admin\Views\StaffPurchaseOrder\ConfirmOrder.cshtml" />
-    <Content Include="Controllers\API\API_DOCUMENTATION.md" />
-    <Content Include="Controllers\API\SETUP_GUIDE.md" />
-    <Content Include="Controllers\API\FLUTTER_INTEGRATION_EXAMPLE.md" />
-    <Content Include="Controllers\API\README.md" />
-    <Content Include="Controllers\API\CUSTOMER_API_IMPROVEMENTS.md" />
-    <Content Include="Controllers\API\CUSTOMER_API_USAGE_GUIDE.md" />
-    <Content Include="Controllers\API\CODE_COMPARISON_BEFORE_AFTER.md" />
-    <Content Include="Controllers\API\IMPROVEMENTS_SUMMARY.md" />
-    <Content Include="Controllers\API\COMPLETION_REPORT.md" />
-    <Content Include="Controllers\API\STAFF_API_IMPROVEMENTS.md" />
-    <Content Include="Controllers\API\MOBILE_APP_2ROLES_GUIDE.md" />
-    <Content Include="Controllers\API\BOTH_APIS_COMPLETION_SUMMARY.md" />
+    <Content Include="Controllers\API\WebCinema_API_Collection.postman_collection.json" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

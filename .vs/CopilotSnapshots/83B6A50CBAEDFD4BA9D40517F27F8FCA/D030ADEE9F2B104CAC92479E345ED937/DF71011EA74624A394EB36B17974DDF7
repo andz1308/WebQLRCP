@@ -1,0 +1,800 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+using Newtonsoft.Json.Linq;
+
+namespace WebCinema.Controllers.API
+{
+    /// <summary>
+    /// Customer API - MEGA API với tất cả chức năng của khách hàng
+    /// </summary>
+    [RoutePrefix("api/customer")]
+    [Authorize]  // ✅ Tất cả endpoints yêu cầu auth
+    public class CustomerMegaApiController : ApiController
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+        private const int DEFAULT_PAGE_SIZE = 10;
+        private const int MAX_PAGE_SIZE = 100;
+
+        #region ==================== MOVIES API ====================
+
+        /// <summary>
+        /// GET: api/customer/movies?page=1&pageSize=10&search=keyword
+        /// Lấy danh sách phim (có phân trang, tìm kiếm)
+        /// </summary>
+        [HttpGet]
+        [Route("movies")]
+        [AllowAnonymous]
+        public IHttpActionResult GetMovies(int page = 1, int pageSize = 10, string search = "")
+        {
+            try
+            {
+                // ✅ Validation
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) pageSize = DEFAULT_PAGE_SIZE;
+
+                var query = db.Phims.AsQueryable();
+
+                // ✅ Search filter
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(p => p.ten_phim.Contains(search));
+                }
+
+                int total = query.Count();
+                int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+                var movies = query
+                    .OrderByDescending(p => p.ngay_khoi_chieu)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new
+                    {
+                        movie_id = p.phim_id,
+                        title = p.ten_phim,
+                        description = p.mo_ta,
+                        duration = p.thoi_luong,
+                        release_date = p.ngay_khoi_chieu != null ? p.ngay_khoi_chieu.Value.ToString("yyyy-MM-dd") : "N/A",
+                        image = p.hinh_anh,
+                        trailer_url = p.trailer_link
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách phim thành công",
+                    data = new
+                    {
+                        movies = movies,
+                        total = total,
+                        current_page = page,
+                        total_pages = totalPages,
+                        page_size = pageSize
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/movies/{movieId}
+        /// Lấy chi tiết phim
+        /// </summary>
+        [HttpGet]
+        [Route("movies/{movieId}")]
+        [AllowAnonymous]
+        public IHttpActionResult GetMovieDetail(int movieId)
+        {
+            try
+            {
+                if (movieId <= 0) return BadRequest("Movie ID không hợp lệ");
+
+                var movie = db.Phims.FirstOrDefault(p => p.phim_id == movieId);
+                if (movie == null) return NotFound();
+
+                var actors = db.Dien_Viens_Phim
+                    .Where(dvp => dvp.phim_id == movieId)
+                    .Select(dvp => new
+                    {
+                        actor_id = dvp.Dien_Vien.dien_vien_id,
+                        name = dvp.Dien_Vien.ten_dien_vien,
+                        role = dvp.vai_dien
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        movie_id = movie.phim_id,
+                        title = movie.ten_phim,
+                        description = movie.mo_ta,
+                        duration = movie.thoi_luong,
+                        release_date = movie.ngay_khoi_chieu?.ToString("yyyy-MM-dd"),
+                        image = movie.hinh_anh,
+                        trailer_url = movie.trailer_link,
+                        director = movie.Dao_Dien?.ten_dao_dien,
+                        producer = movie.Nha_San_Xuat?.ten_nha_san_xuat,
+                        actors = actors
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/movies/trending
+        /// Lấy phim xu hướng
+        /// </summary>
+        [HttpGet]
+        [Route("trending-movies")]
+        [AllowAnonymous]
+        public IHttpActionResult GetTrendingMovies()
+        {
+            try
+            {
+                var trendingMovies = db.Dat_Ves
+                    .Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán")
+                    .SelectMany(b => b.Ves)
+                    .GroupBy(v => v.Suat_Chieu.Phim.phim_id)
+                    .Select(g => new
+                    {
+                        movie_id = g.Key,
+                        title = g.First().Suat_Chieu.Phim.ten_phim,
+                        image = g.First().Suat_Chieu.Phim.hinh_anh,
+                        booking_count = g.Count()
+                    })
+                    .OrderByDescending(m => m.booking_count)
+                    .Take(10)
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = trendingMovies
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        #endregion
+
+        #region ==================== CINEMA & SHOWTIME API ====================
+
+        /// <summary>
+        /// GET: api/customer/cinemas
+        /// Lấy danh sách rạp chiếu
+        /// </summary>
+        [HttpGet]
+        [Route("cinemas")]
+        [AllowAnonymous]
+        public IHttpActionResult GetCinemas()
+        {
+            try
+            {
+                var cinemas = db.Raps
+                    .OrderBy(r => r.ten_rap)
+                    .Select(r => new
+                    {
+                        cinema_id = r.rap_id,
+                        name = r.ten_rap,
+                        address = r.dia_chi,
+                        phone = r.dien_thoai,
+                        rooms_count = r.Phong_Chieus.Count
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = cinemas
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/cinemas/{cinemaId}/showtimes?movieId=1&date=2024-01-15
+        /// Lấy suất chiếu theo rạp và phim
+        /// </summary>
+        [HttpGet]
+        [Route("cinemas/{cinemaId}/showtimes")]
+        [AllowAnonymous]
+        public IHttpActionResult GetShowtimes(int cinemaId, int? movieId = null, string date = "")
+        {
+            try
+            {
+                if (cinemaId <= 0) return BadRequest("Cinema ID không hợp lệ");
+
+                var query = db.Suat_Chieus
+                    .Where(s => s.Phong_Chieu.rap_id == cinemaId && s.ngay_chieu >= DateTime.Now.Date)
+                    .AsQueryable();
+
+                if (movieId.HasValue && movieId > 0)
+                {
+                    query = query.Where(s => s.phim_id == movieId);
+                }
+
+                if (!string.IsNullOrEmpty(date) && DateTime.TryParse(date, out DateTime filterDate))
+                {
+                    query = query.Where(s => s.ngay_chieu.Date == filterDate.Date);
+                }
+
+                var showtimes = query
+                    .OrderBy(s => s.ngay_chieu)
+                    .ThenBy(s => s.Ca_Chieu.gio_bat_dau)
+                    .Select(s => new
+                    {
+                        showtime_id = s.suat_chieu_id,
+                        movie_id = s.phim_id,
+                        movie_title = s.Phim.ten_phim,
+                        room_id = s.Phong_Chieu.phong_chieu_id,
+                        room_name = s.Phong_Chieu.ten_phong,
+                        date = s.ngay_chieu.ToString("yyyy-MM-dd"),
+                        start_time = s.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm"),
+                        price = s.gia_ve,
+                        available_seats = s.Phong_Chieu.Ghes.Count(g => g.trang_thai == 2) 
+                                        - s.Ves.Count(v => v.Dat_Ve_id != null)
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = showtimes
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/cinemas/{cinemaId}/rooms/{roomId}/seats?showtimeId=1
+        /// Lấy danh sách ghế
+        /// </summary>
+        [HttpGet]
+        [Route("cinemas/{cinemaId}/rooms/{roomId}/seats")]
+        [AllowAnonymous]
+        public IHttpActionResult GetSeats(int cinemaId, int roomId, int showtimeId)
+        {
+            try
+            {
+                if (cinemaId <= 0 || roomId <= 0 || showtimeId <= 0)
+                    return BadRequest("Tham số không hợp lệ");
+
+                var room = db.Phong_Chieus.FirstOrDefault(p => p.phong_chieu_id == roomId && p.rap_id == cinemaId);
+                if (room == null) return NotFound();
+
+                var bookedSeats = db.Ves
+                    .Where(v => v.suat_chieu_id == showtimeId && v.Dat_Ve_id != null)
+                    .Select(v => v.ghe_id)
+                    .ToList();
+
+                var seats = room.Ghes
+                    .OrderBy(g => g.hang)
+                    .ThenBy(g => g.cot)
+                    .Select(g => new
+                    {
+                        seat_id = g.ghe_id,
+                        seat_number = g.so_ghe,
+                        row = g.hang,
+                        column = g.cot,
+                        type = g.Loai_Ghe?.ten_loai_ghe ?? "Standard",
+                        status = bookedSeats.Contains(g.ghe_id) ? "booked" : (g.trang_thai == 0 ? "aisle" : "available"),
+                        price = db.Ves.Where(v => v.suat_chieu_id == showtimeId && v.ghe_id == g.ghe_id)
+                                     .Select(v => v.gia_ve)
+                                     .FirstOrDefault()
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        room_id = roomId,
+                        room_name = room.ten_phong,
+                        rows = room.so_hang,
+                        columns = room.so_cot,
+                        seats = seats
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        #endregion
+
+        #region ==================== BOOKING API ====================
+
+        /// <summary>
+        /// POST: api/customer/bookings/create
+        /// Tạo đơn đặt vé
+        /// </summary>
+        [HttpPost]
+        [Route("bookings/create")]
+        [Authorize]
+        public IHttpActionResult CreateBooking([FromBody] CreateBookingRequest request)
+        {
+            try
+            {
+                // ✅ Validation
+                if (request?.seat_ids == null || request.seat_ids.Count == 0)
+                    return BadRequest("Phải chọn ít nhất 1 ghế");
+
+                if (request.seat_ids.Count > 100)
+                    return BadRequest("Không được đặt quá 100 ghế");
+
+                if (request.showtime_id <= 0)
+                    return BadRequest("Showtime ID không hợp lệ");
+
+                var customerId = GetUserIdFromToken();
+                var showtimeId = request.showtime_id;
+
+                // ✅ Kiểm tra ghế available
+                var tickets = db.Ves
+                    .Where(v => request.seat_ids.Contains(v.ghe_id) && v.suat_chieu_id == showtimeId)
+                    .ToList();
+
+                var bookedSeats = tickets.Where(t => t.Dat_Ve_id != null).ToList();
+                if (bookedSeats.Any())
+                {
+                    return Ok(new 
+                    { 
+                        success = false, 
+                        message = $"Ghế số {string.Join(", ", bookedSeats.Select(b => b.Ghe.so_ghe))} đã được đặt" 
+                    });
+                }
+
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+
+                // ✅ Tạo Booking
+                var booking = new Dat_Ve
+                {
+                    khach_hang_id = customerId,
+                    ngay_tao = DateTime.Now,
+                    trang_thai_Dat_Ve = "Chưa thanh toán",
+                    tong_tien = ticketTotal
+                };
+
+                db.Dat_Ves.InsertOnSubmit(booking);
+                db.SubmitChanges();
+
+                // ✅ Update tickets
+                foreach (var ticket in tickets)
+                {
+                    ticket.Dat_Ve_id = booking.Dat_Ve_id;
+                    ticket.ma_qr_code = Guid.NewGuid().ToString();
+                    ticket.trang_thai_ve = "Chưa sử dụng";
+                }
+
+                // ✅ Add food items (nếu có)
+                if (request.food_items != null && request.food_items.Count > 0)
+                {
+                    foreach (var foodItem in request.food_items)
+                    {
+                        var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodItem.food_id);
+                        if (food != null)
+                        {
+                            var foodOrder = new DonHang_DoAn
+                            {
+                                Dat_Ve_id = booking.Dat_Ve_id,
+                                Do_An_id = food.Do_An_id,
+                                so_luong = foodItem.quantity
+                            };
+                            db.DonHang_DoAns.InsertOnSubmit(foodOrder);
+                            foodTotal += (food.gia ?? 0m) * foodItem.quantity;
+                        }
+                    }
+                }
+
+                booking.tong_tien = ticketTotal + foodTotal;
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Booking created: ID={booking.Dat_Ve_id}, Customer={customerId}, Total={booking.tong_tien}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo đơn đặt thành công",
+                    data = new
+                    {
+                        booking_id = booking.Dat_Ve_id,
+                        total_amount = booking.tong_tien,
+                        tickets_count = tickets.Count,
+                        status = booking.trang_thai_Dat_Ve
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/bookings
+        /// Lấy lịch sử đặt vé của khách hàng
+        /// </summary>
+        [HttpGet]
+        [Route("bookings")]
+        [Authorize]
+        public IHttpActionResult GetBookings(string status = "")
+        {
+            try
+            {
+                var customerId = GetUserIdFromToken();
+
+                var query = db.Dat_Ves
+                    .Where(b => b.khach_hang_id == customerId)
+                    .AsQueryable();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(b => b.trang_thai_Dat_Ve == status);
+                }
+
+                var bookings = query
+                    .OrderByDescending(b => b.ngay_tao)
+                    .Select(b => new
+                    {
+                        booking_id = b.Dat_Ve_id,
+                        created_at = b.ngay_tao.HasValue ? b.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                        status = b.trang_thai_Dat_Ve,
+                        total_amount = b.tong_tien,
+                        tickets_count = b.Ves.Count,
+                        movie_title = b.Ves.Select(v => v.Suat_Chieu.Phim.ten_phim).FirstOrDefault() ?? "N/A"
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy lịch sử đặt vé thành công",
+                    data = bookings
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/bookings/{bookingId}
+        /// Lấy chi tiết đơn đặt vé
+        /// </summary>
+        [HttpGet]
+        [Route("bookings/{bookingId}")]
+        [Authorize]
+        public IHttpActionResult GetBookingDetail(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0) return BadRequest("Booking ID không hợp lệ");
+
+                var customerId = GetUserIdFromToken();
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId && b.khach_hang_id == customerId);
+                
+                if (booking == null) return NotFound();
+
+                var tickets = booking.Ves.Select(v => new
+                {
+                    ticket_id = v.ve_id,
+                    seat_number = v.Ghe.so_ghe,
+                    qr_code = v.ma_qr_code,
+                    price = v.gia_ve,
+                    status = v.trang_thai_ve
+                }).ToList();
+
+                var showtime = booking.Ves.FirstOrDefault()?.Suat_Chieu;
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy chi tiết đơn đặt thành công",
+                    data = new
+                    {
+                        booking_id = booking.Dat_Ve_id,
+                        customer_name = booking.Khach_Hang.ho_ten,
+                        customer_email = booking.Khach_Hang.email,
+                        customer_phone = booking.Khach_Hang.so_dien_thoai,
+                        created_at = booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                        status = booking.trang_thai_Dat_Ve,
+                        total_amount = booking.tong_tien,
+                        movie = new
+                        {
+                            movie_id = showtime?.Phim.phim_id,
+                            title = showtime?.Phim.ten_phim
+                        },
+                        showtime = new
+                        {
+                            showtime_id = showtime?.suat_chieu_id,
+                            cinema = showtime?.Phong_Chieu.Rap.ten_rap,
+                            room = showtime?.Phong_Chieu.ten_phong,
+                            date = showtime?.ngay_chieu.ToString("yyyy-MM-dd"),
+                            time = showtime?.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")
+                        },
+                        tickets = tickets,
+                        food_items = booking.DonHang_DoAns.Select(f => new
+                        {
+                            food_name = f.Do_An.ten_san_pham,
+                            quantity = f.so_luong,
+                            price = f.Do_An.gia
+                        }).ToList()
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/bookings/{bookingId}/cancel
+        /// Hủy đơn đặt vé
+        /// </summary>
+        [HttpPost]
+        [Route("bookings/{bookingId}/cancel")]
+        [Authorize]
+        public IHttpActionResult CancelBooking(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0) return BadRequest("Booking ID không hợp lệ");
+
+                var customerId = GetUserIdFromToken();
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId && b.khach_hang_id == customerId);
+                
+                if (booking == null) return NotFound();
+
+                if (booking.trang_thai_Dat_Ve == "Đã Hủy")
+                    return Ok(new { success = false, message = "Đơn này đã được hủy" });
+
+                if (booking.trang_thai_Dat_Ve == "Đã Thanh toán")
+                    return Ok(new { success = false, message = "Không thể hủy đơn đã thanh toán" });
+
+                // ✅ Cancel booking
+                booking.trang_thai_Dat_Ve = "Đã Hủy";
+
+                // ✅ Release tickets
+                foreach (var ticket in booking.Ves)
+                {
+                    ticket.Dat_Ve_id = null;
+                    ticket.ma_qr_code = null;
+                }
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"Booking cancelled: ID={bookingId}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Hủy đơn thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        #endregion
+
+        #region ==================== FOOD API ====================
+
+        /// <summary>
+        /// GET: api/customer/foods?page=1&pageSize=20
+        /// Lấy danh sách đồ ăn
+        /// </summary>
+        [HttpGet]
+        [Route("foods")]
+        [AllowAnonymous]
+        public IHttpActionResult GetFoods(int page = 1, int pageSize = 20)
+        {
+            try
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) pageSize = 20;
+
+                int total = db.Do_Ans.Count();
+                int totalPages = (int)Math.Ceiling(total / (double)pageSize);
+
+                var foods = db.Do_Ans
+                    .OrderBy(d => d.ten_san_pham)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(d => new
+                    {
+                        food_id = d.Do_An_id,
+                        name = d.ten_san_pham,
+                        price = d.gia,
+                        description = d.mo_ta
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        foods = foods,
+                        total = total,
+                        current_page = page,
+                        total_pages = totalPages
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        #endregion
+
+        #region ==================== REVIEWS API ====================
+
+        /// <summary>
+        /// GET: api/customer/movies/{movieId}/reviews
+        /// Lấy đánh giá phim
+        /// </summary>
+        [HttpGet]
+        [Route("movies/{movieId}/reviews")]
+        [AllowAnonymous]
+        public IHttpActionResult GetMovieReviews(int movieId, int page = 1)
+        {
+            try
+            {
+                var reviews = db.Danh_Gias
+                    .Where(d => d.phim_id == movieId)
+                    .OrderByDescending(d => d.ngay_danh_gia)
+                    .Skip((page - 1) * 10)
+                    .Take(10)
+                    .Select(d => new
+                    {
+                        review_id = d.danh_gia_id,
+                        customer_name = d.Khach_Hang.ho_ten,
+                        rating = d.so_sao,
+                        comment = d.noi_dung,
+                        date = d.ngay_danh_gia.ToString("yyyy-MM-dd HH:mm")
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    data = reviews
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/movies/{movieId}/reviews
+        /// Thêm đánh giá phim
+        /// </summary>
+        [HttpPost]
+        [Route("movies/{movieId}/reviews")]
+        [Authorize]
+        public IHttpActionResult AddReview(int movieId, [FromBody] ReviewRequest request)
+        {
+            try
+            {
+                if (movieId <= 0) return BadRequest("Movie ID không hợp lệ");
+                if (request?.rating < 1 || request?.rating > 5) return BadRequest("Đánh giá phải từ 1-5 sao");
+
+                var customerId = GetUserIdFromToken();
+
+                var review = new Danh_Gia
+                {
+                    phim_id = movieId,
+                    khach_hang_id = customerId,
+                    so_sao = request.rating,
+                    noi_dung = request.comment,
+                    ngay_danh_gia = DateTime.Now
+                };
+
+                db.Danh_Gias.InsertOnSubmit(review);
+                db.SubmitChanges();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Thêm đánh giá thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        #endregion
+
+        #region ==================== HELPER ====================
+
+        private int GetUserIdFromToken()
+        {
+            try
+            {
+                var identity = User.Identity as System.Security.Claims.ClaimsIdentity;
+                var claim = identity?.FindFirst("UserId");
+                return int.TryParse(claim?.Value, out int userId) ? userId : 0;
+            }
+            catch { return 0; }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) db?.Dispose();
+            base.Dispose(disposing);
+        }
+
+        #endregion
+    }
+
+    #region ==================== REQUEST MODELS ====================
+
+    public class CreateBookingRequest
+    {
+        public int showtime_id { get; set; }
+        public List<int> seat_ids { get; set; }
+        public List<FoodItemRequest> food_items { get; set; }
+    }
+
+    public class FoodItemRequest
+    {
+        public int food_id { get; set; }
+        public int quantity { get; set; }
+    }
+
+    public class ReviewRequest
+    {
+        public int rating { get; set; }
+        public string comment { get; set; }
+    }
+
+    #endregion
+}

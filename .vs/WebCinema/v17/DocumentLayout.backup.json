@@ -3,32 +3,75 @@
   "WorkspaceRootPath": "D:\\WebQLRCP\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\customerapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\directormanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\directormanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\home\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\home\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\movieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\services\\movieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\api\\customerapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\customerapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\customer_api_usage_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\customer_api_usage_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\api\\authapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\authapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\staffapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\staffapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\setup_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\setup_guide.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\api_documentation.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\api_documentation.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\api\\api_ready.txt||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\api_ready.txt||{8B382828-6202-11D1-8870-0000F87579D2}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\flutter_integration_example.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\flutter_integration_example.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|WebCinema||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\api\\webcinema_api_collection.postman_collection.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\webcinema_api_collection.postman_collection.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\app_start\\webapiconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\app_start\\webapiconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\global.asax||{4D30FDB3-AB3E-4810-B6F2-64627BCCA384}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\global.asax||{4D30FDB3-AB3E-4810-B6F2-64627BCCA384}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\app_start\\routeconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\app_start\\routeconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\invoicecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -47,14 +90,11 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\booking\\checkout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|WebCinema||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\models\\authresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\models\\authresult.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
@@ -64,10 +104,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\home\\about.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\home\\about.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\views\\staffinvoice\\viewinvoice.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -110,16 +146,8 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\infrastructure\\qrcodepaymentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\bookingcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\invoice\\viewinvoice.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\invoice\\viewinvoice.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\WebQLRCP\\QR_CODE_PAYMENT_IMPLEMENTATION.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
@@ -202,10 +230,6 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\models\\moviedetailviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\dashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\staffdashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\staffdashboardcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -218,20 +242,12 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\models\\actormovieviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\services\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\models\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\models\\loginviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\home\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\home\\detail.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\bookingexpirationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -302,10 +318,6 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\views\\showtimemanagement\\edit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\movieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\services\\movieservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\views\\home\\cinemamovies.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\home\\cinemamovies.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
@@ -352,10 +364,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\WebQLRCP\\WebQLRCP\\ALL_FIXES_COMPLETE_READY_TO_RUN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:WebQLRCP\\ALL_FIXES_COMPLETE_READY_TO_RUN.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\global.asax.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\views\\purchaseorder\\create.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -497,10 +505,6 @@
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\views\\_viewstart.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\global.asax||{4D30FDB3-AB3E-4810-B6F2-64627BCCA384}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\global.asax||{4D30FDB3-AB3E-4810-B6F2-64627BCCA384}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\services\\showtimeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\services\\showtimeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -612,10 +616,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\producermanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\producermanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\directormanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\areas\\admin\\controllers\\directormanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|D:\\WebQLRCP\\webcinema\\areas\\admin\\controllers\\cinemamanagementcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -1044,13 +1044,7 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:WebQLRCP\\WebCinema\\Views\\Cart\\Checkout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\||{B270807C-D8C6-49EB-8EBE-8E8D566637A1}|a54ad834-9219-4aa6-b589-607af21c3e26"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\BaseApiController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\AuthApiController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\MoviesApiController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
@@ -1065,20 +1059,10 @@
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\FoodsApiController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\customer_api_improvements.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\customer_api_improvements.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\CustomerMegaApiController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\code_comparison_before_after.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\code_comparison_before_after.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\improvements_summary.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\improvements_summary.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\controllers\\api\\completion_report.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|",
-      "RelativeMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|solutionrelative:webcinema\\controllers\\api\\completion_report.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|"
+      "AbsoluteMoniker": "D:0:0:{494DB388-760C-4A0A-A0BE-5A83253377C5}|WebCinema\\WebCinema.csproj|d:\\webqlrcp\\webcinema\\||{B270807C-D8C6-49EB-8EBE-8E8D566637A1}|a54ad834-9219-4aa6-b589-607af21c3e26"
     }
   ],
   "DocumentGroupContainers": [
@@ -1088,11 +1072,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 208,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 124,
+              "DocumentIndex": 15,
               "Title": "Global.asax",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Global.asax",
               "RelativeDocumentMoniker": "WebCinema\\Global.asax",
@@ -1106,98 +1090,109 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 273,
-              "Title": "COMPLETION_REPORT.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\COMPLETION_REPORT.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\COMPLETION_REPORT.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\COMPLETION_REPORT.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\COMPLETION_REPORT.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEMBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:32:54.587Z",
+              "DocumentIndex": 10,
+              "Title": "API_READY.txt",
+              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\API_READY.txt",
+              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\API_READY.txt",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\API_READY.txt",
+              "RelativeToolTip": "WebCinema\\Controllers\\API\\API_READY.txt",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAFIAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2025-11-15T14:09:54.481Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 272,
-              "Title": "IMPROVEMENTS_SUMMARY.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\IMPROVEMENTS_SUMMARY.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\IMPROVEMENTS_SUMMARY.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\IMPROVEMENTS_SUMMARY.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\IMPROVEMENTS_SUMMARY.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:32:06.98Z",
+              "DocumentIndex": 12,
+              "Title": "WebCinema_API_Collection.postman_collection.json",
+              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\WebCinema_API_Collection.postman_collection.json",
+              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\WebCinema_API_Collection.postman_collection.json",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\WebCinema_API_Collection.postman_collection.json",
+              "RelativeToolTip": "WebCinema\\Controllers\\API\\WebCinema_API_Collection.postman_collection.json",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-11-15T14:04:39.062Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 271,
-              "Title": "CODE_COMPARISON_BEFORE_AFTER.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CODE_COMPARISON_BEFORE_AFTER.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\CODE_COMPARISON_BEFORE_AFTER.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CODE_COMPARISON_BEFORE_AFTER.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\CODE_COMPARISON_BEFORE_AFTER.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFgBAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:31:11.453Z",
+              "DocumentIndex": 7,
+              "Title": "AuthApiController.cs",
+              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\AuthApiController.cs",
+              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\AuthApiController.cs",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\AuthApiController.cs",
+              "RelativeToolTip": "WebCinema\\Controllers\\API\\AuthApiController.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAnwEkAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-15T11:16:00.912Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "CUSTOMER_API_USAGE_GUIDE.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CUSTOMER_API_USAGE_GUIDE.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\CUSTOMER_API_USAGE_GUIDE.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CUSTOMER_API_USAGE_GUIDE.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\CUSTOMER_API_USAGE_GUIDE.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:30:35.538Z",
+              "DocumentIndex": 268,
+              "Title": "CustomerMegaApiController.cs",
+              "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\CustomerMegaApiController.cs",
+              "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\CustomerMegaApiController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-15T11:14:10.152Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 270,
-              "Title": "CUSTOMER_API_IMPROVEMENTS.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CUSTOMER_API_IMPROVEMENTS.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\CUSTOMER_API_IMPROVEMENTS.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CUSTOMER_API_IMPROVEMENTS.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\CUSTOMER_API_IMPROVEMENTS.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAD4BAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:29:16.262Z",
+              "DocumentIndex": 16,
+              "Title": "RouteConfig.cs",
+              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\App_Start\\RouteConfig.cs",
+              "RelativeDocumentMoniker": "WebCinema\\App_Start\\RouteConfig.cs",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\App_Start\\RouteConfig.cs",
+              "RelativeToolTip": "WebCinema\\App_Start\\RouteConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-15T09:51:54.57Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 13,
+              "Title": "WebApiConfig.cs",
+              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\App_Start\\WebApiConfig.cs",
+              "RelativeDocumentMoniker": "WebCinema\\App_Start\\WebApiConfig.cs",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\App_Start\\WebApiConfig.cs",
+              "RelativeToolTip": "WebCinema\\App_Start\\WebApiConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-15T09:49:54.551Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "StaffApiController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\StaffApiController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\StaffApiController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\StaffApiController.cs",
               "RelativeToolTip": "WebCinema\\Controllers\\API\\StaffApiController.cs",
-              "ViewState": "AgIAAMIBAAAAAAAAAAAjwCUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAALoCAAAAAAAAAADgvyUAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T13:19:29.671Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 6,
               "Title": "CustomerApiController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CustomerApiController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\CustomerApiController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\CustomerApiController.cs",
               "RelativeToolTip": "WebCinema\\Controllers\\API\\CustomerApiController.cs",
-              "ViewState": "AgIAAI0AAAAAAAAAAAAYwCcBAAAYAAAAAAAAAA==",
+              "ViewState": "AgIAAGwAAAAAAAAAAAAjwMADAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T13:18:58.061Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 269,
+              "DocumentIndex": 267,
               "Title": "FoodsApiController.cs",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\FoodsApiController.cs",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\FoodsApiController.cs",
@@ -1208,7 +1203,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 268,
+              "DocumentIndex": 266,
               "Title": "BookingsApiController.cs",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\BookingsApiController.cs",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\BookingsApiController.cs",
@@ -1219,7 +1214,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 267,
+              "DocumentIndex": 265,
               "Title": "CinemasApiController.cs",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\CinemasApiController.cs",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\CinemasApiController.cs",
@@ -1230,7 +1225,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 266,
+              "DocumentIndex": 264,
               "Title": "MoviesApiController.cs",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\MoviesApiController.cs",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\MoviesApiController.cs",
@@ -1241,76 +1236,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 265,
-              "Title": "AuthApiController.cs",
-              "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\AuthApiController.cs",
-              "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\AuthApiController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T13:06:24.707Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 264,
+              "DocumentIndex": 263,
               "Title": "BaseApiController.cs",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\BaseApiController.cs",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-37840964\\BaseApiController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T13:06:15.302Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "README.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\README.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\README.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\README.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\README.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:05:12.677Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "FLUTTER_INTEGRATION_EXAMPLE.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\FLUTTER_INTEGRATION_EXAMPLE.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\FLUTTER_INTEGRATION_EXAMPLE.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\FLUTTER_INTEGRATION_EXAMPLE.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\FLUTTER_INTEGRATION_EXAMPLE.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:04:41.72Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "SETUP_GUIDE.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\SETUP_GUIDE.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\SETUP_GUIDE.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\SETUP_GUIDE.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\SETUP_GUIDE.md",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:04:11.774Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "API_DOCUMENTATION.md",
-              "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\API_DOCUMENTATION.md",
-              "RelativeDocumentMoniker": "WebCinema\\Controllers\\API\\API_DOCUMENTATION.md",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\API\\API_DOCUMENTATION.md",
-              "RelativeToolTip": "WebCinema\\Controllers\\API\\API_DOCUMENTATION.md",
-              "ViewState": "AgIAAJ8CAAAAAAAAAAAAALQCAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
-              "WhenOpened": "2025-11-14T13:03:45.741Z",
               "EditorCaption": ""
             },
             {
@@ -1328,7 +1260,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 37,
               "Title": "QR_CODE_PAYMENT_IMPLEMENTATION.md",
               "DocumentMoniker": "D:\\WebQLRCP\\QR_CODE_PAYMENT_IMPLEMENTATION.md",
               "RelativeDocumentMoniker": "QR_CODE_PAYMENT_IMPLEMENTATION.md",
@@ -1341,7 +1273,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 35,
               "Title": "QRCodePaymentService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Infrastructure\\QRCodePaymentService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Infrastructure\\QRCodePaymentService.cs",
@@ -1354,7 +1286,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 36,
+              "DocumentIndex": 43,
               "Title": "PurchaseOrderPendingViewModel.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\PurchaseOrderPendingViewModel.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\PurchaseOrderPendingViewModel.cs",
@@ -1367,7 +1299,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 37,
+              "DocumentIndex": 44,
               "Title": "ConfirmOrder.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffPurchaseOrder\\ConfirmOrder.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffPurchaseOrder\\ConfirmOrder.cshtml",
@@ -1380,7 +1312,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 38,
+              "DocumentIndex": 45,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffPurchaseOrder\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffPurchaseOrder\\Create.cshtml",
@@ -1393,7 +1325,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 32,
+              "DocumentIndex": 39,
               "Title": "StaffPurchaseOrderController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffPurchaseOrderController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffPurchaseOrderController.cs",
@@ -1406,7 +1338,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 35,
+              "DocumentIndex": 42,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffInventoryManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffInventoryManagement\\Details.cshtml",
@@ -1419,7 +1351,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 40,
+              "DocumentIndex": 47,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffInventoryManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffInventoryManagement\\Index.cshtml",
@@ -1432,7 +1364,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 38,
               "Title": "StaffInventoryManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffInventoryManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffInventoryManagementController.cs",
@@ -1445,7 +1377,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 41,
+              "DocumentIndex": 48,
               "Title": "PromoController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\PromoController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\PromoController.cs",
@@ -1458,7 +1390,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 42,
+              "DocumentIndex": 49,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffBookingManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffBookingManagement\\Details.cshtml",
@@ -1471,7 +1403,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 43,
+              "DocumentIndex": 50,
               "Title": "StaffBookingManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffBookingManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffBookingManagementController.cs",
@@ -1484,7 +1416,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 40,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffShowtimeTicketManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffShowtimeTicketManagement\\Details.cshtml",
@@ -1497,7 +1429,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 44,
+              "DocumentIndex": 51,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffShowtimeTicketManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffShowtimeTicketManagement\\Index.cshtml",
@@ -1510,7 +1442,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 52,
               "Title": "StaffShowtimeTicketManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffShowtimeTicketManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffShowtimeTicketManagementController.cs",
@@ -1523,7 +1455,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
+              "DocumentIndex": 54,
               "Title": "web.config",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\web.config",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\web.config",
@@ -1536,7 +1468,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 26,
               "Title": "ViewInvoice.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffInvoice\\ViewInvoice.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffInvoice\\ViewInvoice.cshtml",
@@ -1549,7 +1481,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
+              "DocumentIndex": 55,
               "Title": "InvoiceController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\InvoiceController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\InvoiceController.cs",
@@ -1584,7 +1516,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 39,
+              "DocumentIndex": 46,
               "Title": "LayoutStaff.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\Shared\\LayoutStaff.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\Shared\\LayoutStaff.cshtml",
@@ -1608,7 +1540,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 30,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffDashboard\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffDashboard\\Index.cshtml",
@@ -1621,7 +1553,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
+              "DocumentIndex": 57,
               "Title": "StaffDashboardController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffDashboardController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffDashboardController.cs",
@@ -1656,7 +1588,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 58,
               "Title": "TicketVerification.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\TicketVerification.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\TicketVerification.cshtml",
@@ -1669,7 +1601,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 27,
               "Title": "SelectSeats.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\SelectSeats.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\SelectSeats.cshtml",
@@ -1682,7 +1614,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
+              "DocumentIndex": 41,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\StaffOfflineBooking\\Index.cshtml",
@@ -1695,7 +1627,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
+              "DocumentIndex": 28,
               "Title": "StaffOfflineBookingController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\StaffOfflineBookingController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\StaffOfflineBookingController.cs",
@@ -1807,7 +1739,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 62,
               "Title": "BookingExpirationService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\BookingExpirationService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\BookingExpirationService.cs",
@@ -1820,7 +1752,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
+              "DocumentIndex": 63,
               "Title": "BookingService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\BookingService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\BookingService.cs",
@@ -1833,7 +1765,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 60,
+              "DocumentIndex": 64,
               "Title": "EmailService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\EmailService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\EmailService.cs",
@@ -1857,7 +1789,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
+              "DocumentIndex": 69,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShowtimeTicketManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShowtimeTicketManagement\\Details.cshtml",
@@ -1870,7 +1802,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 62,
+              "DocumentIndex": 66,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShowtimeTicketManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShowtimeTicketManagement\\Index.cshtml",
@@ -1883,7 +1815,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 64,
+              "DocumentIndex": 68,
               "Title": "ShowtimeTicketManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ShowtimeTicketManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ShowtimeTicketManagementController.cs",
@@ -1896,7 +1828,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 53,
+              "DocumentIndex": 59,
               "Title": "ActorMovieViewModel.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\ActorMovieViewModel.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\ActorMovieViewModel.cs",
@@ -1920,7 +1852,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 76,
+              "DocumentIndex": 79,
               "Title": "CinemaMovies.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\CinemaMovies.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Home\\CinemaMovies.cshtml",
@@ -1933,7 +1865,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 20,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\BookingManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\BookingManagement\\Details.cshtml",
@@ -1957,7 +1889,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 87,
+              "DocumentIndex": 90,
               "Title": "ALL_FIXES_COMPLETE_READY_TO_RUN.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\ALL_FIXES_COMPLETE_READY_TO_RUN.md",
               "RelativeDocumentMoniker": "WebQLRCP\\ALL_FIXES_COMPLETE_READY_TO_RUN.md",
@@ -1990,7 +1922,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 91,
+              "DocumentIndex": 93,
               "Title": "StockWarnings.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\StockWarnings.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\StockWarnings.cshtml",
@@ -2003,7 +1935,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 81,
+              "DocumentIndex": 84,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Details.cshtml",
@@ -2016,7 +1948,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 89,
+              "DocumentIndex": 91,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Create.cshtml",
@@ -2029,7 +1961,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 85,
+              "DocumentIndex": 88,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\PurchaseOrder\\Index.cshtml",
@@ -2042,7 +1974,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 82,
+              "DocumentIndex": 85,
               "Title": "PurchaseOrderController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\PurchaseOrderController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\PurchaseOrderController.cs",
@@ -2077,7 +2009,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 94,
+              "DocumentIndex": 96,
               "Title": "INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md",
               "RelativeDocumentMoniker": "WebQLRCP\\INVENTORY_PURCHASE_ORDER_IMPLEMENTATION_GUIDE.md",
@@ -2088,7 +2020,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 95,
+              "DocumentIndex": 97,
               "Title": "DATABASE_SCHEMA_NHAP_HANG.sql",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\DATABASE_SCHEMA_NHAP_HANG.sql",
               "RelativeDocumentMoniker": "WebQLRCP\\DATABASE_SCHEMA_NHAP_HANG.sql",
@@ -2099,7 +2031,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 93,
+              "DocumentIndex": 95,
               "Title": "FoodService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\FoodService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\FoodService.cs",
@@ -2145,7 +2077,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 98,
+              "DocumentIndex": 100,
               "Title": "Report.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Report.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Report.cshtml",
@@ -2158,7 +2090,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 100,
+              "DocumentIndex": 102,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Details.cshtml",
@@ -2171,7 +2103,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 97,
+              "DocumentIndex": 99,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Edit.cshtml",
@@ -2184,7 +2116,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 99,
+              "DocumentIndex": 101,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Create.cshtml",
@@ -2197,7 +2129,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 90,
+              "DocumentIndex": 92,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\InventoryManagement\\Index.cshtml",
@@ -2210,7 +2142,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 92,
+              "DocumentIndex": 94,
               "Title": "InventoryManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\InventoryManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\InventoryManagementController.cs",
@@ -2245,7 +2177,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 101,
+              "DocumentIndex": 103,
               "Title": "PaymentSuccess.cshtml",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1423132072\\PaymentSuccess.cshtml",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1423132072\\PaymentSuccess.cshtml",
@@ -2300,7 +2232,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
+              "DocumentIndex": 65,
               "Title": "PaymentGateway.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Infrastructure\\PaymentGateway.cs",
               "RelativeDocumentMoniker": "WebCinema\\Infrastructure\\PaymentGateway.cs",
@@ -2555,7 +2487,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 107,
+              "DocumentIndex": 109,
               "Title": "VNPAY_COMMON_ISSUES_FIXED.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\VNPAY_COMMON_ISSUES_FIXED.md",
               "RelativeDocumentMoniker": "WebQLRCP\\VNPAY_COMMON_ISSUES_FIXED.md",
@@ -2566,7 +2498,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 108,
+              "DocumentIndex": 110,
               "Title": "VNPAY_FIX_COMPLETE.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\VNPAY_FIX_COMPLETE.md",
               "RelativeDocumentMoniker": "WebQLRCP\\VNPAY_FIX_COMPLETE.md",
@@ -2577,7 +2509,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 109,
+              "DocumentIndex": 111,
               "Title": "RESTART_APP_NOW_CRITICAL.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\RESTART_APP_NOW_CRITICAL.md",
               "RelativeDocumentMoniker": "WebQLRCP\\RESTART_APP_NOW_CRITICAL.md",
@@ -2588,7 +2520,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 110,
+              "DocumentIndex": 112,
               "Title": "VNPAY_FINAL_SOLUTION.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\VNPAY_FINAL_SOLUTION.md",
               "RelativeDocumentMoniker": "WebQLRCP\\VNPAY_FINAL_SOLUTION.md",
@@ -2599,7 +2531,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 111,
+              "DocumentIndex": 113,
               "Title": "VNPAY_OFFICIAL_SPEC_vs_YOUR_CODE.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\VNPAY_OFFICIAL_SPEC_vs_YOUR_CODE.md",
               "RelativeDocumentMoniker": "WebQLRCP\\VNPAY_OFFICIAL_SPEC_vs_YOUR_CODE.md",
@@ -2731,7 +2663,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 104,
+              "DocumentIndex": 106,
               "Title": "InvoiceService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\InvoiceService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\InvoiceService.cs",
@@ -2744,7 +2676,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 96,
+              "DocumentIndex": 98,
               "Title": "PaymentFailed.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Invoice\\PaymentFailed.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Invoice\\PaymentFailed.cshtml",
@@ -2757,7 +2689,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 33,
               "Title": "PaymentSuccess.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Invoice\\PaymentSuccess.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Invoice\\PaymentSuccess.cshtml",
@@ -2770,7 +2702,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 36,
               "Title": "ViewInvoice.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Invoice\\ViewInvoice.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Invoice\\ViewInvoice.cshtml",
@@ -2783,7 +2715,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 125,
+              "DocumentIndex": 126,
               "Title": "ShowtimeService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\ShowtimeService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\ShowtimeService.cs",
@@ -2818,7 +2750,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 102,
+              "DocumentIndex": 104,
               "Title": "PaymentGateway.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Booking\\PaymentGateway.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Booking\\PaymentGateway.cshtml",
@@ -2886,7 +2818,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 127,
+              "DocumentIndex": 128,
               "Title": "Payment.cshtml",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-204322208\\Payment.cshtml",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-204322208\\Payment.cshtml",
@@ -2913,7 +2845,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 131,
+              "DocumentIndex": 132,
               "Title": "CheckoutSuccess.cshtml",
               "DocumentMoniker": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-693633951\\CheckoutSuccess.cshtml",
               "ToolTip": "C:\\Users\\Duy An\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-693633951\\CheckoutSuccess.cshtml",
@@ -2949,20 +2881,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 4,
               "Title": "BookingController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\BookingController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\BookingController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\BookingController.cs",
               "RelativeToolTip": "WebCinema\\Controllers\\BookingController.cs",
-              "ViewState": "AgIAADACAAAAAAAAAAAmwE8CAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFwAAAAAAAAAAAAAwFICAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-02T02:45:51.648Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 21,
               "Title": "Checkout.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Booking\\Checkout.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Booking\\Checkout.cshtml",
@@ -3043,7 +2975,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 114,
+              "DocumentIndex": 116,
               "Title": "EditCinema.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\EditCinema.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\EditCinema.cshtml",
@@ -3067,7 +2999,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 133,
+              "DocumentIndex": 134,
               "Title": "Report.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\TicketManagement\\Report.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\TicketManagement\\Report.cshtml",
@@ -3091,7 +3023,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 86,
+              "DocumentIndex": 89,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\TicketManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\TicketManagement\\Index.cshtml",
@@ -3183,7 +3115,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 83,
+              "DocumentIndex": 86,
               "Title": "CSDLDataContextExtensions.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\CSDLDataContextExtensions.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\CSDLDataContextExtensions.cs",
@@ -3196,7 +3128,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 135,
+              "DocumentIndex": 136,
               "Title": "RequireLogin.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Shared\\RequireLogin.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Shared\\RequireLogin.cshtml",
@@ -3209,7 +3141,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 126,
+              "DocumentIndex": 127,
               "Title": "AuthSessionHelper.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Infrastructure\\AuthSessionHelper.cs",
               "RelativeDocumentMoniker": "WebCinema\\Infrastructure\\AuthSessionHelper.cs",
@@ -3222,20 +3154,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 88,
+              "DocumentIndex": 9,
               "Title": "Global.asax.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Global.asax.cs",
               "RelativeDocumentMoniker": "WebCinema\\Global.asax.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Global.asax.cs",
               "RelativeToolTip": "WebCinema\\Global.asax.cs",
-              "ViewState": "AgIAAF0AAAAAAAAAAAAYwFoAAAA7AAAAAAAAAA==",
+              "ViewState": "AgIAABAAAAAAAAAAAAAzwJoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-02T03:16:23.561Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 139,
+              "DocumentIndex": 140,
               "Title": "BOOKING_SYSTEM_SUMMARY.md",
               "DocumentMoniker": "D:\\WebQLRCP\\WebQLRCP\\BOOKING_SYSTEM_SUMMARY.md",
               "RelativeDocumentMoniker": "WebQLRCP\\BOOKING_SYSTEM_SUMMARY.md",
@@ -3246,7 +3178,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 129,
+              "DocumentIndex": 130,
               "Title": "Success.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Booking\\Success.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Booking\\Success.cshtml",
@@ -3259,7 +3191,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 112,
+              "DocumentIndex": 114,
               "Title": "SelectFood.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Booking\\SelectFood.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Booking\\SelectFood.cshtml",
@@ -3272,7 +3204,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 128,
+              "DocumentIndex": 129,
               "Title": "SelectSeats.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Booking\\SelectSeats.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Booking\\SelectSeats.cshtml",
@@ -3296,7 +3228,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 113,
+              "DocumentIndex": 115,
               "Title": "AuditoriController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\AuditoriController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\AuditoriController.cs",
@@ -3322,7 +3254,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 121,
+              "DocumentIndex": 123,
               "Title": "EditRoom.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\EditRoom.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\EditRoom.cshtml",
@@ -3335,7 +3267,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 78,
+              "DocumentIndex": 81,
               "Title": "Rooms.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Rooms.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Rooms.cshtml",
@@ -3361,7 +3293,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 115,
+              "DocumentIndex": 117,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Create.cshtml",
@@ -3374,7 +3306,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 29,
               "Title": "CSDL.dbml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\CSDL.dbml",
               "RelativeDocumentMoniker": "WebCinema\\Models\\CSDL.dbml",
@@ -3386,7 +3318,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 145,
+              "DocumentIndex": 146,
               "Title": "Director.cshtml",
               "DocumentMoniker": "D:\\WebCinema (1)\\WebCinema\\WebCinema\\Views\\Person\\Director.cshtml",
               "RelativeDocumentMoniker": "..\\WebCinema (1)\\WebCinema\\WebCinema\\Views\\Person\\Director.cshtml",
@@ -3397,7 +3329,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 144,
+              "DocumentIndex": 145,
               "Title": "Director.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Person\\Director.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Person\\Director.cshtml",
@@ -3410,7 +3342,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 67,
+              "DocumentIndex": 71,
               "Title": "Actor.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Person\\Actor.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Person\\Actor.cshtml",
@@ -3423,7 +3355,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 66,
+              "DocumentIndex": 70,
               "Title": "PersonController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\PersonController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\PersonController.cs",
@@ -3436,7 +3368,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 143,
+              "DocumentIndex": 144,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\Details.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\Details.cshtml",
@@ -3449,7 +3381,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 137,
+              "DocumentIndex": 138,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\Edit.cshtml",
@@ -3462,7 +3394,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 146,
+              "DocumentIndex": 147,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\Create.cshtml",
@@ -3475,7 +3407,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 148,
+              "DocumentIndex": 149,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Edit.cshtml",
@@ -3488,7 +3420,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 149,
+              "DocumentIndex": 150,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Create.cshtml",
@@ -3501,7 +3433,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 147,
+              "DocumentIndex": 148,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShiftManagement\\Index.cshtml",
@@ -3514,7 +3446,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 140,
+              "DocumentIndex": 141,
               "Title": "ShiftManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ShiftManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ShiftManagementController.cs",
@@ -3540,7 +3472,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 116,
+              "DocumentIndex": 118,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ProducerManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ProducerManagement\\Create.cshtml",
@@ -3553,7 +3485,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 70,
+              "DocumentIndex": 74,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ProducerManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ProducerManagement\\Index.cshtml",
@@ -3566,7 +3498,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 153,
+              "DocumentIndex": 154,
               "Title": "ProducerManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ProducerManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ProducerManagementController.cs",
@@ -3579,7 +3511,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 150,
+              "DocumentIndex": 151,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\DirectorManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\DirectorManagement\\Edit.cshtml",
@@ -3605,7 +3537,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 68,
+              "DocumentIndex": 72,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\DirectorManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\DirectorManagement\\Index.cshtml",
@@ -3618,20 +3550,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 154,
+              "DocumentIndex": 0,
               "Title": "DirectorManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\DirectorManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\DirectorManagementController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\DirectorManagementController.cs",
               "RelativeToolTip": "WebCinema\\Areas\\Admin\\Controllers\\DirectorManagementController.cs",
-              "ViewState": "AgIAAMMAAAAAAAAAAIBZwMgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAALwAAAAAAAAAAAAuwMgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-27T03:27:59.403Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 120,
+              "DocumentIndex": 122,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Edit.cshtml",
@@ -3644,7 +3576,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 119,
+              "DocumentIndex": 121,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Create.cshtml",
@@ -3657,7 +3589,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 69,
+              "DocumentIndex": 73,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ActorManagement\\Index.cshtml",
@@ -3670,7 +3602,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 142,
+              "DocumentIndex": 143,
               "Title": "ActorManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ActorManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ActorManagementController.cs",
@@ -3683,7 +3615,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 74,
+              "DocumentIndex": 78,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Edit.cshtml",
@@ -3696,7 +3628,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 73,
+              "DocumentIndex": 77,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Create.cshtml",
@@ -3709,7 +3641,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 67,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\ShowtimeManagement\\Index.cshtml",
@@ -3722,7 +3654,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 130,
+              "DocumentIndex": 131,
               "Title": "ShowtimeManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ShowtimeManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ShowtimeManagementController.cs",
@@ -3735,7 +3667,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 117,
+              "DocumentIndex": 119,
               "Title": "EditStaff.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\EditStaff.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\EditStaff.cshtml",
@@ -3761,7 +3693,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 136,
+              "DocumentIndex": 137,
               "Title": "Staff.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\Staff.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\Staff.cshtml",
@@ -3774,7 +3706,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 34,
               "Title": "EvaluateController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\EvaluateController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\EvaluateController.cs",
@@ -3787,7 +3719,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 134,
+              "DocumentIndex": 135,
               "Title": "RoleAuthorizeAttribute.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Infrastructure\\RoleAuthorizeAttribute.cs",
               "RelativeDocumentMoniker": "WebCinema\\Infrastructure\\RoleAuthorizeAttribute.cs",
@@ -3800,7 +3732,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 138,
+              "DocumentIndex": 139,
               "Title": "Edit.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Edit.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Edit.cshtml",
@@ -3826,7 +3758,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 31,
               "Title": "Home_adminController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\Home_adminController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\Home_adminController.cs",
@@ -3852,7 +3784,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 77,
+              "DocumentIndex": 80,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\CinemaManagement\\Index.cshtml",
@@ -3865,7 +3797,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 118,
+              "DocumentIndex": 120,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\UserManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\UserManagement\\Index.cshtml",
@@ -3878,7 +3810,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 79,
+              "DocumentIndex": 82,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\BookingManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\BookingManagement\\Index.cshtml",
@@ -3891,7 +3823,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 141,
+              "DocumentIndex": 142,
               "Title": "Create.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Create.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Create.cshtml",
@@ -3904,7 +3836,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 72,
+              "DocumentIndex": 76,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\MovieManagement\\Index.cshtml",
@@ -3917,7 +3849,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 56,
+              "DocumentIndex": 61,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\Dashboard\\Index.cshtml",
@@ -3930,7 +3862,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
+              "DocumentIndex": 32,
               "Title": "LayoutAdmin.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Views\\Shared\\LayoutAdmin.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Views\\Shared\\LayoutAdmin.cshtml",
@@ -3943,7 +3875,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 84,
+              "DocumentIndex": 87,
               "Title": "ReviewManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\ReviewManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\ReviewManagementController.cs",
@@ -3956,7 +3888,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 80,
+              "DocumentIndex": 83,
               "Title": "UserManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\UserManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\UserManagementController.cs",
@@ -3969,7 +3901,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 19,
               "Title": "BookingManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\BookingManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\BookingManagementController.cs",
@@ -3995,7 +3927,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 71,
+              "DocumentIndex": 75,
               "Title": "MovieManagementController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\MovieManagementController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\MovieManagementController.cs",
@@ -4008,20 +3940,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
+              "DocumentIndex": 2,
               "Title": "DashboardController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\DashboardController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Areas\\Admin\\Controllers\\DashboardController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Areas\\Admin\\Controllers\\DashboardController.cs",
               "RelativeToolTip": "WebCinema\\Areas\\Admin\\Controllers\\DashboardController.cs",
-              "ViewState": "AgIAAJoAAAAAAAAAAAAQwKIAAAAWAAAAAAAAAA==",
+              "ViewState": "AgIAAAABAAAAAAAAAAAWwLQAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-24T05:54:50.507Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 18,
               "Title": "InvoiceController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\InvoiceController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\InvoiceController.cs",
@@ -4034,13 +3966,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 17,
               "Title": "Web.config",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Web.config",
               "RelativeDocumentMoniker": "WebCinema\\Web.config",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Web.config",
               "RelativeToolTip": "WebCinema\\Web.config",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAAE0AAAAAAAAAAAAAAGgAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
               "WhenOpened": "2025-10-23T12:50:55.598Z",
               "EditorCaption": ""
@@ -4051,15 +3983,15 @@
               "Title": "WebCinema",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\WebCinema.csproj",
               "RelativeDocumentMoniker": "WebCinema\\WebCinema.csproj",
-              "ToolTip": "D:\\WebQLRCP\\WebCinema\\WebCinema.csproj*",
-              "RelativeToolTip": "WebCinema\\WebCinema.csproj*",
+              "ToolTip": "D:\\WebQLRCP\\WebCinema\\WebCinema.csproj",
+              "RelativeToolTip": "WebCinema\\WebCinema.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-10-23T12:49:49.803Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 22,
               "Title": "AuthResult.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\AuthResult.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\AuthResult.cs",
@@ -4072,7 +4004,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 106,
+              "DocumentIndex": 108,
               "Title": "LoggingHelper.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Infrastructure\\LoggingHelper.cs",
               "RelativeDocumentMoniker": "WebCinema\\Infrastructure\\LoggingHelper.cs",
@@ -4098,7 +4030,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 151,
+              "DocumentIndex": 152,
               "Title": "Register.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Account\\Register.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Account\\Register.cshtml",
@@ -4111,7 +4043,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 152,
+              "DocumentIndex": 153,
               "Title": "Login.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Account\\Login.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Account\\Login.cshtml",
@@ -4124,7 +4056,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 46,
+              "DocumentIndex": 53,
               "Title": "AccountController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\AccountController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\AccountController.cs",
@@ -4137,13 +4069,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 14,
               "Title": "AuthService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\AuthService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\AuthService.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Services\\AuthService.cs",
               "RelativeToolTip": "WebCinema\\Services\\AuthService.cs",
-              "ViewState": "AgIAALUAAAAAAAAAAAAgwEsAAAAgAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-23T11:50:36.564Z",
               "EditorCaption": ""
@@ -4163,7 +4095,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 55,
+              "DocumentIndex": 60,
               "Title": "LoginViewModel.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\LoginViewModel.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\LoginViewModel.cs",
@@ -4176,7 +4108,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 132,
+              "DocumentIndex": 133,
               "Title": "Error.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Shared\\Error.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Shared\\Error.cshtml",
@@ -4189,7 +4121,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 123,
+              "DocumentIndex": 125,
               "Title": "_ViewStart.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\_ViewStart.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\_ViewStart.cshtml",
@@ -4202,7 +4134,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 25,
               "Title": "About.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\About.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Home\\About.cshtml",
@@ -4215,7 +4147,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 105,
+              "DocumentIndex": 107,
               "Title": "Contact.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\Contact.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Home\\Contact.cshtml",
@@ -4304,7 +4236,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 122,
+              "DocumentIndex": 124,
               "Title": "Web.config",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Web.config",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Web.config",
@@ -4317,7 +4249,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 24,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Shared\\_Layout.cshtml",
@@ -4330,7 +4262,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
+              "DocumentIndex": 56,
               "Title": "MovieDetailViewModel.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\MovieDetailViewModel.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\MovieDetailViewModel.cs",
@@ -4343,7 +4275,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 103,
+              "DocumentIndex": 105,
               "Title": "MovieViewModel.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Models\\MovieViewModel.cs",
               "RelativeDocumentMoniker": "WebCinema\\Models\\MovieViewModel.cs",
@@ -4356,20 +4288,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
+              "DocumentIndex": 1,
               "Title": "Detail.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\Detail.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Home\\Detail.cshtml",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\Detail.cshtml",
               "RelativeToolTip": "WebCinema\\Views\\Home\\Detail.cshtml",
-              "ViewState": "AgIAAA8FAAAAAAAAAAASwJADAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAGIFAAAAAAAAAAArwJgCAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-10-23T09:55:11.477Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 23,
               "Title": "Index.cshtml",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Views\\Home\\Index.cshtml",
               "RelativeDocumentMoniker": "WebCinema\\Views\\Home\\Index.cshtml",
@@ -4382,26 +4314,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 3,
               "Title": "HomeController.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "WebCinema\\Controllers\\HomeController.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Controllers\\HomeController.cs",
               "RelativeToolTip": "WebCinema\\Controllers\\HomeController.cs",
-              "ViewState": "AgIAAPkAAAAAAAAAAAAvwAgBAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcBAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-23T09:53:39.884Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 75,
+              "DocumentIndex": 5,
               "Title": "MovieService.cs",
               "DocumentMoniker": "D:\\WebQLRCP\\WebCinema\\Services\\MovieService.cs",
               "RelativeDocumentMoniker": "WebCinema\\Services\\MovieService.cs",
               "ToolTip": "D:\\WebQLRCP\\WebCinema\\Services\\MovieService.cs",
               "RelativeToolTip": "WebCinema\\Services\\MovieService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-23T09:53:21.612Z",
               "EditorCaption": ""
