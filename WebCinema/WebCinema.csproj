@@ -216,6 +216,7 @@
     <Compile Include="Infrastructure\LoggingHelper.cs" />
     <Compile Include="Infrastructure\PaymentGateway.cs" />
     <Compile Include="Infrastructure\QRCodePaymentService.cs" />
+    <Compile Include="Infrastructure\QRCodeTicketService.cs" />
     <Compile Include="Infrastructure\RoleAuthorizeAttribute.cs" />
     <Compile Include="Models\ActorMovieViewModel.cs" />
     <Compile Include="Models\AuthResult.cs" />
@@ -400,6 +401,7 @@
     <Folder Include="Content\images\actors\" />
     <Folder Include="Content\images\directors\" />
     <Folder Include="Content\images\movies\" />
+    <Folder Include="Content\qr\" />
     <Folder Include="Content\vendor\bootstrap\" />
     <Folder Include="Content\vendor\fontawesome\" />
     <Folder Include="Content\vendor\jquery\" />

@@ -139,6 +139,9 @@
       <Column Name="mat_khau" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="ngay_dang_ky" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
       <Column Name="diem_tich_luy" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ngay_sinh" Type="System.DateTime" DbType="Date" CanBeNull="true" />
+      <Column Name="gioi_tinh" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
+      <Column Name="dia_chi" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Association Name="Khach_Hang_Danh_Gia" Member="Danh_Gias" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Danh_Gia" />
       <Association Name="Khach_Hang_Dat_Ve" Member="Dat_Ves" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Dat_Ve" />
     </Type>
@@ -275,6 +278,7 @@
       <Column Name="hinh_anh" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="video" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="ngay_khoi_chieu" Type="System.DateTime" DbType="Date" CanBeNull="true" />
+      <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Phim_Danh_Gia" Member="Danh_Gias" ThisKey="phim_id" OtherKey="phim_id" Type="Danh_Gia" />
       <Association Name="Phim_Phim_LoaiPhim" Member="Phim_LoaiPhims" ThisKey="phim_id" OtherKey="phim_id" Type="Phim_LoaiPhim" />
       <Association Name="Phim_Suat_Chieu" Member="Suat_Chieus" ThisKey="phim_id" OtherKey="phim_id" Type="Suat_Chieu" />
@@ -331,6 +335,7 @@
       <Column Name="loai_ngay_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ngon_ngu" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="gia_ve" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
+      <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Suat_Chieu_Ve" Member="Ves" ThisKey="suat_chieu_id" OtherKey="suat_chieu_id" Type="Ve" />
       <Association Name="Ca_Chieu_Suat_Chieu" Member="Ca_Chieu" ThisKey="ca_chieu_id" OtherKey="ca_chieu_id" Type="Ca_Chieu" IsForeignKey="true" />
       <Association Name="Loai_Ngay_Suat_Chieu" Member="Loai_Ngay" ThisKey="loai_ngay_id" OtherKey="loai_ngay_id" Type="Loai_Ngay" IsForeignKey="true" />

@@ -263,6 +263,26 @@
                     @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-input", placeholder = "0912345678" })
                     @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "error-message" })
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-input", type = "date" })
+                    @Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Giới tính</label>
+                    @Html.DropDownListFor(m => m.GioiTinh,
+                        new SelectList(new[] { "Nam", "Nữ", "Khác" }, "Nam"),
+                        "-- Chọn giới tính --",
+                        new { @class = "form-input" })
+                    @Html.ValidationMessageFor(m => m.GioiTinh, "", new { @class = "error-message" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ</label>
+                    @Html.TextBoxFor(m => m.DiaChi, new { @class = "form-input", placeholder = "Nhập địa chỉ của bạn" })
+                    @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "error-message" })
+                </div>
 
                 <div class="form-group">
                     <label class="form-label">Mật khẩu</label>
@@ -288,6 +308,7 @@
                     </div>
                     @Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "error-message" })
                 </div>
+
 
                 <div class="terms-text">
                     Bằng việc đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của DAV Cinema.

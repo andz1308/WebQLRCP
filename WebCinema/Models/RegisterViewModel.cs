@@ -1,33 +1,47 @@
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace WebCinema.Models
 {
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "H? t�n l� b?t bu?c")]
-        [Display(Name = "H? v� t�n")]
+        [Required(ErrorMessage = "Họ tên là bắt buộc")]
+        [Display(Name = "Họ và tên")]
         public string FullName { get; set; }
 
-        [Required(ErrorMessage = "Email l� b?t bu?c")]
-        [EmailAddress(ErrorMessage = "Email kh�ng h?p l?")]
+        [Required(ErrorMessage = "Email là bắt buộc")]
+        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "S? ?i?n tho?i l� b?t bu?c")]
-        [Phone(ErrorMessage = "S? ?i?n tho?i kh�ng h?p l?")]
-        [Display(Name = "S? ?i?n tho?i")]
+        [Required(ErrorMessage = "Số điện thoại là bắt buộc")]
+        [Phone(ErrorMessage = "Số điện thoại không hợp lệ")]
+        [Display(Name = "Số điện thoại")]
         public string PhoneNumber { get; set; }
 
-        [Required(ErrorMessage = "M?t kh?u l� b?t bu?c")]
-        [StringLength(100, ErrorMessage = "M?t kh?u ph?i c� �t nh?t {2} k� t?", MinimumLength = 6)]
+        [Display(Name = "Ngày sinh")]
+        [DataType(DataType.Date)]
+        public DateTime? NgaySinh { get; set; }
+
+        [Display(Name = "Giới tính")]
+        public string GioiTinh { get; set; }
+
+        [Display(Name = "Địa chỉ")]
+        public string DiaChi { get; set; }
+
+        [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
+        [StringLength(100, ErrorMessage = "Mật khẩu phải có ít nhất {2} ký tự", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "M?t kh?u")]
+        [Display(Name = "Mật khẩu")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "X�c nh?n m?t kh?u l� b?t bu?c")]
+        [Required(ErrorMessage = "Xác nhận mật khẩu là bắt buộc")]
         [DataType(DataType.Password)]
-        [Display(Name = "X�c nh?n m?t kh?u")]
-        [Compare("Password", ErrorMessage = "M?t kh?u v� x�c nh?n m?t kh?u kh�ng kh?p")]
+        [Display(Name = "Xác nhận mật khẩu")]
+        [Compare("Password", ErrorMessage = "Mật khẩu và xác nhận mật khẩu không khớp")]
         public string ConfirmPassword { get; set; }
+
+        // ✅ Thêm cột mới
+        
     }
 }

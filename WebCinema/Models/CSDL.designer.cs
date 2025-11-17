@@ -3237,6 +3237,12 @@ namespace WebCinema.Models
 		
 		private System.Nullable<int> _diem_tich_luy;
 		
+		private System.Nullable<System.DateTime> _ngay_sinh;
+		
+		private string _gioi_tinh;
+		
+		private string _dia_chi;
+		
 		private EntitySet<Danh_Gia> _Danh_Gias;
 		
 		private EntitySet<Dat_Ve> _Dat_Ves;
@@ -3259,6 +3265,12 @@ namespace WebCinema.Models
     partial void Onngay_dang_kyChanged();
     partial void Ondiem_tich_luyChanging(System.Nullable<int> value);
     partial void Ondiem_tich_luyChanged();
+    partial void Onngay_sinhChanging(System.Nullable<System.DateTime> value);
+    partial void Onngay_sinhChanged();
+    partial void Ongioi_tinhChanging(string value);
+    partial void Ongioi_tinhChanged();
+    partial void Ondia_chiChanging(string value);
+    partial void Ondia_chiChanged();
     #endregion
 		
 		public Khach_Hang()
@@ -3404,6 +3416,66 @@ namespace WebCinema.Models
 					this._diem_tich_luy = value;
 					this.SendPropertyChanged("diem_tich_luy");
 					this.Ondiem_tich_luyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ngay_sinh", DbType="Date")]
+		public System.Nullable<System.DateTime> ngay_sinh
+		{
+			get
+			{
+				return this._ngay_sinh;
+			}
+			set
+			{
+				if ((this._ngay_sinh != value))
+				{
+					this.Onngay_sinhChanging(value);
+					this.SendPropertyChanging();
+					this._ngay_sinh = value;
+					this.SendPropertyChanged("ngay_sinh");
+					this.Onngay_sinhChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_gioi_tinh", DbType="NVarChar(10)")]
+		public string gioi_tinh
+		{
+			get
+			{
+				return this._gioi_tinh;
+			}
+			set
+			{
+				if ((this._gioi_tinh != value))
+				{
+					this.Ongioi_tinhChanging(value);
+					this.SendPropertyChanging();
+					this._gioi_tinh = value;
+					this.SendPropertyChanged("gioi_tinh");
+					this.Ongioi_tinhChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_dia_chi", DbType="NVarChar(255)")]
+		public string dia_chi
+		{
+			get
+			{
+				return this._dia_chi;
+			}
+			set
+			{
+				if ((this._dia_chi != value))
+				{
+					this.Ondia_chiChanging(value);
+					this.SendPropertyChanging();
+					this._dia_chi = value;
+					this.SendPropertyChanged("dia_chi");
+					this.Ondia_chiChanged();
 				}
 			}
 		}
@@ -6069,6 +6141,8 @@ namespace WebCinema.Models
 		
 		private System.Nullable<System.DateTime> _ngay_khoi_chieu;
 		
+		private string _trang_thai;
+		
 		private EntitySet<Danh_Gia> _Danh_Gias;
 		
 		private EntitySet<Phim_LoaiPhim> _Phim_LoaiPhims;
@@ -6103,6 +6177,8 @@ namespace WebCinema.Models
     partial void OnvideoChanged();
     partial void Onngay_khoi_chieuChanging(System.Nullable<System.DateTime> value);
     partial void Onngay_khoi_chieuChanged();
+    partial void Ontrang_thaiChanging(string value);
+    partial void Ontrang_thaiChanged();
     #endregion
 		
 		public Phim()
@@ -6300,6 +6376,26 @@ namespace WebCinema.Models
 					this._ngay_khoi_chieu = value;
 					this.SendPropertyChanged("ngay_khoi_chieu");
 					this.Onngay_khoi_chieuChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trang_thai", DbType="NVarChar(50)")]
+		public string trang_thai
+		{
+			get
+			{
+				return this._trang_thai;
+			}
+			set
+			{
+				if ((this._trang_thai != value))
+				{
+					this.Ontrang_thaiChanging(value);
+					this.SendPropertyChanging();
+					this._trang_thai = value;
+					this.SendPropertyChanged("trang_thai");
+					this.Ontrang_thaiChanged();
 				}
 			}
 		}
@@ -7262,6 +7358,8 @@ namespace WebCinema.Models
 		
 		private decimal _gia_ve;
 		
+		private string _trang_thai;
+		
 		private EntitySet<Ve> _Ves;
 		
 		private EntityRef<Ca_Chieu> _Ca_Chieu;
@@ -7292,6 +7390,8 @@ namespace WebCinema.Models
     partial void Onngon_nguChanged();
     partial void Ongia_veChanging(decimal value);
     partial void Ongia_veChanged();
+    partial void Ontrang_thaiChanging(string value);
+    partial void Ontrang_thaiChanged();
     #endregion
 		
 		public Suat_Chieu()
@@ -7476,6 +7576,26 @@ namespace WebCinema.Models
 					this._gia_ve = value;
 					this.SendPropertyChanged("gia_ve");
 					this.Ongia_veChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trang_thai", DbType="NVarChar(50)")]
+		public string trang_thai
+		{
+			get
+			{
+				return this._trang_thai;
+			}
+			set
+			{
+				if ((this._trang_thai != value))
+				{
+					this.Ontrang_thaiChanging(value);
+					this.SendPropertyChanging();
+					this._trang_thai = value;
+					this.SendPropertyChanged("trang_thai");
+					this.Ontrang_thaiChanged();
 				}
 			}
 		}

@@ -21,6 +21,7 @@ namespace WebCinema.Controllers.API
         /// <summary>
         /// GET: api/customer/movies?page=1&pageSize=10
         /// Lấy danh sách phim đang chiếu (có suất chiếu từ hôm nay trở đi) - GIố WEB
+        /// ✅ Chỉ lấy phim có trạng thái "Đang chiếu"
         /// </summary>
         [HttpGet]
         [Route("movies")]
@@ -42,15 +43,15 @@ namespace WebCinema.Controllers.API
 
                 var today = DateTime.Today;
 
-                // ✅ FIX: Lấy CHỈ phim đang chiếu (có suất chiếu >= hôm nay) - GIỐNG WEB
+                // ✅ FIX: Lấy CHỈ phim đang chiếu (có suất chiếu >= hôm nay VÀ trạng thái "Đang chiếu") - GIỐNG WEB
                 int total = db.Phims
-                    .Where(p => p.Suat_Chieus.Any(sc => sc.ngay_chieu >= today))
+                    .Where(p => p.trang_thai == "Đang chiếu" && p.Suat_Chieus.Any(sc => sc.ngay_chieu >= today))
                     .Count();
 
                 int totalPages = (int)Math.Ceiling(total / (double)pageSize);
 
                 var movies = db.Phims
-                    .Where(p => p.Suat_Chieus.Any(sc => sc.ngay_chieu >= today)) // ✅ Filter: chỉ phim đang chiếu
+                    .Where(p => p.trang_thai == "Đang chiếu" && p.Suat_Chieus.Any(sc => sc.ngay_chieu >= today)) // ✅ Filter: chỉ phim đang chiếu
                     .OrderByDescending(p => p.ngay_khoi_chieu)
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
@@ -89,6 +90,7 @@ namespace WebCinema.Controllers.API
         /// <summary>
         /// GET: api/customer/showtimes/{movieId}
         /// Lấy danh sách suất chiếu của một phim
+        /// ✅ Chỉ lấy suất chiếu "Sắp Diễn Ra" hoặc "Đang Chiếu"
         /// </summary>
         [HttpGet]
         [Route("showtimes/{movieId}")]
@@ -137,6 +139,7 @@ namespace WebCinema.Controllers.API
                     .OrderBy(s => s.ngay_chieu)
                     .ThenBy(s => s.Ca_Chieu != null ? s.Ca_Chieu.gio_bat_dau : TimeSpan.Zero)
                     .ToList() // ✅ Materialize trước khi select để tránh null nav properties
+                    .Where(s => s.Ca_Chieu != null) // ✅ Lọc chỉ những suất có ca chiếu hợp lệ
                     .Select(s => new
                     {
                         showtime_id = s.suat_chieu_id,
@@ -273,6 +276,12 @@ namespace WebCinema.Controllers.API
                     customer_name = booking.Khach_Hang != null ? booking.Khach_Hang.ho_ten : "N/A",
                     customer_email = booking.Khach_Hang != null ? booking.Khach_Hang.email : "N/A",
                     customer_phone = booking.Khach_Hang != null ? booking.Khach_Hang.so_dien_thoai : "N/A",
+                    // ✅ Thêm các cột mới
+                    customer_dob = booking.Khach_Hang != null && booking.Khach_Hang.ngay_sinh.HasValue 
+                        ? booking.Khach_Hang.ngay_sinh.Value.ToString("yyyy-MM-dd") 
+                        : "N/A",
+                    customer_gender = booking.Khach_Hang != null ? booking.Khach_Hang.gioi_tinh ?? "N/A" : "N/A",
+                    customer_address = booking.Khach_Hang != null ? booking.Khach_Hang.dia_chi ?? "N/A" : "N/A",
                     created_at = booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
                     status = booking.trang_thai_Dat_Ve,
                     total_amount = booking.tong_tien,
@@ -409,6 +418,7 @@ namespace WebCinema.Controllers.API
         /// <summary>
         /// GET: api/customer/movie/{movieId}
         /// Lấy chi tiết phim - GIỐNG WEB (genres, cast, showtimes, rating)
+        /// ✅ Chỉ lấy phim có trạng thái "Đang chiếu"
         /// </summary>
         [HttpGet]
         [Route("movie/{movieId}")]
@@ -426,6 +436,12 @@ namespace WebCinema.Controllers.API
                 if (movie == null)
                 {
                     return NotFound();
+                }
+
+                // ✅ Kiểm tra trạng thái phim
+                if (movie.trang_thai != "Đang chiếu")
+                {
+                    return Ok(new { success = false, message = "Phim này hiện không có sẵn" });
                 }
 
                 var today = DateTime.Today;
@@ -520,7 +536,7 @@ namespace WebCinema.Controllers.API
 
         /// <summary>
         /// GET: api/customer/trending
-        /// Lây danh sách phim trending/nổi bật
+        /// Lây danh sách phim trending/nổi bật (chỉ phim "Đang chiếu")
         /// </summary>
         [HttpGet]
         [Route("trending")]
@@ -529,9 +545,9 @@ namespace WebCinema.Controllers.API
         {
             try
             {
-                // ✅ Lấy phim có nhiều đánh giá nhất hoặc rating cao
+                // ✅ Lấy phim có trạng thái "Đang chiếu" với nhiều đánh giá nhất hoặc rating cao
                 var trendingMovies = db.Phims
-                    .Where(p => p.ngay_khoi_chieu <= DateTime.Now)
+                    .Where(p => p.trang_thai == "Đang chiếu" && p.ngay_khoi_chieu <= DateTime.Now)
                     .AsEnumerable()
                     .Where(p => p.Danh_Gias != null) // ✅ Filter null collections
                     .OrderByDescending(p => p.Danh_Gias.Count)
@@ -1055,6 +1071,12 @@ namespace WebCinema.Controllers.API
                     customer_name = booking.Khach_Hang != null ? booking.Khach_Hang.ho_ten : "N/A",
                     customer_email = booking.Khach_Hang != null ? booking.Khach_Hang.email : "N/A",
                     customer_phone = booking.Khach_Hang != null ? booking.Khach_Hang.so_dien_thoai : "N/A",
+                    // ✅ Thêm các cột mới
+                    customer_dob = booking.Khach_Hang != null && booking.Khach_Hang.ngay_sinh.HasValue 
+                        ? booking.Khach_Hang.ngay_sinh.Value.ToString("yyyy-MM-dd") 
+                        : "N/A",
+                    customer_gender = booking.Khach_Hang != null ? booking.Khach_Hang.gioi_tinh ?? "N/A" : "N/A",
+                    customer_address = booking.Khach_Hang != null ? booking.Khach_Hang.dia_chi ?? "N/A" : "N/A",
                     created_at = booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
                     status = booking.trang_thai_Dat_Ve,
                     movie = showtime != null && showtime.Phim != null ? new
@@ -1148,6 +1170,107 @@ namespace WebCinema.Controllers.API
                         amount = booking.tong_tien,
                         currency = "VNĐ"
                     }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/profile/{customerId}
+        /// Lấy thông tin profile khách hàng (đầy đủ bao gồm các cột mới)
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpGet]
+        [Route("profile/{customerId}")]
+        [Authorize]
+        public IHttpActionResult GetCustomerProfile(int customerId)
+        {
+            try
+            {
+                if (customerId <= 0)
+                    return BadRequest("Customer ID không hợp lệ");
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                    return NotFound();
+
+                var profile = new
+                {
+                    customer_id = customer.khach_hang_id,
+                    full_name = customer.ho_ten,
+                    email = customer.email,
+                    phone = customer.so_dien_thoai,
+                    // ✅ Thêm các cột mới
+                    date_of_birth = customer.ngay_sinh.HasValue ? customer.ngay_sinh.Value.ToString("yyyy-MM-dd") : null,
+                    gender = customer.gioi_tinh ?? "N/A",
+                    address = customer.dia_chi ?? "N/A",
+                    registration_date = customer.ngay_dang_ky.HasValue ? customer.ngay_dang_ky.Value.ToString("yyyy-MM-dd") : "N/A",
+                    total_bookings = customer.Dat_Ves.Count,
+                    total_spent = customer.Dat_Ves.Sum(d => (decimal?)d.tong_tien) ?? 0m
+                };
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy thông tin profile thành công",
+                    data = profile
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// PUT: api/customer/profile/{customerId}
+        /// Cập nhật thông tin profile khách hàng
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPut]
+        [Route("profile/{customerId}")]
+        [Authorize]
+        public IHttpActionResult UpdateCustomerProfile(int customerId, [FromBody] JObject data)
+        {
+            try
+            {
+                if (customerId <= 0)
+                    return BadRequest("Customer ID không hợp lệ");
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                    return NotFound();
+
+                // ✅ Cập nhật các field
+                if (data["full_name"] != null)
+                    customer.ho_ten = data["full_name"].Value<string>();
+
+                if (data["phone"] != null)
+                    customer.so_dien_thoai = data["phone"].Value<string>();
+
+                // ✅ Cập nhật các cột mới
+                if (data["date_of_birth"] != null && DateTime.TryParse(data["date_of_birth"].Value<string>(), out var dob))
+                    customer.ngay_sinh = dob;
+
+                if (data["gender"] != null)
+                    customer.gioi_tinh = data["gender"].Value<string>();
+
+                if (data["address"] != null)
+                    customer.dia_chi = data["address"].Value<string>();
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Cập nhật profile: Customer {customerId}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Cập nhật profile thành công"
                 });
             }
             catch (Exception ex)
