@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Web;
 using QRCoder;
@@ -6,7 +6,7 @@ using QRCoder;
 namespace WebCinema.Infrastructure
 {
     /// <summary>
-    /// Service ?? sinh ra QR code t? m� v� v� l?u v�o folder
+    /// Service để sinh ra QR code từ mã vé và lưu vào folder
     /// </summary>
     public class QRCodeTicketService
     {
@@ -14,10 +14,10 @@ namespace WebCinema.Infrastructure
 
         public QRCodeTicketService()
         {
-            // ? ???ng d?n folder qr trong wwwroot
+            // ✅ Đường dẫn folder qr trong wwwroot
             _qrFolder = Path.Combine(HttpContext.Current?.Server.MapPath("~") ?? "", "Content", "qr");
             
-            // ? T?o folder n?u ch?a t?n t?i
+            // ✅ Tạo folder nếu chưa tồn tại
             if (!Directory.Exists(_qrFolder))
             {
                 Directory.CreateDirectory(_qrFolder);
@@ -25,10 +25,10 @@ namespace WebCinema.Infrastructure
         }
 
         /// <summary>
-        /// Sinh QR code t? m� v� v� l?u v�o file
+        /// Sinh QR code từ mã vé và lưu vào file
         /// </summary>
-        /// <param name="qrCode">M� QR code (t? Ve.ma_qr_code)</param>
-        /// <returns>???ng d?n t??ng ??i c?a file ?nh QR code</returns>
+        /// <param name="qrCode">Mã QR code (từ Ve.ma_qr_code)</param>
+        /// <returns>Đường dẫn tương đối của file ảnh QR code</returns>
         public string GenerateAndSaveQRCode(string qrCode)
         {
             try
@@ -36,27 +36,27 @@ namespace WebCinema.Infrastructure
                 if (string.IsNullOrEmpty(qrCode))
                     return null;
 
-                // ? T?o t�n file duy nh?t t? m� QR code
+                // ✅ Tạo tên file duy nhất từ mã QR code
                 string safeFileName = qrCode.Replace(" ", "_").Replace("/", "_").Replace(":", "_");
                 string fileName = $"qr_{safeFileName}.png";
                 string filePath = Path.Combine(_qrFolder, fileName);
 
-                // ? N?u file ?� t?n t?i, tr? v? ???ng d?n
+                // ✅ Nếu file đã tồn tại, trả về đường dẫn
                 if (File.Exists(filePath))
                 {
                     return $"/Content/qr/{fileName}";
                 }
 
-                // ? Sinh QR code b?ng QRCoder
+                // ✅ Sinh QR code bằng QRCoder
                 using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
                 {
                     QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrCode, QRCodeGenerator.ECCLevel.Q);
                     
-                    // ? D�ng PngByteQRCode thay v� GetGraphic
+                    // ✅ Dùng PngByteQRCode thay vì GetGraphic
                     PngByteQRCode qrCode_png = new PngByteQRCode(qrCodeData);
                     byte[] qrCodeImage = qrCode_png.GetGraphic(10);
 
-                    // ? L?u byte array v�o file PNG
+                    // ✅ Lưu byte array vào file PNG
                     using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
                     {
                         fs.Write(qrCodeImage, 0, qrCodeImage.Length);
@@ -64,9 +64,9 @@ namespace WebCinema.Infrastructure
                     }
                 }
 
-                LoggingHelper.LogInfo($"? Sinh QR code: {qrCode} -> {fileName}");
+                LoggingHelper.LogInfo($"✅ Sinh QR code: {qrCode} -> {fileName}");
 
-                // ? Tr? v? ???ng d?n t??ng ??i
+                // ✅ Trả về đường dẫn tương đối
                 return $"/Content/qr/{fileName}";
             }
             catch (Exception ex)
@@ -77,7 +77,7 @@ namespace WebCinema.Infrastructure
         }
 
         /// <summary>
-        /// L?y ???ng d?n QR code t? m� v� (kh�ng sinh l?i n?u ?� t?n t?i)
+        /// Lấy đường dẫn QR code từ mã vé (không sinh lại nếu đã tồn tại)
         /// </summary>
         public string GetQRCodePath(string qrCode)
         {
@@ -90,13 +90,13 @@ namespace WebCinema.Infrastructure
                 string fileName = $"qr_{safeFileName}.png";
                 string filePath = Path.Combine(_qrFolder, fileName);
 
-                // ? N?u file t?n t?i, tr? v? ???ng d?n
+                // ✅ Nếu file tồn tại, trả về đường dẫn
                 if (File.Exists(filePath))
                 {
                     return $"/Content/qr/{fileName}";
                 }
 
-                // ? N?u kh�ng t?n t?i, sinh m?i
+                // ✅ Nếu không tồn tại, sinh mới
                 return GenerateAndSaveQRCode(qrCode);
             }
             catch (Exception ex)
@@ -107,7 +107,7 @@ namespace WebCinema.Infrastructure
         }
 
         /// <summary>
-        /// X�a file QR code
+        /// Xóa file QR code
         /// </summary>
         public bool DeleteQRCode(string qrCode)
         {
@@ -123,7 +123,7 @@ namespace WebCinema.Infrastructure
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
-                    LoggingHelper.LogInfo($"? X�a QR code: {fileName}");
+                    LoggingHelper.LogInfo($"✅ Xóa QR code: {fileName}");
                     return true;
                 }
 

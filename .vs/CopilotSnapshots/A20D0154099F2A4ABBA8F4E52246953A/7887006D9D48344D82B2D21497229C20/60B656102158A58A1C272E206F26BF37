@@ -1,0 +1,336 @@
+﻿using System;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using System.Web.Security;
+using WebCinema.Models;
+using WebCinema.Services;
+
+namespace WebCinema.Controllers
+{
+    public class AccountController : Controller
+    {
+        private AuthService authService = new AuthService();
+
+        // GET: Account/Login
+        public ActionResult Login(string returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
+
+        // POST: Account/Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(LoginViewModel model, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                var auth = authService.Login(model.Email, model.Password);
+
+                if (auth != null && auth.IsAuthenticated)
+                {
+                    // Clear any previous session
+                    Session.Clear();
+
+                    if (auth.Role == "Customer" && auth.Customer != null)
+                    {
+                        Session["CustomerId"] = auth.Customer.khach_hang_id;
+                        Session["CustomerName"] = auth.Customer.ho_ten;
+                        Session["CustomerEmail"] = auth.Customer.email;
+                        Session["UserRole"] = "Customer";
+
+                        if (model.RememberMe)
+                        {
+                            // Custom lightweight cookie for UI (optional)
+                            HttpCookie userCookie = new HttpCookie("UserAuth");
+                            userCookie["Email"] = auth.Customer.email;
+                            userCookie.Expires = DateTime.Now.AddDays(30);
+                            userCookie.Path = "/";
+                            Response.Cookies.Add(userCookie);
+
+                            // Create persistent forms auth cookie (explicit ticket) so authentication persists
+                            var ticket = new FormsAuthenticationTicket(
+                                1,
+                                auth.Customer.email,
+                                DateTime.Now,
+                                DateTime.Now.AddDays(30),
+                                true,
+                                "Customer",
+                                FormsAuthentication.FormsCookiePath);
+
+                            string encryptedTicket = FormsAuthentication.Encrypt(ticket);
+                            var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                            {
+                                HttpOnly = true,
+                                Expires = ticket.Expiration,
+                                Path = FormsAuthentication.FormsCookiePath,
+                                Secure = Request.IsSecureConnection
+                            };
+
+                            Response.Cookies.Add(authCookie);
+                        }
+                        else
+                        {
+                            // Non-persistent auth cookie for session-only
+                            FormsAuthentication.SetAuthCookie(auth.Customer.email, false);
+                        }
+                    }
+                    else if ((auth.Role == "Admin" || auth.Role == "Staff") && auth.Employee != null)
+                    {
+                        Session["EmployeeId"] = auth.Employee.nhanvien_id;
+                        Session["EmployeeName"] = auth.Employee.ho_ten;
+                        Session["EmployeeEmail"] = auth.Employee.email;
+                        Session["UserRole"] = auth.Role; // Admin or Staff
+
+                        if (model.RememberMe)
+                        {
+                            HttpCookie userCookie = new HttpCookie("UserAuth");
+                            userCookie["Email"] = auth.Employee.email;
+                            userCookie.Expires = DateTime.Now.AddDays(30);
+                            userCookie.Path = "/";
+                            Response.Cookies.Add(userCookie);
+
+                            var ticket = new FormsAuthenticationTicket(
+                                1,
+                                auth.Employee.email,
+                                DateTime.Now,
+                                DateTime.Now.AddDays(30),
+                                true,
+                                auth.Role,
+                                FormsAuthentication.FormsCookiePath);
+
+                            string encryptedTicket = FormsAuthentication.Encrypt(ticket);
+                            var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket)
+                            {
+                                HttpOnly = true,
+                                Expires = ticket.Expiration,
+                                Path = FormsAuthentication.FormsCookiePath,
+                                Secure = Request.IsSecureConnection
+                            };
+
+                            Response.Cookies.Add(authCookie);
+                        }
+                        else
+                        {
+                            FormsAuthentication.SetAuthCookie(auth.Employee.email, false);
+                        }
+                    }
+
+                    // Redirect based on role
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+
+                    if (auth.Role == "Admin")
+                    {
+                        return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
+                    }
+
+                    if (auth.Role == "Staff")
+                    {
+                        return RedirectToAction("Index", "StaffDashboard", new { area = "Admin" });
+                    }
+
+                    return RedirectToAction("Index", "Home");
+                }
+
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
+            }
+
+            ViewBag.ReturnUrl = returnUrl;
+            return View(model);
+        }
+
+        // GET: Account/Register
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Account/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string errorMessage;
+                bool success = authService.Register(model, out errorMessage);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                    return RedirectToAction("Login");
+                }
+
+                ModelState.AddModelError("", errorMessage);
+            }
+
+            return View(model);
+        }
+
+        // GET: Account/Logout
+        public ActionResult Logout()
+        {
+            // Sign out forms auth
+            try
+            {
+                FormsAuthentication.SignOut();
+
+                // Remove forms auth cookie
+                if (Request.Cookies[FormsAuthentication.FormsCookieName] != null)
+                {
+                    var cookie = new HttpCookie(FormsAuthentication.FormsCookieName, "");
+                    cookie.Expires = DateTime.Now.AddDays(-1);
+                    cookie.Path = FormsAuthentication.FormsCookiePath;
+                    Response.Cookies.Add(cookie);
+                }
+            }
+            catch
+            {
+                // ignore
+            }
+
+            // Clear session
+            Session.Clear();
+            Session.Abandon();
+
+            // Clear custom cookie
+            if (Request.Cookies["UserAuth"] != null)
+            {
+                HttpCookie userCookie = new HttpCookie("UserAuth");
+                userCookie.Expires = DateTime.Now.AddDays(-1);
+                userCookie.Path = "/";
+                Response.Cookies.Add(userCookie);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        // GET: Account/Profile
+        new public ActionResult Profile()
+        {
+            // If customer
+            if (Session["UserRole"] == null)
+            {
+                return RedirectToAction("Login", new { returnUrl = Url.Action("Profile") });
+            }
+
+            var role = Session["UserRole"].ToString();
+
+            if (role == "Customer")
+            {
+                int customerId = (int)Session["CustomerId"];
+                var customer = authService.GetCustomerById(customerId);
+
+                if (customer == null)
+                {
+                    return RedirectToAction("Logout");
+                }
+
+                // ✅ Lấy lịch sử đặt vé
+                var db = new CSDLDataContext();
+                var bookingsAnon = db.Dat_Ves
+                    .Where(b => b.khach_hang_id == customerId)
+                    .OrderByDescending(b => b.ngay_tao)
+                    .ToList()  // fetch
+                    .Select(b => new
+                    {
+                        booking_id = b.Dat_Ve_id,
+                        movie_name = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.Phim.ten_phim : "N/A",
+                        show_date = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.ngay_chieu.ToString("dd/MM/yyyy") : "N/A",
+                        cinema_name = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
+                        ticket_count = b.Ves.Count,
+                        total_amount = b.tong_tien,
+                        status = b.trang_thai_Dat_Ve
+                    })
+                    .ToList();
+
+                // Convert to List<object> so ViewBag can be cast safely in the view
+                ViewBag.Bookings = bookingsAnon.Cast<object>().ToList();
+
+                return View(customer);
+            }
+
+            // For staff/admin show employee profile view (reuse same view or create new)
+            if (role == "Admin" || role == "Staff")
+            {
+                int employeeId = (int)Session["EmployeeId"];
+                var employee = authService.GetEmployeeById(employeeId);
+                if (employee == null)
+                {
+                    return RedirectToAction("Logout");
+                }
+
+                return View("ProfileEmployee", employee);
+            }
+
+            return RedirectToAction("Logout");
+        }
+
+        // ✅ GET: Account/EditProfile
+        [HttpGet]
+        public ActionResult EditProfile()
+        {
+            if (Session["UserRole"] == null || Session["UserRole"].ToString() != "Customer")
+            {
+                return RedirectToAction("Login");
+            }
+
+            int customerId = (int)Session["CustomerId"];
+            var customer = authService.GetCustomerById(customerId);
+
+            if (customer == null)
+            {
+                return RedirectToAction("Logout");
+            }
+
+            return View(customer);
+        }
+
+        // ✅ POST: Account/EditProfile
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditProfile(Khach_Hang model)
+        {
+            try
+            {
+                if (Session["UserRole"] == null || Session["UserRole"].ToString() != "Customer")
+                {
+                    return RedirectToAction("Login");
+                }
+
+                int customerId = (int)Session["CustomerId"];
+                var db = new CSDLDataContext();
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+
+                if (customer == null)
+                {
+                    return RedirectToAction("Logout");
+                }
+
+                // ✅ Cập nhật thông tin
+                customer.ho_ten = model.ho_ten;
+                customer.so_dien_thoai = model.so_dien_thoai;
+                customer.ngay_sinh = model.ngay_sinh;
+                customer.gioi_tinh = model.gioi_tinh;
+                customer.dia_chi = model.dia_chi;
+
+                db.SubmitChanges();
+
+                // ✅ Cập nhật session
+                Session["CustomerName"] = customer.ho_ten;
+
+                TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
+                return RedirectToAction("Profile");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return View(model);
+            }
+        }
+    }
+}

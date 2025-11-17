@@ -1,0 +1,202 @@
+﻿@model WebCinema.Models.Khach_Hang
+
+@{
+    ViewBag.Title = "Chỉnh Sửa Thông Tin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .edit-container {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .edit-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .edit-header h1 {
+        font-size: 1.8rem;
+        color: #333;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-cancel {
+        background: #ecf0f1;
+        color: #333;
+    }
+
+    .btn-cancel:hover {
+        background: #bdc3c7;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @@media (max-width: 600px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .success-alert {
+        background: #d4edda;
+        border: 2px solid #28a745;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .error-alert {
+        background: #f8d7da;
+        border: 2px solid #dc3545;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <div class="edit-header">
+            <h1><i class="fas fa-user-edit"></i> Chỉnh Sửa Thông Tin</h1>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="success-alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="error-alert">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @using (Html.BeginForm("EditProfile", "Account", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label">Họ và tên *</label>
+                @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-control", placeholder = "Nhập họ và tên", required = "required" })
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email *</label>
+                @Html.TextBoxFor(m => m.email, new { @class = "form-control", placeholder = "Email", type = "email", disabled = "disabled", style = "background: #f0f0f0;" })
+                <small style="color: #666;">Email không thể thay đổi</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại</label>
+                    @Html.TextBoxFor(m => m.so_dien_thoai, new { @class = "form-control", placeholder = "0912345678" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    @Html.TextBoxFor(m => m.ngay_sinh, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Giới tính</label>
+                    @Html.DropDownListFor(m => m.gioi_tinh, 
+                        new SelectList(new[] { "Nam", "Nữ", "Khác" }, Model.gioi_tinh),
+                        "-- Chọn giới tính --",
+                        new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ</label>
+                    @Html.TextBoxFor(m => m.dia_chi, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> Lưu Thay Đổi
+                </button>
+                <a href="@Url.Action("Profile", "Account")" class="btn btn-cancel" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+            </div>
+        }
+    </div>
+</div>

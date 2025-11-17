@@ -226,6 +226,7 @@
       <DependentUpon>CSDL.dbml</DependentUpon>
     </Compile>
     <Compile Include="Models\CSDLDataContextExtensions.cs" />
+    <Compile Include="Models\CustomerBookingViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\MovieDetailViewModel.cs" />
     <Compile Include="Models\MovieViewModel.cs" />
@@ -392,6 +393,8 @@
     <Content Include="Views\Invoice\PaymentSuccess.cshtml" />
     <Content Include="Views\Invoice\PaymentFailed.cshtml" />
     <Content Include="Views\Home\CinemaMovies.cshtml" />
+    <Content Include="Views\Account\EditProfile.cshtml" />
+    <Content Include="Views\Account\ChangePassword.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
