@@ -1,0 +1,351 @@
+﻿@model IEnumerable<WebCinema.Models.Khuyen_Mai>
+
+@{
+    ViewBag.Title = "Quản Lý Mã Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<style>
+    .promo-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .promo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .promo-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #333;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .promo-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2rem;
+    }
+
+    .promo-table thead {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .promo-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .promo-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .promo-table tbody tr:hover {
+        background: #f9f9f9;
+    }
+
+    .promo-code {
+        font-weight: 700;
+        color: #ff6b35;
+        font-size: 1.1rem;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-inactive {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .discount-badge {
+        background: #e8f4f8;
+        color: #0066cc;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .promo-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-edit, .btn-delete {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+
+    .btn-edit {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .pagination a, .pagination span {
+        padding: 0.6rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.3s ease;
+    }
+
+    .pagination a:hover {
+        background: #f8f9fa;
+        border-color: #ff6b35;
+        color: #ff6b35;
+    }
+
+    .pagination span.active {
+        background: #ff6b35;
+        color: white;
+        border-color: #ff6b35;
+    }
+</style>
+
+<div class="promo-container">
+    <div class="promo-header">
+        <h2><i class="fas fa-tag"></i> Quản Lý Mã Khuyến Mãi</h2>
+        <a href="@Url.Action("Create", "Promo")" class="btn-create">
+            <i class="fas fa-plus"></i> Tạo Mã Mới
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #28a745;">
+            ✅ @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <table class="promo-table">
+            <thead>
+                <tr>
+                    <th>Mã Khuyến Mãi</th>
+                    <th>Mô Tả</th>
+                    <th>Giảm Giá</th>
+                    <th>Số Lượng Còn Lại</th>
+                    <th>Trạng Thái</th>
+                    <th>Thời Gian</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (var promo in Model)
+                    {
+                        // Use strongly-typed and null-safe access
+                        var maKhuyen = promo.ma_khuyen_mai ?? "N/A";
+                        var moTa = promo.mo_ta ?? "";
+                        var giaTriGiam = promo.gia_tri_giam ?? 0m;
+                        var loaiGiam = promo.loai_giam_gia ?? "%";
+                        var soLuongConLai = promo.so_luong_con_lai ?? 0;
+                        var trangThai = promo.trang_thai ?? "Hoạt động";
+                        var ngayBatDau = promo.ngay_bat_dau;
+                        var ngayKetThuc = promo.ngay_ket_thuc;
+                        var khuyenMaiId = promo.ma_giam_gia_id; // actual PK
+
+                        <tr>
+                            <td>
+                                <span class="promo-code">@maKhuyen</span>
+                            </td>
+                            <td>
+                                <span style="color: #666;">@moTa</span>
+                            </td>
+                            <td>
+                                <span class="discount-badge">
+                                    @if (loaiGiam == "%")
+                                    {
+                                        <text>-@giaTriGiam.ToString("0")%</text>
+                                    }
+                                    else
+                                    {
+                                        <text>-@giaTriGiam.ToString("N0") ₫</text>
+                                    }
+                                </span>
+                            </td>
+                            <td>
+                                <strong>@soLuongConLai</strong>
+                            </td>
+                            <td>
+                                @if (trangThai == "Hoạt động")
+                                {
+                                    <span class="status-active">✓ Hoạt Động</span>
+                                }
+                                else
+                                {
+                                    <span class="status-inactive">✗ Ngừng Hoạt Động</span>
+                                }
+                            </td>
+                            <td>
+                                <span style="font-size: 0.85rem; color: #666;">
+                                    @if (ngayBatDau.HasValue)
+                                    {
+                                        <div>Từ: @ngayBatDau.Value.ToString("dd/MM/yyyy")</div>
+                                    }
+                                    @if (ngayKetThuc.HasValue)
+                                    {
+                                        <div>Đến: @ngayKetThuc.Value.ToString("dd/MM/yyyy")</div>
+                                    }
+                                </span>
+                            </td>
+                            <td>
+                                <div class="promo-actions">
+                                    <a href="@Url.Action("Edit", "Promo", new { id = khuyenMaiId })" class="btn-edit">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
+                                    <button class="btn-delete" onclick="deletePromo(@khuyenMaiId, '@maKhuyen')">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        if (ViewBag.TotalPages > 1)
+        {
+            <div class="pagination">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="active">@i</span>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = i })">@i</a>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
+                    {
+                        <span>...</span>
+                    }
+                }
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+            <p style="font-size: 1.2rem;">Chưa có mã khuyến mãi nào</p>
+            <p>Nhấn "<strong>Tạo Mã Mới</strong>" để bắt đầu</p>
+        </div>
+    }
+</div>
+
+<script>
+    function deletePromo(id, maKhuyen) {
+        if (confirm('❌ XÁC NHẬN XÓA\n\nMã: ' + maKhuyen + '\n\nBạn có chắc chắn muốn xóa?')) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Promo")',
+                type: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('❌ Có lỗi xảy ra khi xóa mã khuyến mãi');
+                }
+            });
+        }
+    }
+</script>

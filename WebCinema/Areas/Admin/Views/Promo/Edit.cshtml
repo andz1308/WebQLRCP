@@ -1,0 +1,223 @@
+﻿@model WebCinema.Models.Khuyen_Mai
+
+@{
+    ViewBag.Title = "Chỉnh Sửa Mã Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    var maKhuyen = Model.GetType().GetProperty("ma_khuyen_mai").GetValue(Model).ToString() ?? "";
+    var moTa = Model.GetType().GetProperty("mo_ta").GetValue(Model).ToString() ?? "";
+    var giaTriGiam = (decimal?)Model.GetType().GetProperty("gia_tri_giam").GetValue(Model) ?? 0;
+    //var loaiGiam = Model.GetType().GetProperty("gia_tri_giam").GetValue(Model).ToString() ?? "%";
+    var soLuongConLai = (int?)Model.GetType().GetProperty("so_luong_con_lai").GetValue(Model) ?? 0;
+    var trangThai = Model.GetType().GetProperty("trang_thai").GetValue(Model).ToString() ?? "Hoạt động";
+    var ngayBatDau = (DateTime?)Model.GetType().GetProperty("ngay_bat_dau").GetValue(Model);
+    var ngayKetThuc = (DateTime?)Model.GetType().GetProperty("ngay_ket_thuc").GetValue(Model);
+    var khuyenMaiId = (int?)Model.GetType().GetProperty("ma_giam_gia_id").GetValue(Model) ?? 0;
+}
+
+<style>
+    .form-container {
+        max-width: 700px;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 0 auto;
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .form-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 10px rgba(255, 107, 53, 0.2);
+    }
+
+    .form-group input:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 0.9rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #666;
+        border: 2px solid #ccc;
+    }
+
+    .btn-cancel:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+        background: #fff5f2;
+    }
+
+    .info-box {
+        background: #e8f4f8;
+        border-left: 4px solid #3498db;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        color: #0066cc;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-edit"></i> Chỉnh Sửa Mã Khuyến Mãi</h2>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #e74c3c;">
+            ❌ @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <div class="info-box">
+        <strong>ℹ️ Chú ý:</strong><br/>
+        • <strong>Mã Khuyến Mãi:</strong> Không thể chỉnh sửa sau khi tạo<br/>
+        • <strong>Số Lượng Còn Lại:</strong> Sẽ tự động giảm khi khách hàng dùng mã
+    </div>
+
+    @using (Html.BeginForm("Edit", "Promo", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("id", khuyenMaiId)
+
+        <div class="form-group">
+            <label for="ma_khuyen_mai">Mã Khuyến Mãi</label>
+            <input type="text" id="ma_khuyen_mai" name="ma_khuyen_mai" value="@maKhuyen" disabled />
+            <small style="color: #999;">(Không thể chỉnh sửa)</small>
+        </div>
+
+        <div class="form-group">
+            <label for="mo_ta">Mô Tả *</label>
+            <textarea id="mo_ta" name="mo_ta" required>@moTa</textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="gia_tri_giam">Giá Trị Giảm *</label>
+                <input type="number" id="gia_tri_giam" name="gia_tri_giam" value="@giaTriGiam" min="0" step="0.01" required />
+            </div>
+
+            @*<div class="form-group">
+                <label for="loai_giam">Loại Giảm *</label>
+                <select id="loai_giam" name="loai_giam" required>
+                    <option value="%" @(loaiGiam == "%" ? "selected" : "")>% (Giảm Phần Trăm)</option>
+                    <option value="₫" @(loaiGiam == "₫" ? "selected" : "")>₫ (Giảm Tiền Cố Định)</option>
+                </select>
+            </div>*@
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="so_luong_con_lai">Số Lượng Còn Lại *</label>
+                <input type="number" id="so_luong_con_lai" name="so_luong_con_lai" value="@soLuongConLai" min="0" required />
+                <small style="color: #666;">Hiện còn: @soLuongConLai (tự giảm khi dùng)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="trang_thai">Trạng Thái</label>
+                <select id="trang_thai" name="trang_thai">
+                    <option value="Hoạt động" @(trangThai == "Hoạt động" ? "selected" : "")>Hoạt Động</option>
+                    <option value="Ngừng hoạt động" @(trangThai == "Ngừng hoạt động" ? "selected" : "")>Ngừng Hoạt Động</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ngay_bat_dau">Ngày Bắt Đầu</label>
+                <input type="date" id="ngay_bat_dau" name="ngay_bat_dau" value="@(ngayBatDau.HasValue ? ngayBatDau.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+
+            <div class="form-group">
+                <label for="ngay_ket_thuc">Ngày Kết Thúc</label>
+                <input type="date" id="ngay_ket_thuc" name="ngay_ket_thuc" value="@(ngayKetThuc.HasValue ? ngayKetThuc.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-submit">
+                <i class="fas fa-save"></i> Lưu Thay Đổi
+            </button>
+            <a href="@Url.Action("Index", "Promo")" class="btn btn-cancel">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+        </div>
+    }
+</div>

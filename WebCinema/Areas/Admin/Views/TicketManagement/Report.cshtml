@@ -118,7 +118,7 @@
                         @foreach (var booking in Model)
                         {
                             var firstTicket = booking.Ves.FirstOrDefault();
-                            var movie = firstTicket?.Suat_Chieu?.Phim;
+                            var movie = firstTicket.Suat_Chieu.Phim;
                             var seats = string.Join(", ", booking.Ves.Select(v => v.Ghe.so_ghe));
 
                             // Trạng thái thanh toán (Đã Thanh toán, Chưa thanh toán, Đã Hủy)
@@ -132,14 +132,14 @@
                                         #@booking.Dat_Ve_id
                                     </a>
                                 </td>
-                                <td style="padding: 1rem;">@(booking.Khach_Hang?.ho_ten ?? "N/A")</td>
-                                <td style="padding: 1rem;">@(movie?.ten_phim ?? "N/A")</td>
+                                <td style="padding: 1rem;">@(booking.Khach_Hang.ho_ten ?? "N/A")</td>
+                                <td style="padding: 1rem;">@(movie.ten_phim ?? "N/A")</td>
                                 <td style="padding: 1rem;">@seats</td>
                                 <td style="padding: 1rem; color: #ff6b35; font-weight: 600;">@booking.tong_tien.ToString("N0") ₫</td>
                                 <td style="padding: 1rem;">
                                     <span class="badge badge-@statusBadgeClass">@booking.trang_thai_Dat_Ve</span>
                                 </td>
-                                <td style="padding: 1rem; font-size: 0.9rem;">@booking.ngay_tao.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td style="padding: 1rem; font-size: 0.9rem;">@booking.ngay_tao?.ToString("dd/MM/yyyy HH:mm")</td>
                             </tr>
                         }
                     </tbody>

@@ -1,0 +1,221 @@
+﻿@model WebCinema.Models.Khuyen_Mai
+
+@{
+    ViewBag.Title = "Tạo Mã Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<style>
+    .form-container {
+        max-width: 700px;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin: 0 auto;
+    }
+
+    .form-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .form-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: #333;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 10px rgba(255, 107, 53, 0.2);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 0.9rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #666;
+        border: 2px solid #ccc;
+    }
+
+    .btn-cancel:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+        background: #fff5f2;
+    }
+
+    .error {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 0.3rem;
+    }
+
+    .info-box {
+        background: #e8f4f8;
+        border-left: 4px solid #3498db;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        color: #0066cc;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2><i class="fas fa-plus"></i> Tạo Mã Khuyến Mãi Mới</h2>
+    </div>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #e74c3c;">
+            ❌ @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <div class="info-box">
+        <strong>ℹ️ Hướng dẫn:</strong><br/>
+        • <strong>Mã Khuyến Mãi:</strong> Định danh duy nhất (ví dụ: KM001, KM003)<br/>
+        • <strong>Loại Giảm:</strong> % = giảm phần trăm, ₫ = giảm tiền cố định<br/>
+        • <strong>Số Lượng:</strong> Bao nhiêu người có thể dùng mã này
+    </div>
+
+    @using (Html.BeginForm("Create", "Promo", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label for="ma_khuyen_mai">Mã Khuyến Mãi *</label>
+            <input type="text" id="ma_khuyen_mai" name="ma_khuyen_mai" placeholder="ví dụ: KM001" required maxlength="20" />
+            <small style="color: #666;">Định danh duy nhất cho mã này</small>
+        </div>
+
+        <div class="form-group">
+            <label for="mo_ta">Mô Tả *</label>
+            <textarea id="mo_ta" name="mo_ta" placeholder="Mô tả về mã khuyến mãi" required></textarea>
+            <small style="color: #666;">Hiển thị cho khách hàng khi chọn mã</small>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="gia_tri_giam">Giá Trị Giảm *</label>
+                <input type="number" id="gia_tri_giam" name="gia_tri_giam" placeholder="0" min="0" step="0.01" required />
+            </div>
+            <div class="form-group">
+                <label for="trang_thai">Trạng Thái</label>
+                <select id="trang_thai" name="trang_thai">
+                    <option value="Hoạt động">Hoạt Động</option>
+                    <option value="Ngừng hoạt động">Ngừng Hoạt Động</option>
+                </select>
+            </div>
+            @*<div class="form-group">
+            <label for="loai_giam">Loại Giảm *</label>
+            <select id="loai_giam" name="loai_giam" required>
+                <option value="%">% (Giảm Phần Trăm)</option>
+                <option value="₫">₫ (Giảm Tiền Cố Định)</option>
+            </select>
+        </div>*@
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="so_luong_con_lai">Số Lượng Còn Lại *</label>
+                <input type="number" id="so_luong_con_lai" name="so_luong_con_lai" placeholder="100" min="0" required />
+                <small style="color: #666;">Số lần mã này có thể được dùng</small>
+            </div>
+
+            @*<div class="form-group">
+                <label for="trang_thai">Trạng Thái</label>
+                <select id="trang_thai" name="trang_thai">
+                    <option value="Hoạt động">Hoạt Động</option>
+                    <option value="Ngừng hoạt động">Ngừng Hoạt Động</option>
+                </select>
+            </div>*@
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ngay_bat_dau">Ngày Bắt Đầu</label>
+                <input type="date" id="ngay_bat_dau" name="ngay_bat_dau" />
+            </div>
+
+            <div class="form-group">
+                <label for="ngay_ket_thuc">Ngày Kết Thúc</label>
+                <input type="date" id="ngay_ket_thuc" name="ngay_ket_thuc" />
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-submit">
+                <i class="fas fa-check"></i> Tạo Mã Khuyến Mãi
+            </button>
+            <a href="@Url.Action("Index", "Promo")" class="btn btn-cancel">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+        </div>
+    }
+</div>

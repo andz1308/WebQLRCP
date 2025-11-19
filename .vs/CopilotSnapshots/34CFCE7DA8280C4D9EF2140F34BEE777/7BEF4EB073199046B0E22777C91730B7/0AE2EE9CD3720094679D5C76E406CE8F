@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "Hóa Đơn Đặt Vé";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    var booking = ViewBag.Booking as WebCinema.Models.Dat_Ve;
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
+    var foodItems = ViewBag.FoodItems as List<dynamic>;
+    var ticketTotal = (decimal)ViewBag.TicketTotal;
+    var foodTotal = (decimal)ViewBag.FoodTotal;
+    var grandTotal = (decimal)ViewBag.GrandTotal;
+}
+
+<style>
+    /* Simplified print-friendly staff invoice */
+    .staff-invoice { max-width:900px; margin:2rem auto; background:white; padding:1.5rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.06);} 
+    .staff-invoice h2 { margin-bottom:0.5rem; }
+    .staff-invoice .section { margin-bottom:1rem; }
+    .staff-invoice .buttons { display:flex; gap:0.5rem; justify-content:center; margin-top:1rem; }
+    .btn-print { background:#e0e0e0; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; }
+    .btn-back { background:#ecf0f1; padding:0.6rem 1rem; border-radius:6px; cursor:pointer; }
+
+    .ticket-box { padding:0.5rem 0.8rem; background:#f8f9fa; border-radius:6px; border:1px solid #e0e0e0; display:flex; gap:0.5rem; align-items:center; }
+    .qr-image { width:72px; height:72px; border-radius:6px; background:white; padding:4px; }
+    .qr-text { font-size:0.85rem; color:#333; word-break:break-all; }
+    .copy-btn { padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+
+    /* Print: hide everything except the invoice content when printing */
+    @@media print {
+        /* hide all elements first */
+        body * {
+            visibility: hidden !important;
+        }
+        /* show only the invoice and its children */
+        .staff-invoice, .staff-invoice * {
+            visibility: visible !important;
+        }
+        /* position invoice at top-left for printing */
+        .staff-invoice {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            padding: 0.5rem !important;
+        }
+        /* hide print buttons inside invoice as well */
+        .staff-invoice .buttons { display: none !important; }
+    }
+</style>
+
+<div class="staff-invoice">
+    <h2>HÓA ĐƠN - DAV Cinema</h2>
+
+    @if (booking != null)
+    {
+        <div class="section">
+            <strong>Mã đơn:</strong> #@booking.Dat_Ve_id<br />
+            <strong>Khách hàng:</strong> @booking.Khach_Hang.ho_ten (@(booking.Khach_Hang.so_dien_thoai ?? "N/A"))<br />
+            <strong>Ngày tạo:</strong> @(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+        </div>
+
+        if (showtime != null)
+        {
+            <div class="section">
+                <strong>Phim:</strong> @showtime.Phim.ten_phim<br />
+                <strong>Rạp / Phòng:</strong> @showtime.Phong_Chieu.Rap.ten_rap / @showtime.Phong_Chieu.ten_phong<br />
+                <strong>Ngày & Giờ:</strong> @showtime.ngay_chieu.ToString("dd/MM/yyyy") lúc @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")
+            </div>
+
+            <div class="section">
+                <strong>Vé:</strong>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+                    @foreach (var t in tickets)
+                    {
+                        var code = t.ma_qr_code ?? "";
+                        var qrService = new WebCinema.Infrastructure.QRCodeTicketService();
+                        var qrImagePath = qrService.GetQRCodePath(code);
+                        
+                        <div class="ticket-box">
+                            <div style="flex:0 0 auto;">
+                                @if (!string.IsNullOrEmpty(qrImagePath))
+                                {
+                                    <img class="qr-image" src="@qrImagePath" alt="QR Code - @t.Ghe.so_ghe" />
+                                }
+                                else
+                                {
+                                    <div style="width: 72px; height: 72px; background: #f0f0f0; border: 2px dashed #ccc; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 0.75rem;">QR</div>
+                                }
+                            </div>
+                            <div style="flex:1 1 auto;">
+                                <div><strong>Ghế @t.Ghe.so_ghe</strong></div>
+                                <div class="qr-text">@code</div>
+                            </div>
+                            <div style="flex:0 0 auto; display:flex; flex-direction:column; gap:6px;">
+                                <button class="copy-btn" type="button" onclick="copyToClipboard('@code')">Sao chép</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        if (foodItems != null && foodItems.Count > 0)
+        {
+            <div class="section">
+                <strong>Đồ ăn:</strong>
+                <table style="width:100%; margin-top:0.5rem; border-collapse:collapse;">
+                    <thead><tr><th style="text-align:left;">Sản phẩm</th><th style="text-align:center;">SL</th><th style="text-align:right;">Thành tiền</th></tr></thead>
+                    <tbody>
+                        @foreach (var f in foodItems)
+                        {
+                            <tr>
+                                <td>@f.FoodName</td>
+                                <td style="text-align:center;">@f.Quantity</td>
+                                <td style="text-align:right;">@((decimal)f.TotalPrice).ToString("N0") ₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="section">
+            <strong>Tổng vé:</strong> @ticketTotal.ToString("N0")<text> ₫</text><br />
+            @if (foodTotal > 0)
+            {
+                <strong>Đồ ăn:</strong> @foodTotal.ToString("N0")<text> ₫</text><br />
+            }
+            <strong>Tổng cộng:</strong> @grandTotal.ToString("N0")<text> ₫</text>
+        </div>
+
+
+        <div class="buttons">
+            <button class="btn-print" onclick="window.print()"><i class="fas fa-print"></i> In hóa đơn</button>
+            <a class="btn-back" href="@Url.Action("Index","StaffOfflineBooking", new { area = "Admin" })"><i class="fas fa-arrow-left"></i> Quay về</a>
+        </div>
+    }
+    else
+    {
+        <div>Không tìm thấy đơn hàng.</div>
+    }
+</div>
+
+@section scripts{
+    <script>
+        function copyToClipboard(text) {
+            if (!text) return alert('Mã QR rỗng');
+            navigator.clipboard?.writeText(text).then(function(){ alert('Đã copy mã QR'); }, function(){ alert('Không thể copy'); });
+        }
+    </script>
+}

@@ -186,6 +186,7 @@
     <Compile Include="Areas\Admin\Controllers\InvoiceController.cs" />
     <Compile Include="Areas\Admin\Controllers\MovieManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProducerManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\PromoController.cs" />
     <Compile Include="Areas\Admin\Controllers\PurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShiftManagementController.cs" />
@@ -208,7 +209,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\InvoiceController.cs" />
     <Compile Include="Controllers\PersonController.cs" />
-    <Compile Include="Controllers\PromoController.cs" />
+    <Compile Include="Controllers\PromosController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -227,6 +228,7 @@
     </Compile>
     <Compile Include="Models\CSDLDataContextExtensions.cs" />
     <Compile Include="Models\CustomerBookingViewModel.cs" />
+    <Compile Include="Models\FoodItemViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\MovieDetailViewModel.cs" />
     <Compile Include="Models\MovieViewModel.cs" />
@@ -347,6 +349,9 @@
     <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Create.cshtml" />
     <Content Include="Areas\Admin\Views\StaffPurchaseOrder\ConfirmOrder.cshtml" />
     <Content Include="Controllers\API\WebCinema_API_Collection.postman_collection.json" />
+    <Content Include="Areas\Admin\Views\Promo\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Promo\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Promo\Edit.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -401,9 +406,11 @@
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Views\Home_admin\" />
     <Folder Include="Areas\Admin\Views\Invoice\" />
+    <Folder Include="Areas\Admin\Views\PromoController\" />
     <Folder Include="Content\images\actors\" />
     <Folder Include="Content\images\directors\" />
     <Folder Include="Content\images\movies\" />
+    <Folder Include="Content\km\" />
     <Folder Include="Content\qr\" />
     <Folder Include="Content\vendor\bootstrap\" />
     <Folder Include="Content\vendor\fontawesome\" />

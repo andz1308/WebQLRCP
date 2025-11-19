@@ -7,9 +7,11 @@
     var booking = ViewBag.Booking as WebCinema.Models.Dat_Ve;
     var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
     var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
-    var foodItems = ViewBag.FoodItems as List<dynamic>;
+    var foodItems = ViewBag.FoodItems as List<WebCinema.Models.FoodItemViewModel>;
     var ticketTotal = (decimal)ViewBag.TicketTotal;
     var foodTotal = (decimal)ViewBag.FoodTotal;
+    var promoCode = ViewBag.PromoCode as string ?? string.Empty;
+    var promoDiscount = (decimal?)(ViewBag.PromoDiscount as decimal?) ?? 0m;
     var grandTotal = (decimal)ViewBag.GrandTotal;
 }
 
@@ -105,6 +107,15 @@
             </div>
         }
 
+        @* Promo section *@
+        if (!string.IsNullOrEmpty(promoCode) && promoDiscount > 0)
+        {
+            <div class="section">
+                <strong>Mã khuyến mãi:</strong> @promoCode<br />
+                <strong>Giảm:</strong> @promoDiscount.ToString("N0")<text> ₫</text>
+            </div>
+        }
+
         if (foodItems != null && foodItems.Count > 0)
         {
             <div class="section">
@@ -112,12 +123,12 @@
                 <table style="width:100%; margin-top:0.5rem; border-collapse:collapse;">
                     <thead><tr><th style="text-align:left;">Sản phẩm</th><th style="text-align:center;">SL</th><th style="text-align:right;">Thành tiền</th></tr></thead>
                     <tbody>
-                        @foreach (var f in foodItems)
+                        @foreach (WebCinema.Models.FoodItemViewModel f in foodItems)
                         {
                             <tr>
                                 <td>@f.FoodName</td>
                                 <td style="text-align:center;">@f.Quantity</td>
-                                <td style="text-align:right;">@((decimal)f.TotalPrice).ToString("N0") ₫</td>
+                                <td style="text-align:right;">@f.TotalPrice.ToString("N0") ₫</td>
                             </tr>
                         }
                     </tbody>
@@ -130,6 +141,10 @@
             @if (foodTotal > 0)
             {
                 <strong>Đồ ăn:</strong> @foodTotal.ToString("N0")<text> ₫</text><br />
+            }
+            @if (!string.IsNullOrEmpty(promoCode) && promoDiscount > 0)
+            {
+                <strong>Giảm:</strong> @promoDiscount.ToString("N0")<text> ₫</text><br />
             }
             <strong>Tổng cộng:</strong> @grandTotal.ToString("N0")<text> ₫</text>
         </div>

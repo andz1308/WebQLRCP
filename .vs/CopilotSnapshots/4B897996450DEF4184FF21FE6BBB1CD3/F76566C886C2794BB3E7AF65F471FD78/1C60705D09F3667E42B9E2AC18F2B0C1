@@ -1,0 +1,353 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    /// <summary>
+    /// PromosController - Quản lý & hiển thị mã khuyến mãi cho khách hàng
+    /// </summary>
+    public class PromosController : Controller
+    {
+        private CSDLDataContext db;
+
+        public PromosController()
+        {
+            try
+            {
+                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    db = new CSDLDataContext(connString);
+                }
+                else
+                {
+                    db = new CSDLDataContext();
+                }
+            }
+            catch
+            {
+                db = new CSDLDataContext();
+            }
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả mã khuyến mãi có sẵn
+        /// </summary>
+        [HttpGet]
+        public ActionResult Index(int? page)
+        {
+            int pageSize = 12;
+            int pageNumber = page ?? 1;
+
+            // Use reflection to be resilient to DBML naming
+            var promoCodes = db.Khuyen_Mais
+                .AsEnumerable()
+                .OrderByDescending(k =>
+                {
+                    var idProp = k.GetType().GetProperty("khuyen_mai_id");
+                    return idProp != null ? (int)(idProp.GetValue(k) ?? 0) : 0;
+                })
+                .ToList();
+
+            int totalCount = promoCodes.Count;
+            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            var pagedPromoCodes = promoCodes
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalCount = totalCount;
+
+            return View(pagedPromoCodes);
+        }
+
+        /// <summary>
+        /// Chi tiết một mã khuyến mãi
+        /// </summary>
+        [HttpGet]
+        public ActionResult Details(int id)
+        {
+            var allPromos = db.Khuyen_Mais.ToList();
+            var promo = allPromos.FirstOrDefault(k =>
+            {
+                var idProp = k.GetType().GetProperty("khuyen_mai_id");
+                return idProp != null && (int)(idProp.GetValue(k) ?? 0) == id;
+            });
+
+            if (promo == null)
+            {
+                return HttpNotFound("Mã khuyến mãi không tồn tại");
+            }
+
+            return View(promo);
+        }
+
+        /// <summary>
+        /// Kiểm tra xem mã khuyến mãi có áp dụng được cho khách hàng không
+        /// </summary>
+        [HttpPost]
+        public ActionResult CheckPromoCode(string promoCode, int customerId = 0, string foodItemsJson = "[]")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(promoCode))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập mã khuyến mãi" });
+                }
+
+                var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == promoCode);
+                if (promo == null)
+                {
+                    return Json(new { success = false, message = "Mã khuyến mãi không tồn tại" });
+                }
+
+                // Lấy số lượng còn lại
+                int soLuongConLai = promo.so_luong_con_lai;
+                if (soLuongConLai <= 0)
+                {
+                    return Json(new { success = false, message = "Mã khuyến mãi đã hết" });
+                }
+
+                // Kiểm tra điều kiện áp dụng
+                string reason = "";
+                decimal giaTriGiam = promo.gia_tri_giam;
+                string loaiGiam = "VND";
+
+                // Xác định loại giảm (% hay VND)
+                if (!string.IsNullOrEmpty(promo.loai_giam_gia))
+                {
+                    loaiGiam = (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%")) ? "%" : "VND";
+                }
+
+                // Kiểm tra ngày áp dụng (DBML uses non-nullable DateTime for these fields)
+                if (promo.ngay_bat_dau != DateTime.MinValue && DateTime.Now < promo.ngay_bat_dau)
+                {
+                    return Json(new { success = false, message = $"Mã này chưa hoạt động. Bắt đầu từ {promo.ngay_bat_dau:dd/MM/yyyy}" });
+                }
+
+                if (promo.ngay_ket_thuc != DateTime.MinValue && DateTime.Now > promo.ngay_ket_thuc)
+                {
+                    return Json(new { success = false, message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})" });
+                }
+
+                // Kiểm tra trạng thái
+                if (!string.Equals(promo.trang_thai, "Hoạt động", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new { success = false, message = "Mã khuyến mãi này hiện không hoạt động" });
+                }
+
+                // Kiểm tra điều kiện riêng cho từng mã
+                string maKhuyenValue = promo.ma_khuyen_mai;
+
+                // KM001: Áp dụng tháng 12
+                if (maKhuyenValue == "KM001")
+                {
+                    if (DateTime.Now.Month != 12)
+                    {
+                        return Json(new { success = false, message = "Mã KM001 chỉ áp dụng trong tháng 12" });
+                    }
+                }
+                // KM003: Áp dụng nếu điểm >= 20
+                else if (maKhuyenValue == "KM003")
+                {
+                    if (customerId > 0)
+                    {
+                        var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                        int customerPoints = customer?.diem_tich_luy ?? 0;
+                        if (customerPoints < 20)
+                        {
+                            return Json(new { success = false, message = $"Cần 20+ điểm (hiện có {customerPoints})" });
+                        }
+                    }
+                }
+                // KM004: Áp dụng nếu có "Combo" trong đồ ăn
+                else if (maKhuyenValue == "KM004")
+                {
+                    bool hasCombo = false;
+
+                    try
+                    {
+                        var foodItems = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(foodItemsJson ?? "[]");
+                        LoggingHelper.LogInfo($"🔍 KM004 Check: foodItems={foodItems?.Count ?? 0}");
+
+                        if (foodItems != null && foodItems.Any())
+                        {
+                            foreach (var item in foodItems)
+                            {
+                                try
+                                {
+                                    var foodTypeProp = item.GetType().GetProperty("FoodType");
+                                    if (foodTypeProp != null)
+                                    {
+                                        var foodTypeValue = foodTypeProp.GetValue(item, null);
+                                        if (foodTypeValue != null && foodTypeValue.ToString().Contains("Combo"))
+                                        {
+                                            hasCombo = true;
+                                            LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodType");
+                                            break;
+                                        }
+                                    }
+
+                                    if (!hasCombo)
+                                    {
+                                        var foodNameProp = item.GetType().GetProperty("FoodName");
+                                        if (foodNameProp != null)
+                                        {
+                                            var foodNameValue = foodNameProp.GetValue(item, null);
+                                            if (foodNameValue != null && foodNameValue.ToString().Contains("Combo"))
+                                            {
+                                                hasCombo = true;
+                                                LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodName");
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (!hasCombo)
+                                    {
+                                        var foodIdProp = item.GetType().GetProperty("FoodId");
+                                        if (foodIdProp != null)
+                                        {
+                                            var foodIdValue = foodIdProp.GetValue(item, null);
+                                            if (foodIdValue != null && int.TryParse(foodIdValue.ToString(), out int foodId))
+                                            {
+                                                var foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                                                if (foodObj != null)
+                                                {
+                                                    string foodNameCheck = foodObj.ten_san_pham ?? "";
+                                                    string foodLoaiCheck = foodObj.loai ?? "";
+
+                                                    if (foodNameCheck.Contains("Combo") || foodLoaiCheck.Contains("Combo"))
+                                                    {
+                                                        hasCombo = true;
+                                                        LoggingHelper.LogInfo($"✅ KM004: Found Combo in Database");
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    LoggingHelper.LogError(ex);
+                                }
+                            }
+                        }
+
+                        if (!hasCombo)
+                        {
+                            return Json(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggingHelper.LogError(ex);
+                        return Json(new { success = false, message = "Lỗi kiểm tra mã khuyến mãi" });
+                    }
+                }
+
+                // Mã khuyến mãi áp dụng được
+                return Json(new
+                {
+                    success = true,
+                    promoCode = promo.ma_khuyen_mai,
+                    description = promo.mo_ta,
+                    discount = giaTriGiam,
+                    discountType = loaiGiam,
+                    remaining = soLuongConLai
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Áp dụng mã khuyến mãi cho đơn hàng
+        /// </summary>
+        [HttpPost]
+        public ActionResult ApplyPromo(int bookingId, string promoCode)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return Json(new { success = false, message = "Đơn hàng không tồn tại" });
+                }
+
+                var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == promoCode);
+                if (promo == null)
+                {
+                    return Json(new { success = false, message = "Mã khuyến mãi không tồn tại" });
+                }
+
+                decimal giaTriGiam = promo.gia_tri_giam;
+                string loaiGiam = "VND";
+
+                if (!string.IsNullOrEmpty(promo.loai_giam_gia))
+                {
+                    loaiGiam = (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%")) ? "%" : "VND";
+                }
+
+                // Tính discount
+                decimal originalTotal = booking.tong_tien;
+                decimal discountAmount = 0m;
+
+                if (loaiGiam == "%")
+                {
+                    discountAmount = (originalTotal * giaTriGiam) / 100m;
+                }
+                else
+                {
+                    discountAmount = giaTriGiam;
+                }
+
+                decimal finalTotal = originalTotal - discountAmount;
+                if (finalTotal < 0) finalTotal = 0;
+
+                // Cập nhật booking
+                booking.tong_tien = finalTotal;
+                booking.phuong_thuc_thanh_toan = promoCode;
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ ApplyPromo: BookingId={bookingId}, PromoCode={promoCode}, Discount={discountAmount}, NewTotal={finalTotal}");
+
+                return Json(new
+                {
+                    success = true,
+                    promoCode = promoCode,
+                    originalTotal = originalTotal,
+                    discount = discountAmount,
+                    finalTotal = finalTotal,
+                    message = "Áp dụng mã khuyến mãi thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

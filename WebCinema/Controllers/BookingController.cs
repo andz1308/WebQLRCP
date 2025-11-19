@@ -330,7 +330,7 @@ namespace WebCinema.Controllers
             return RedirectToAction("Checkout", "Booking");
         }
 
-        // **BƯỚC 4: XEM LẠI ĐƠN HÀNG TRƯỚC THANH TOÁN (BOOKING ĐÃ ĐƯỢC LƯU)**
+        // **BƯỚC 4: XEM LẠI ĐƠN HÀNG TRƯỚC THANH TOÁN (BOOKING ĐÃ ĐƯỢC LƯỚI)
         [HttpGet]
         public ActionResult Checkout()
         {
@@ -361,13 +361,15 @@ namespace WebCinema.Controllers
                 decimal itemTotal = unitPrice * foodOrder.so_luong;
                 foodTotal += itemTotal;
                 
+                // ✅ Thêm thông tin loai vào foodItems để KM004 có thể check Combo
                 foodItems.Add(new 
                 { 
                     FoodId = food.Do_An_id,
                     FoodName = food.ten_san_pham,
                     Price = unitPrice,
                     Quantity = foodOrder.so_luong,
-                    TotalPrice = itemTotal
+                    TotalPrice = itemTotal,
+                    FoodType = food.loai  // ✅ THÊM LOẠI ĐỒ ĂN (Combo hay không)
                 });
             }
 
@@ -388,6 +390,294 @@ namespace WebCinema.Controllers
             ViewBag.QRCodeUrl = qrUrl;
 
             return View();
+        }
+
+        // **BƯỚC 4.5: LẤY DANH SÁCH MÃ KHUYẾN MÃI CÓ THỂ ÁP DỤNG**
+        [HttpPost]
+        public ActionResult GetAvailablePromoCodes(int customerId, string foodItemsJson)
+        {
+            try
+            {
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                {
+                    return Json(new List<object>());
+                }
+
+                // ✅ Filter active promo codes
+                var promoCodes = db.Khuyen_Mais.ToList();
+
+                var result = new List<dynamic>();
+
+                foreach (var km in promoCodes)
+                {
+                    try
+                    {
+                        bool isApplicable = true;
+                        string reason = "";
+                        string maKhuyenValue = km.ma_khuyen_mai;
+
+                        // ✅ KM001: Áp dụng tháng 12
+                        if (maKhuyenValue == "KM001")
+                        {
+                            if (DateTime.Now.Month != 12)
+                            {
+                                isApplicable = false;
+                                reason = "Chỉ áp dụng tháng 12";
+                            }
+                        }
+                        // ✅ KM003: Áp dụng nếu điểm ⭐ >= 20
+                        else if (maKhuyenValue == "KM003")
+                        {
+                            int customerPoints = customer.diem_tich_luy ?? 0;
+                            if (customerPoints < 20)
+                            {
+                                isApplicable = false;
+                                reason = $"Cần 20+ điểm (hiện có {customerPoints})";
+                            }
+                        }
+                        // ✅ KM004: Áp dụng nếu có "Combo" trong đồ ăn
+                        else if (maKhuyenValue == "KM004")
+                        {
+                            bool hasCombo = false;
+                            try
+                            {
+                                LoggingHelper.LogInfo($"🔍 KM004 Start: foodItemsJson={(!string.IsNullOrEmpty(foodItemsJson) ? "exist" : "null")}");
+
+                                // Parse foodItems JSON - đây là array từ Checkout view
+                                //var foodItems = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(foodItemsJson ?? "[]");
+
+                                //if (foodItems != null && foodItems.Any())
+                                //{
+                                //    LoggingHelper.LogInfo($"  → Parsed {foodItems.Count} food items");
+
+                                //    foreach (var item in foodItems)
+                                //    {
+                                //        try
+                                //        {
+                                //            // ✅ CÁCH 1: Kiểm tra FoodType property (nếu có)
+                                //            var foodTypeProp = item.GetType().GetProperty("FoodType");
+                                //            if (foodTypeProp != null)
+                                //            {
+                                //                var foodTypeValue = foodTypeProp.GetValue(item, null);
+                                //                if (foodTypeValue != null)
+                                //                {
+                                //                    string foodTypeStr = foodTypeValue.ToString();
+                                //                    LoggingHelper.LogInfo($"  → Checking FoodType: '{foodTypeStr}'");
+                                //                    if (foodTypeStr.Contains("Combo"))
+                                //                    {
+                                //                        hasCombo = true;
+                                //                        LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodType!");
+                                //                        break;
+                                //                    }
+                                //                }
+                                //            }
+
+                                //            // ✅ CÁCH 2: Kiểm tra FoodName nếu chứa "Combo"
+                                //            if (!hasCombo)
+                                //            {
+                                //                var foodNameProp = item.GetType().GetProperty("FoodName");
+                                //                if (foodNameProp != null)
+                                //                {
+                                //                    var foodNameValue = foodNameProp.GetValue(item, null);
+                                //                    if (foodNameValue != null)
+                                //                    {
+                                //                        string foodNameStr = foodNameValue.ToString();
+                                //                        LoggingHelper.LogInfo($"  → Checking FoodName: '{foodNameStr}'");
+                                //                        if (foodNameStr.Contains("Combo"))
+                                //                        {
+                                //                            hasCombo = true;
+                                //                            LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodName!");
+                                //                            break;
+                                //                        }
+                                //                    }
+                                //                }
+                                //            }
+
+                                //            // ✅ CÁCH 3: Kiểm tra FoodId - tìm trong database
+                                //            if (!hasCombo)
+                                //            {
+                                //                var foodIdProp = item.GetType().GetProperty("FoodId");
+                                //                if (foodIdProp != null)
+                                //                {
+                                //                    var foodIdValue = foodIdProp.GetValue(item, null);
+                                //                    int foodId;
+                                //                    if (int.TryParse(foodIdValue.ToString(), out foodId))
+                                //                    {
+                                //                        Do_An foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                                //                        if (foodObj != null)
+                                //                        {
+                                //                            string foodNameCheck = foodObj.ten_san_pham ?? "";
+                                //                            string foodLoaiCheck = foodObj.loai ?? "";
+                                //                            LoggingHelper.LogInfo($"  → FoodId {foodId}: Name='{foodNameCheck}', Type='{foodLoaiCheck}'");
+
+                                //                            if (foodNameCheck.Contains("Combo") || foodLoaiCheck.Contains("Combo"))
+                                //                            {
+                                //                                hasCombo = true;
+                                //                                LoggingHelper.LogInfo($"✅ KM004: Found Combo in Database!");
+                                //                                break;
+                                //                            }
+                                //                        }
+                                //                    }
+                                //                }
+                                //            }
+                                //        }
+                                //        catch (Exception itemEx) 
+                                //        { 
+                                //            LoggingHelper.LogError(new Exception($"KM004 Item check error: {itemEx.Message}", itemEx));
+                                //        }
+                                //    }
+                                //}
+                                //else
+                                //{
+                                //    LoggingHelper.LogInfo($"  → No food items to check");
+                                //}
+                                var foodItems = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson ?? "[]");
+
+                                foreach (var item in foodItems)
+                                {
+                                    string foodTypeStr = item["FoodType"]?.ToString() ?? "";
+                                    string foodNameStr = item["FoodName"]?.ToString() ?? "";
+
+                                    LoggingHelper.LogInfo($"  → Checking FoodType='{foodTypeStr}', FoodName='{foodNameStr}'");
+
+                                    if (foodTypeStr.Contains("Combo") || foodNameStr.Contains("Combo"))
+                                    {
+                                        hasCombo = true;
+                                        LoggingHelper.LogInfo("✅ KM004: Found Combo!");
+                                        break;
+                                    }
+
+                                    // Kiểm tra database theo FoodId
+                                    if (int.TryParse(item["FoodId"]?.ToString(), out int foodId))
+                                    {
+                                        var foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                                        if (foodObj != null &&
+                                            ((foodObj.ten_san_pham ?? "").Contains("Combo") || (foodObj.loai ?? "").Contains("Combo")))
+                                        {
+                                            hasCombo = true;
+                                            LoggingHelper.LogInfo("✅ KM004: Found Combo in DB!");
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                LoggingHelper.LogInfo($"✅ KM004 Complete: hasCombo={hasCombo}");
+                            }
+                            catch (Exception ex) 
+                            { 
+                                LoggingHelper.LogError(new Exception($"KM004 JSON parse error: {ex.Message}", ex));
+                            }
+
+                            if (!hasCombo)
+                            {
+                                isApplicable = false;
+                                reason = "Cần mua Combo";
+                            }
+                        }
+
+                        // Kiểm tra ngày áp dụng
+                        // Use reflection to safely read possible DateTime properties
+                        DateTime? kmStart = null;
+                        DateTime? kmEnd = null;
+                        try
+                        {
+                            var startProp = km.GetType().GetProperty("ngay_bat_dau");
+                            if (startProp != null)
+                            {
+                                var val = startProp.GetValue(km, null);
+                                if (val is DateTime dt && dt != DateTime.MinValue) kmStart = dt;
+                            }
+
+                            var endProp = km.GetType().GetProperty("ngay_ket_thuc");
+                            if (endProp != null)
+                            {
+                                var val = endProp.GetValue(km, null);
+                                if (val is DateTime dt2 && dt2 != DateTime.MinValue) kmEnd = dt2;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggingHelper.LogError(ex);
+                        }
+
+                        if (isApplicable && kmStart.HasValue && DateTime.Now < kmStart.Value)
+                        {
+                            isApplicable = false;
+                            reason = "Chưa đến ngày áp dụng";
+                        }
+
+                        if (isApplicable && kmEnd.HasValue && DateTime.Now > kmEnd.Value)
+                        {
+                            isApplicable = false;
+                            reason = "Đã hết hạn áp dụng";
+                        }
+
+                        // ✅ Get promo properties safely
+                        decimal giaTriGiam = 0m;
+                        int soLuongConLai = 0;
+                        string loaiGiam = "%"; // Default
+
+                        try
+                        {
+                            // ✅ Get gia_tri_giam
+                            var giaProp = km.GetType().GetProperty("gia_tri_giam");
+                            if (giaProp != null)
+                            {
+                                object val = giaProp.GetValue(km, null);
+                                giaTriGiam = val != null ? Convert.ToDecimal(val) : 0m;
+                            }
+
+                            // ✅ Get so_luong_con_lai
+                            var luongProp = km.GetType().GetProperty("so_luong_con_lai");
+                            if (luongProp != null)
+                            {
+                                object val = luongProp.GetValue(km, null);
+                                soLuongConLai = val != null ? Convert.ToInt32(val) : 0;
+                            }
+
+                            // ✅ Get loai_giam_gia
+                            var loaiGiamProp = km.GetType().GetProperty("loai_giam_gia");
+                            if (loaiGiamProp != null)
+                            {
+                                object val = loaiGiamProp.GetValue(km, null);
+                                if (val != null)
+                                {
+                                    string typeValue = val.ToString();
+                                    loaiGiam = (typeValue.Contains("Phần") || typeValue.Contains("%")) ? "%" : "VND";
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggingHelper.LogError(new Exception($"Promo property read error: {ex.Message}"));
+                        }
+
+                        // ✅ Add to result
+                        result.Add(new
+                        {
+                            maKhuyen = km.ma_khuyen_mai,
+                            moTa = km.mo_ta ?? "",
+                            giaTriGiam = giaTriGiam,
+                            loaiGiam = loaiGiam,
+                            soLuongConLai = soLuongConLai,
+                            isApplicable = isApplicable && soLuongConLai > 0,
+                            reason = reason
+                        });
+                    }
+                    catch (Exception itemEx)
+                    {
+                        LoggingHelper.LogError(itemEx);
+                    }
+                }
+
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new List<object>());
+            }
         }
 
         // **BƯỚC 5: THANH TOÁN ONLINE - Chuyển đến Payment Gateway**
@@ -547,7 +837,7 @@ namespace WebCinema.Controllers
                     paidBooking.trang_thai_Dat_Ve = "Đã Thanh toán";
                     db.SubmitChanges();
 
-                    // ✅ CỘNG ĐIỂM TÍCH LŨY: Mỗi vé thanh toán = +1 điểm
+                    // ✅ CỘNG ĐIỂM TÍCH LũY: Mỗi vé thanh toán = +1 điểm
                     var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == paidBooking.khach_hang_id);
                     if (customer != null)
                     {
@@ -604,6 +894,86 @@ namespace WebCinema.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        // **BƯỚC 4.5.1: CẬP NHẬT QR CODE KHI CHỌN KHUYẾN MÃI**
+        [HttpPost]
+        public ActionResult UpdateQRCodeWithPromo(int bookingId, string promoCode)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return Json(new { success = false, message = "Booking không tồn tại" });
+                }
+
+                //decimal originalTotal = booking.tong_tien;
+                if (Session[$"Booking_{bookingId}_OriginalTotal"] == null)
+                {
+                    Session[$"Booking_{bookingId}_OriginalTotal"] = booking.tong_tien;
+                }
+                decimal originalTotal = Session[$"Booking_{bookingId}_OriginalTotal"] as decimal? ?? booking.tong_tien;
+                decimal discountAmount = 0m;
+                string discountType = "";
+
+                // ✅ Tính toán discount từ promo code
+                if (!string.IsNullOrEmpty(promoCode))
+                {
+                    var promo = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
+                    if (promo != null)
+                    {
+                        decimal giaTriGiam = promo.gia_tri_giam;  // ✅ NOT nullable
+                        
+                        // ✅ Xác định loại giảm (% hay VND)
+                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) && 
+                            (promo.loai_giam_gia.Contains("Phần trăm") || promo.loai_giam_gia.Contains("%"));
+                        
+                        if (isPercent)
+                        {
+                            discountAmount = (originalTotal * giaTriGiam) / 100m;
+                            discountType = "%";
+                        }
+                        else
+                        {
+                            discountAmount = giaTriGiam;
+                            discountType = "VND";
+                        }
+
+                        LoggingHelper.LogInfo($"✅ PromoCode {promoCode}: giaTriGiam={giaTriGiam}, loai={discountType}, discount={discountAmount}");
+                    }
+                }
+
+                // ✅ Tính toán tổng tiền sau giảm
+                decimal finalTotal = originalTotal - discountAmount;
+                if (finalTotal < 0) finalTotal = 0;
+
+                // ✅ Cập nhật booking với tổng tiền mới
+                booking.tong_tien = finalTotal;
+                booking.phuong_thuc_thanh_toan = promoCode ?? "";  // Lưu mã promo
+                db.SubmitChanges();
+
+                // ✅ Tạo QR Code mới với giá đúng
+                var qrService = new QRCodePaymentService();
+                string qrDescription = qrService.GenerateTransactionDescription(bookingId);
+                string newQrUrl = qrService.GenerateQRCodeUrl(finalTotal, qrDescription);
+
+                LoggingHelper.LogInfo($"✅ UpdateQRCode: BookingId={bookingId}, Original={originalTotal}, Discount={discountAmount}, Final={finalTotal}, PromoCode={promoCode}");
+
+                return Json(new
+                {
+                    success = true,
+                    newQrUrl = newQrUrl,
+                    finalTotal = finalTotal,
+                    discountAmount = discountAmount,
+                    discountType = discountType
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
         }
     }
 }

@@ -483,9 +483,23 @@
                             <span>@foodTotal.ToString("N0") đ</span>
                         </div>
                     }
+                    
+                    <!-- ✅ THÊM: Hiển thị Mã Khuyến Mãi Áp Dụng -->
+                    @if (booking != null && !string.IsNullOrEmpty(booking.phuong_thuc_thanh_toan))
+                    {
+                        var discount = ticketTotal + foodTotal - booking.tong_tien;
+                        if (discount > 0)
+                        {
+                            <div class="total-item" style="color: white;">
+                                <span><i class="fas fa-tag"></i> Mã KM: @booking.phuong_thuc_thanh_toan (-@discount.ToString("N0") đ)</span>
+                                <span>-@discount.ToString("N0") đ</span>
+                            </div>
+                        }
+                    }
+                    
                     <div class="total-final">
-                        <span>TỔNG CỘNG</span>
-                        <span>@grandTotal.ToString("N0") đ</span>
+                        <span>TỔNG THANH TOÁN</span>
+                        <span>@(booking != null ? booking.tong_tien.ToString("N0") : grandTotal.ToString("N0")) đ</span>
                     </div>
                 </div>
 

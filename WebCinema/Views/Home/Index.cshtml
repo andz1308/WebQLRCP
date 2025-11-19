@@ -154,26 +154,270 @@
 <!-- PROMOTIONS SECTION -->
 <section class="promotions-section" id="promotions">
     <div class="promotions-container">
-        <h2 class="section-title">Sự Kiện Nổi Bật</h2>
-        <div class="promo-grid">
-            <div class="promo-card">
-                <div class="promo-icon">🎫</div>
-                <h3 class="promo-title">Ưu Đãi Thành Viên</h3>
-                <p class="promo-desc">Giảm giá đến 20% cho thành viên VIP khi đặt vé online</p>
+        <h2 class="section-title">Sự Kiện & Khuyến Mãi Nổi Bật</h2>
+        
+        <div class="promo-carousel-wrapper">
+            <div class="promo-carousel">
+                <div class="promo-slide">
+                    <img src="~/Content/km/km1.png" alt="Khuyến mãi 1" class="promo-image" onerror="this.src='~/Content/km/km1.png'">
+                </div>
+                <div class="promo-slide">
+                    <img src="~/Content/km/km2.png" alt="Khuyến mãi 2" class="promo-image" onerror="this.src='~/Content/km/km2.png'">
+                </div>
+                <div class="promo-slide">
+                    <img src="~/Content/km/km3.png" alt="Khuyến mãi 3" class="promo-image" onerror="this.src='~/Content/km/km3.png">
+                </div>
+                <div class="promo-slide">
+                    <img src="~/Content/km/km4.png" alt="Khuyến mãi 4" class="promo-image" onerror="this.src='~/Content/km/km4.png'">
+                </div>
             </div>
-            <div class="promo-card">
-                <div class="promo-icon">🍿</div>
-                <h3 class="promo-title">Combo Bắp Nước</h3>
-                <p class="promo-desc">Mua combo bắp nước chỉ từ 69.000đ - Tiết kiệm đến 30%</p>
-            </div>
-            <div class="promo-card">
-                <div class="promo-icon">💳</div>
-                <h3 class="promo-title">Thanh Toán Online</h3>
-                <p class="promo-desc">Giảm 10% khi thanh toán qua ví điện tử và thẻ ngân hàng</p>
+
+            <!-- Navigation Buttons -->
+            <button class="promo-nav promo-nav-prev" onclick="promoPrev()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="promo-nav promo-nav-next" onclick="promoNext()">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+
+            <!-- Dots -->
+            <div class="promo-dots">
+                <span class="promo-dot active" onclick="promoGoTo(0)"></span>
+                <span class="promo-dot" onclick="promoGoTo(1)"></span>
+                <span class="promo-dot" onclick="promoGoTo(2)"></span>
+                <span class="promo-dot" onclick="promoGoTo(3)"></span>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    /* ✅ PROMOTIONS CAROUSEL - Modern Design */
+    .promo-carousel-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        background: #000;
+    }
+
+    .promo-carousel {
+        position: relative;
+        width: 100%;
+        height: 900px;
+        display: flex;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .promo-slide {
+        min-width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .promo-image {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        transition: transform 0.5s ease;
+        cursor: pointer;
+        background: #000;
+    }
+
+    .promo-slide:hover .promo-image {
+        transform: scale(1.05);
+    }
+
+    /* Navigation Buttons */
+    .promo-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 107, 53, 0.8);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 10;
+        backdrop-filter: blur(5px);
+    }
+
+    .promo-nav:hover {
+        background: rgba(255, 107, 53, 1);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+    }
+
+    .promo-nav-prev {
+        left: 20px;
+    }
+
+    .promo-nav-next {
+        right: 20px;
+    }
+
+    /* Dots Navigation */
+    .promo-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+    .promo-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.7);
+    }
+
+    .promo-dot:hover {
+        background: rgba(255, 255, 255, 0.8);
+        transform: scale(1.2);
+    }
+
+    .promo-dot.active {
+        background: #ff6b35;
+        border-color: #ff8555;
+        width: 30px;
+        border-radius: 6px;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .promo-carousel {
+            height: 250px;
+        }
+
+        .promo-nav {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .promo-nav-prev {
+            left: 10px;
+        }
+
+        .promo-nav-next {
+            right: 10px;
+        }
+
+        .promo-dots {
+            bottom: 15px;
+            gap: 8px;
+        }
+
+        .promo-dot {
+            width: 10px;
+            height: 10px;
+        }
+
+        .promo-dot.active {
+            width: 24px;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .promo-carousel {
+            height: 180px;
+        }
+
+        .promo-nav {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+    }
+</style>
+
+<script>
+    let promoIndex = 0;
+    const promoSlides = document.querySelectorAll('.promo-slide');
+    const promoDots = document.querySelectorAll('.promo-dot');
+    const promoCarousel = document.querySelector('.promo-carousel');
+    let promoAutoPlayTimer;
+
+    function showPromoSlide(index) {
+        if (promoSlides.length === 0) return;
+
+        // Loop around
+        if (index >= promoSlides.length) {
+            promoIndex = 0;
+        } else if (index < 0) {
+            promoIndex = promoSlides.length - 1;
+        } else {
+            promoIndex = index;
+        }
+
+        // Update carousel position
+        const offset = -promoIndex * 100;
+        promoCarousel.style.transform = `translateX(${offset}%)`;
+
+        // Update dots
+        promoDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === promoIndex);
+        });
+
+        // Reset auto-play timer
+        resetPromoAutoPlay();
+    }
+
+    function promoNext() {
+        showPromoSlide(promoIndex + 1);
+    }
+
+    function promoPrev() {
+        showPromoSlide(promoIndex - 1);
+    }
+
+    function promoGoTo(index) {
+        showPromoSlide(index);
+    }
+
+    function autoPlayPromo() {
+        promoAutoPlayTimer = setInterval(() => {
+            promoNext();
+        }, 5000); // Change slide every 5 seconds
+    }
+
+    function resetPromoAutoPlay() {
+        clearInterval(promoAutoPlayTimer);
+        autoPlayPromo();
+    }
+
+    // Start auto-play when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        autoPlayPromo();
+    });
+
+    // Pause auto-play on hover
+    document.querySelector('.promo-carousel-wrapper')?.addEventListener('mouseenter', () => {
+        clearInterval(promoAutoPlayTimer);
+    });
+
+    document.querySelector('.promo-carousel-wrapper')?.addEventListener('mouseleave', () => {
+        autoPlayPromo();
+    });
+</script>
 
 <!-- CINEMAS SECTION -->
 <section class="cinemas-section" id="cinemas">

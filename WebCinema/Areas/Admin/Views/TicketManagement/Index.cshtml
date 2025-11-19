@@ -83,13 +83,13 @@
                     @foreach (var booking in Model)
                     {
                         var firstTicket = booking.Ves.FirstOrDefault();
-                        var showtime = firstTicket?.Suat_Chieu;
-                        var cinema = showtime?.Phong_Chieu?.Rap;
-                        var movie = showtime?.Phim;
+                        var showtime = firstTicket.Suat_Chieu;
+                        var cinema = showtime.Phong_Chieu.Rap;
+                        var movie = showtime.Phim;
                         var seats = string.Join(", ", booking.Ves.Select(v => v.Ghe.so_ghe));
                         
                         // Determine ticket status badge (Trạng thái Vé)
-                        var ticketStatus = firstTicket?.trang_thai_ve ?? "Chưa xác định";
+                        var ticketStatus = firstTicket.trang_thai_ve ?? "Chưa xác định";
                         var ticketStatusClass = ticketStatus == "Chưa sử dụng" ? "info" 
                                               : ticketStatus == "Đã sử dụng" ? "success" 
                                               : ticketStatus == "Đã hết hạn" ? "warning"
