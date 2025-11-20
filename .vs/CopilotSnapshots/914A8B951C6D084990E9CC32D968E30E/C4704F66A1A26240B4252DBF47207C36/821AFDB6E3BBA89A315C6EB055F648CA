@@ -2065,7 +2065,7 @@ namespace WebCinema.Controllers.API
                                       ?? item["loai"]?.ToString()
                                       ?? string.Empty;
 
-                    if (!string.IsNullOrEmpty(foodType) && foodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (!string.IsNullOrEmpty(foodType) && foodType.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
                         return true;
 
                     // 2) Check common client-side property names for food name
@@ -2075,7 +2075,7 @@ namespace WebCinema.Controllers.API
                                       ?? item["ten_san_pham"]?.ToString()
                                       ?? string.Empty;
 
-                    if (!string.IsNullOrEmpty(foodName) && foodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (!string.IsNullOrEmpty(foodName) && foodName.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
                         return true;
 
                     // 3) DB lookup fallback using any common id fields
@@ -2089,8 +2089,8 @@ namespace WebCinema.Controllers.API
                             {
                                 string dbFoodType = fobj.loai ?? string.Empty;
                                 string dbFoodName = fobj.ten_san_pham ?? string.Empty;
-                                if (dbFoodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    dbFoodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                                if (dbFoodType.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    dbFoodName.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
                                 {
                                     return true;
                                 }

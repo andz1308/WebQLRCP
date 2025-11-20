@@ -1450,7 +1450,7 @@ namespace WebCinema.Controllers.API
                     showtime = showtime != null ? new
                     {
                         cinema = showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null ? showtime.Phong_Chieu.Rap.ten_rap : "N/A",
-                        room = showtime.Phong_Chieu.ten_phong,
+                        room = showtime.Phong_Chieu != null ? showtime.Phong_Chieu.ten_phong : "N/A",
                         date = showtime.ngay_chieu.Date.ToString("yyyy-MM-dd"),
                         time = showtime.Ca_Chieu != null ? showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A"
                     } : null,
@@ -2046,65 +2046,6 @@ namespace WebCinema.Controllers.API
                 LoggingHelper.LogError(ex);
                 return InternalServerError(ex);
             }
-        }
-
-        // Helper: detect Combo in various food item representations sent by clients
-        private bool ContainsComboInFoodItems(Newtonsoft.Json.Linq.JArray foodItems)
-        {
-            try
-            {
-                if (foodItems == null) return false;
-
-                foreach (var item in foodItems)
-                {
-                    if (item == null) continue;
-
-                    // 1) Check common client-side property names for food type
-                    string foodType = item["FoodType"]?.ToString()
-                                      ?? item["food_type"]?.ToString()
-                                      ?? item["loai"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodType) && foodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 2) Check common client-side property names for food name
-                    string foodName = item["FoodName"]?.ToString()
-                                      ?? item["food_name"]?.ToString()
-                                      ?? item["name"]?.ToString()
-                                      ?? item["ten_san_pham"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodName) && foodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 3) DB lookup fallback using any common id fields
-                    var idToken = item["FoodId"] ?? item["food_id"] ?? item["id"] ?? item["Do_An_id"];
-                    if (idToken != null)
-                    {
-                        if (int.TryParse(idToken.ToString(), out int fid))
-                        {
-                            var fobj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == fid);
-                            if (fobj != null)
-                            {
-                                string dbFoodType = fobj.loai ?? string.Empty;
-                                string dbFoodName = fobj.ten_san_pham ?? string.Empty;
-                                if (dbFoodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    dbFoodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(new Exception("ContainsComboInFoodItems error: " + ex.Message, ex));
-            }
-
-            return false;
         }
     }
 }

@@ -1226,106 +1226,6 @@ namespace WebCinema.Controllers.API
             }
         }
 
-        /// <summary>
-        /// POST: api/customer/confirm-qr-payment
-        /// Xác nhận thanh toán QR (cập nhật booking thành "Chờ Duyệt", admin sẽ duyệt)
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpPost]
-        [Route("confirm-qr-payment")]
-        [Authorize]
-        public IHttpActionResult ConfirmQRPayment([FromBody] JObject data)
-        {
-            try
-            {
-                int bookingId = data["booking_id"]?.Value<int>() ?? 0;
-                string promoCode = data["promo_code"]?.Value<string>() ?? "";
-
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                // ✅ Kiểm tra trạng thái - phải là "Chưa thanh toán"
-                if (booking.trang_thai_Dat_Ve != "Chưa thanh toán")
-                {
-                    return Ok(new { success = false, message = "Đơn hàng đã được xử lý hoặc bị hủy" });
-                }
-
-                // ✅ NẾU CÓ PROMO CODE, GIẢM SỐ LƯỢNG (nếu chưa giảm lúc apply)
-                if (!string.IsNullOrEmpty(promoCode))
-                {
-                    var promoCodeRecord = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
-                    
-                    if (promoCodeRecord != null && (promoCodeRecord.so_luong_con_lai ?? 0) > 0)
-                    {
-                        // ✅ Giảm số lượng mã
-                        promoCodeRecord.so_luong_con_lai--;
-                        db.SubmitChanges();
-                        
-                        LoggingHelper.LogInfo($"✅ Giảm mã khuyến mãi: {promoCode}, Còn lại: {promoCodeRecord.so_luong_con_lai}");
-                    }
-                }
-
-                // ✅ Cập nhật trạng thái thành "Chờ Duyệt" (chờ Admin duyệt)
-                booking.trang_thai_Dat_Ve = "Chờ Duyệt";
-                db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Xác nhận QR Payment: Booking ID {bookingId}, Trạng thái: Chờ Duyệt, PromoCode: {promoCode ?? "None"}");
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Đơn hàng đã gửi, vui lòng chờ Admin duyệt",
-                    booking_id = booking.Dat_Ve_id,
-                    status = booking.trang_thai_Dat_Ve
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/check-booking-status
-        /// Kiểm tra trạng thái booking (dùng để polling xem có được Admin duyệt không)
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpPost]
-        [Route("check-booking-status")]
-        [Authorize]
-        public IHttpActionResult CheckBookingStatus([FromBody] JObject data)
-        {
-            try
-            {
-                int bookingId = data["booking_id"]?.Value<int>() ?? 0;
-
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                return Ok(new
-                {
-                    success = true,
-                    booking_id = booking.Dat_Ve_id,
-                    status = booking.trang_thai_Dat_Ve,
-                    total_amount = booking.tong_tien
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -1415,26 +1315,13 @@ namespace WebCinema.Controllers.API
                     });
                 }
 
-                // ✅ THÊM CHI TIẾT TỪNG VÉ KÈM QR CODE (QUAN TRỌNG!)
-                var ticketDetails = tickets.Select(t => new
-                {
-                    ticket_id = t.ve_id,
-                    seat_id = t.ghe_id,
-                    seat_number = t.Ghe != null ? t.Ghe.so_ghe : "N/A",
-                    row = t.Ghe != null ? ((char)('A' + t.Ghe.hang)).ToString() : "N/A",
-                    column = t.Ghe != null ? t.Ghe.cot : 0,
-                    seat_type = t.Ghe != null && t.Ghe.Loai_Ghe != null ? t.Ghe.Loai_Ghe.ten_loai : "N/A",
-                    price = t.gia_ve,
-                    status = t.trang_thai_ve,
-                    qr_code = t.ma_qr_code  // ✅ QR CODE CHO TỪNG VÉ
-                }).ToList();
-
                 var invoice = new
                 {
                     booking_id = booking.Dat_Ve_id,
                     customer_name = booking.Khach_Hang != null ? booking.Khach_Hang.ho_ten : "N/A",
                     customer_email = booking.Khach_Hang != null ? booking.Khach_Hang.email : "N/A",
                     customer_phone = booking.Khach_Hang != null ? booking.Khach_Hang.so_dien_thoai : "N/A",
+                    // ✅ Thêm các cột mới
                     customer_dob = booking.Khach_Hang != null && booking.Khach_Hang.ngay_sinh.HasValue
                         ? booking.Khach_Hang.ngay_sinh.Value.ToString("yyyy-MM-dd")
                         : "N/A",
@@ -1450,11 +1337,11 @@ namespace WebCinema.Controllers.API
                     showtime = showtime != null ? new
                     {
                         cinema = showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null ? showtime.Phong_Chieu.Rap.ten_rap : "N/A",
-                        room = showtime.Phong_Chieu.ten_phong,
+                        room = showtime.Phong_Chieu != null ? showtime.Phong_Chieu.ten_phong : "N/A",
                         date = showtime.ngay_chieu.Date.ToString("yyyy-MM-dd"),
-                        time = showtime.Ca_Chieu != null ? showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A"
+                        time = showtime.Ca_Chieu != null ? showtime.Ca_Chieu.gio_bat_dau.ToString() : "N/A"
                     } : null,
-                    tickets = ticketDetails,  // ✅ CHI TIẾT TỪNG VÉ
+                    tickets = tickets,
                     food_items = foodItems,
                     ticket_total = ticketTotal,
                     food_total = foodTotal,
@@ -1749,8 +1636,8 @@ namespace WebCinema.Controllers.API
                             var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
                             if (food != null)
                             {
-                                if ((food.ten_san_pham ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    (food.loai ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                                if ((food.ten_san_pham ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    (food.loai ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
                                 {
                                     hasCombo = true;
                                     break;
@@ -2046,65 +1933,6 @@ namespace WebCinema.Controllers.API
                 LoggingHelper.LogError(ex);
                 return InternalServerError(ex);
             }
-        }
-
-        // Helper: detect Combo in various food item representations sent by clients
-        private bool ContainsComboInFoodItems(Newtonsoft.Json.Linq.JArray foodItems)
-        {
-            try
-            {
-                if (foodItems == null) return false;
-
-                foreach (var item in foodItems)
-                {
-                    if (item == null) continue;
-
-                    // 1) Check common client-side property names for food type
-                    string foodType = item["FoodType"]?.ToString()
-                                      ?? item["food_type"]?.ToString()
-                                      ?? item["loai"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodType) && foodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 2) Check common client-side property names for food name
-                    string foodName = item["FoodName"]?.ToString()
-                                      ?? item["food_name"]?.ToString()
-                                      ?? item["name"]?.ToString()
-                                      ?? item["ten_san_pham"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodName) && foodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 3) DB lookup fallback using any common id fields
-                    var idToken = item["FoodId"] ?? item["food_id"] ?? item["id"] ?? item["Do_An_id"];
-                    if (idToken != null)
-                    {
-                        if (int.TryParse(idToken.ToString(), out int fid))
-                        {
-                            var fobj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == fid);
-                            if (fobj != null)
-                            {
-                                string dbFoodType = fobj.loai ?? string.Empty;
-                                string dbFoodName = fobj.ten_san_pham ?? string.Empty;
-                                if (dbFoodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    dbFoodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(new Exception("ContainsComboInFoodItems error: " + ex.Message, ex));
-            }
-
-            return false;
         }
     }
 }
