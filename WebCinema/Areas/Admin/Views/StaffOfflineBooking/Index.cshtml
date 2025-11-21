@@ -298,10 +298,10 @@
                 <input type="text" id="movieName" name="movieName" value="@(ViewBag.MovieName ?? "")" placeholder="Tìm theo tên phim" />
             </div>
 
-            <div class="filter-item">
+            @*<div class="filter-item">
                 <label for="cinemaId">Rạp:</label>
                 @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Tất cả rạp --", new { id = "cinemaId" })
-            </div>
+            </div>*@
 
             <div class="filter-item">
                 <label for="filterDate">Lọc theo ngày:</label>

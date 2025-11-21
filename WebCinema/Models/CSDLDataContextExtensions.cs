@@ -3,9 +3,6 @@ using System.Configuration;
 
 namespace WebCinema.Models
 {
-    // Add a parameterless constructor to the generated LINQ-to-SQL data context
-    // so controllers and services that call `new CSDLDataContext()` compile.
-    // The generated CSDLDataContext is a partial class; this file extends it.
     public partial class CSDLDataContext
     {
         public CSDLDataContext()
@@ -15,15 +12,13 @@ namespace WebCinema.Models
 
         private static string GetConnectionString()
         {
-            // Try common names used in this project, with a sensible fallback
             string conn = ConfigurationManager.ConnectionStrings["CSDLConnectionString3"]?.ConnectionString
                 ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString3"]?.ConnectionString;
 
             if (string.IsNullOrWhiteSpace(conn))
             {
-                // Provide a clear exception so it's easy to fix configuration in deployment
                 throw new InvalidOperationException(
-                    "No database connection string found. Please add a connection string named 'CSDLConnectionString' or 'CinemaDBConnectionString' to Web.config.");
+                    "No database connection string found. Please add a connection string named 'CSDLConnectionString3' or 'CinemaDBConnectionString3' to Web.config.");
             }
 
             return conn;

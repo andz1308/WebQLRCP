@@ -1,0 +1,95 @@
+﻿@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Quản Lý Đơn Đặt Vé";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-receipt"></i> Quản Lý Đơn Đặt Vé</h2>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x:auto;">
+            <table class="data-table" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>Mã Đơn</th>
+                        <th>Khách Hàng</th>
+                        <th>Số Vé</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Tạo</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        <tr>
+                            <td><strong>#@booking.Dat_Ve_id</strong></td>
+                            <td>
+                                @if (booking.Khach_Hang != null)
+                                {
+                                    <div style="font-weight:600">@booking.Khach_Hang.ho_ten</div>
+                                    <div style="font-size:0.85rem;color:#666">@booking.Khach_Hang.email</div>
+                                }
+                                else
+                                {
+                                    <span style="color:#999">--</span>
+                                }
+                            </td>
+                            <td>@(booking.Ves != null ? booking.Ves.Count : 0)</td>
+                            <td>@(booking.tong_tien.ToString("N0") + " đ")</td>
+                            <td>@booking.trang_thai_Dat_Ve</td>
+                            <td>@(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "--")</td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = booking.Dat_Ve_id })" class="btn btn-primary" style="margin-right:0.5rem;">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                                <button class="btn btn-danger" onclick="deleteBooking(@booking.Dat_Ve_id)">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div style="text-align:center; padding:2rem; color:#999;">
+            <i class="fas fa-inbox" style="font-size:3rem; opacity:0.5; margin-bottom:1rem;"></i>
+            <p>Chưa có đơn đặt vé nào.</p>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteBooking(id) {
+            if (!confirm('Bạn có chắc muốn xóa đơn đặt #' + id + '?')) return;
+            $.ajax({
+                url: '@Url.Action("Delete")',
+                type: 'POST',
+                data: { id: id },
+                success: function (response) {
+                    if (response && response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response ? response.message : 'Có lỗi xảy ra');
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi khi xóa đơn đặt.');
+                }
+            });
+        }
+    </script>
+}

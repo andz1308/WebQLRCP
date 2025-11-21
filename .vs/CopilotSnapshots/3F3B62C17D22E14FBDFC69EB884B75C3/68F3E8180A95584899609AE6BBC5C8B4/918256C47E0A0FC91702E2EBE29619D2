@@ -1,0 +1,297 @@
+﻿@model IEnumerable<WebCinema.Models.Suat_Chieu>
+
+@{
+    ViewBag.Title = "Quản Lý Vé & Đơn Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-ticket-alt"></i> Quản Lý Vé & Đơn Hàng</h2>
+    </div>
+
+    <!-- Filter Section -->
+    <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "TicketManagement", FormMethod.Get, new { @class = "filter-form" }))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        <i class="fas fa-film"></i> Phim
+                    </label>
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- Tất cả phim --", new { @class = "form-control" })
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        <i class="fas fa-calendar"></i> Ngày chiếu
+                    </label>
+                    <input type="date" name="date" value="@ViewBag.Date" class="form-control" />
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        <i class="fas fa-tag"></i> Trạng Thái Vé
+                    </label>
+                    @Html.DropDownList("ticketStatus", (SelectList)ViewBag.TicketStatuses, "-- Tất cả --", new { @class = "form-control" })
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        <i class="fas fa-money-bill"></i> Thanh Toán
+                    </label>
+                    @Html.DropDownList("bookingPaymentStatus", (SelectList)ViewBag.BookingPaymentStatuses, "-- Tất cả --", new { @class = "form-control" })
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Report Link -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="@Url.Action("Report")" class="btn btn-info" style="display: inline-block;">
+            <i class="fas fa-chart-bar"></i> Xem Báo Cáo
+        </a>
+    </div>
+
+    <!-- Info Summary -->
+    @if (ViewBag.TotalShowtimes > 0)
+    {
+        <div style="margin-bottom: 1.5rem; color: #666;">
+            <strong>Tổng số:</strong> @ViewBag.TotalShowtimes suất chiếu
+        </div>
+    }
+
+    <!-- Showtime List -->
+    @if (Model != null && Model.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            @foreach (var showtime in Model)
+            {
+                var totalTickets = showtime.Ves.Count;
+                var bookedTickets = showtime.Ves.Count(v => 
+                    v.Dat_Ve_id != null && 
+                    v.Dat_Ve != null && 
+                    v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" &&
+                    v.trang_thai_ve != "Đã Hủy"
+                );
+                var availableTickets = showtime.Ves.Count(v => v.Dat_Ve_id == null && v.trang_thai_ve == "Chưa sử dụng");
+                var usedTickets = showtime.Ves.Count(v => v.trang_thai_ve == "Đã sử dụng");
+                var cancelledTickets = showtime.Ves.Count(v => v.trang_thai_ve == "Đã Hủy");
+
+                <div class="showtime-card" style="background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 2rem; align-items: center;">
+                        <!-- Info Column -->
+                        <div>
+                            <h3 style="margin: 0 0 1rem 0; color: #2c3e50; font-size: 1.3rem;">
+                                <i class="fas fa-film" style="color: #ff6b35;"></i>
+                                @showtime.Phim.ten_phim
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; color: #666;">
+                                <div>
+                                    <i class="fas fa-building" style="color: #3498db;"></i>
+                                    <strong>Rạp:</strong> @showtime.Phong_Chieu.Rap.ten_rap
+                                </div>
+                                <div>
+                                    <i class="fas fa-door-open" style="color: #3498db;"></i>
+                                    <strong>Phòng:</strong> @showtime.Phong_Chieu.ten_phong
+                                </div>
+                                <div>
+                                    <i class="fas fa-calendar-alt" style="color: #27ae60;"></i>
+                                    <strong>Ngày:</strong> @showtime.ngay_chieu.ToString("dd/MM/yyyy")
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock" style="color: #27ae60;"></i>
+                                    <strong>Ca:</strong> @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") - @showtime.Ca_Chieu.gio_ket_thuc.ToString(@"hh\:mm")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats Column -->
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div style="text-align: center; padding: 0.8rem; background: #e8f5e9; border-radius: 8px;">
+                                <div style="font-size: 1.8rem; font-weight: bold; color: #27ae60;">@totalTickets</div>
+                                <div style="font-size: 0.85rem; color: #666;">Tổng vé</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.8rem; background: #fff3e0; border-radius: 8px;">
+                                <div style="font-size: 1.8rem; font-weight: bold; color: #ff9800;">@bookedTickets</div>
+                                <div style="font-size: 0.85rem; color: #666;">Đã thanh toán</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.8rem; background: #e3f2fd; border-radius: 8px;">
+                                <div style="font-size: 1.8rem; font-weight: bold; color: #2196f3;">@availableTickets</div>
+                                <div style="font-size: 0.85rem; color: #666;">Còn trống</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.8rem; background: #f3e5f5; border-radius: 8px;">
+                                <div style="font-size: 1.8rem; font-weight: bold; color: #9c27b0;">@usedTickets</div>
+                                <div style="font-size: 0.85rem; color: #666;">Đã dùng</div>
+                            </div>
+                        </div>
+
+                        <!-- Actions Column -->
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <a href="@Url.Action("Details", new { id = showtime.suat_chieu_id })" 
+                               class="btn btn-primary" 
+                               style="padding: 0.8rem 1.5rem; white-space: nowrap;">
+                                <i class="fas fa-eye"></i> Xem Chi Tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; color: #999;">
+            <i class="fas fa-inbox" style="font-size: 4rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+            <p style="font-size: 1.2rem;">Không tìm thấy suất chiếu nào.</p>
+            <p>Hãy thử thay đổi bộ lọc.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #ff6b35;
+        padding-bottom: 1rem;
+    }
+
+    .card-title {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 1.8rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:hover,
+    .form-control:focus {
+        border-color: #ff6b35;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .showtime-card:hover {
+        border-color: #ff6b35;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #138496;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 1200px) {
+        .showtime-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .showtime-card > div {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+    }
+</style>

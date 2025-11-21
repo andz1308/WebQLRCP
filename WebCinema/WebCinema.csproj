@@ -199,6 +199,7 @@
     <Compile Include="Areas\Admin\Controllers\StaffPurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffShowtimeTicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\TicketRefundManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\API\AuthApiController.cs" />
@@ -210,6 +211,7 @@
     <Compile Include="Controllers\InvoiceController.cs" />
     <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\PromosController.cs" />
+    <Compile Include="Controllers\TicketRefundController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -318,9 +320,7 @@
     <Content Include="Areas\Admin\Views\CinemaManagement\Rooms.cshtml" />
     <Content Include="Areas\Admin\Views\CinemaManagement\EditRoom.cshtml" />
     <Content Include="Areas\Admin\Views\TicketManagement\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\TicketManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\TicketManagement\Report.cshtml" />
-    <Content Include="Areas\Admin\Views\TicketManagement\Details_Fixed.cshtml" />
     <Content Include="Areas\Admin\Views\CinemaManagement\EditCinema.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\Create.cshtml" />
@@ -352,6 +352,9 @@
     <Content Include="Areas\Admin\Views\Promo\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Promo\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Promo\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketRefundManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketRefundManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\TicketManagement\Details.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -400,6 +403,8 @@
     <Content Include="Views\Home\CinemaMovies.cshtml" />
     <Content Include="Views\Account\EditProfile.cshtml" />
     <Content Include="Views\Account\ChangePassword.cshtml" />
+    <Content Include="Views\TicketRefund\MyTickets.cshtml" />
+    <Content Include="Views\TicketRefund\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

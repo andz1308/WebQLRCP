@@ -75,6 +75,12 @@
             </div>
 
             <div class="form-group">
+                @Html.Label("rap_id", "Rạp Chiếu", new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.rap_id, (SelectList)ViewBag.Raps, "-- Quản lý tất cả --", new { @class = "form-input" })
+                <small style="color: #999; margin-top: 0.3rem; display: block;">Để trống nếu nhân viên này là Admin</small>
+            </div>
+
+            <div class="form-group">
                 @Html.LabelFor(m => m.trang_thai, "Trạng Thái", new { @class = "form-label" })
                 @Html.DropDownListFor(m => m.trang_thai, new SelectList(new[] { "Hoạt động", "Nghỉ viêc", "Tạm nghỉ" }, Model.trang_thai), "-- Chọn trạng thái --", new { @class = "form-input" })
             </div>

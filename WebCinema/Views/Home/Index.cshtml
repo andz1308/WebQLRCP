@@ -16,9 +16,9 @@
     
     @if (ViewBag.TotalMovies > 0)
     {
-        <p style="color: #666; margin-bottom: 1.5rem;">
+        @*<p style="color: #666; margin-bottom: 1.5rem;">
             Hiển thị @Model.Count() phim (Tổng: @ViewBag.TotalMovies phim)
-        </p>
+        </p>*@
     }
     
     <div class="movies-grid">
@@ -207,7 +207,7 @@
     .promo-carousel {
         position: relative;
         width: 100%;
-        height: 900px;
+        height: 1100px;
         display: flex;
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }

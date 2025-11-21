@@ -1,0 +1,453 @@
+﻿@model WebCinema.Models.Yeu_Cau_Huy_Ve
+
+@{
+    ViewBag.Title = "Chi Ti?t H?y Vé";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    var booking = Model.Dat_Ve;
+    var customer = Model.Khach_Hang;
+    var tickets = ViewBag.Tickets as System.Collections.Generic.List<WebCinema.Models.Ve>;
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+}
+
+<style>
+    .detail-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .detail-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .info-section {
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #3498db;
+    }
+
+    .info-section h3 {
+        margin-top: 0;
+        color: #333;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        padding: 1rem;
+        background: white;
+        border-radius: 6px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .bank-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+    }
+
+    .bank-label {
+        opacity: 0.9;
+        margin-bottom: 0.5rem;
+    }
+
+    .bank-account {
+        font-size: 1.3rem;
+        font-weight: 600;
+        font-family: monospace;
+    }
+
+    .refund-highlight {
+        background: linear-gradient(135deg, #f0f8f5 0%, #e8f5e9 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #27ae60;
+        margin-bottom: 1.5rem;
+    }
+
+    .refund-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #27ae60;
+    }
+
+    .refund-detail {
+        font-size: 0.9rem;
+        color: #555;
+        margin-top: 0.5rem;
+    }
+
+    .btn-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+    }
+
+    .btn-reject {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+        flex: 1;
+    }
+
+    .btn-reject:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-back {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-back:hover {
+        background: #7f8c8d;
+    }
+
+    .tickets-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .ticket-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .ticket-seat {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .ticket-price {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="detail-container">
+    <div class="detail-card">
+        <div class="detail-header">
+            <div class="detail-title">
+                <i class="fas fa-trash-alt"></i> Yêu C?u H?y Vé #@Model.yeu_cau_id
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                @if (Model.trang_thai == "Ch? duy?t")
+                {
+                    <span class="status-badge status-pending">? Ch? duy?t</span>
+                }
+                else if (Model.trang_thai == "?ã H?y")
+                {
+                    <span class="status-badge status-approved">? ?ã duy?t</span>
+                }
+                else
+                {
+                    <span class="status-badge status-rejected">? T? ch?i</span>
+                }
+                <a href="@Url.Action("Index")" class="btn-action btn-back">
+                    <i class="fas fa-arrow-left"></i> Quay L?i
+                </a>
+            </div>
+        </div>
+
+        <!-- Thông tin khách hàng -->
+        <div class="info-section">
+            <h3><i class="fas fa-user"></i> Thông Tin Khách Hàng</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">H? Tên</div>
+                    <div class="info-value">@customer.ho_ten</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">@(customer.email ?? "N/A")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">S? ?i?n Tho?i</div>
+                    <div class="info-value">@(customer.so_dien_thoai ?? "N/A")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">?i?m Tích L?y</div>
+                    <div class="info-value">@(customer.diem_tich_luy ?? 0) ?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin ngân hàng (Highlight) -->
+        <div class="bank-info">
+            <div class="bank-label">
+                <i class="fas fa-bank"></i> Tài Kho?n Nh?n Ti?n
+            </div>
+            <div class="bank-account">
+                ****@Model.so_tai_khoan_atm.Substring(Model.so_tai_khoan_atm.Length - 4)
+            </div>
+            <div style="font-size: 0.9rem; margin-top: 0.8rem; opacity: 0.9;">
+                ? Khách s? nh?n ti?n trong 1-3 ngày làm vi?c
+            </div>
+        </div>
+
+        <!-- S? ti?n hoàn l?i (Highlight) -->
+        <div class="refund-highlight">
+            <div style="margin-bottom: 0.8rem; font-weight: 600;">S? Ti?n Hoàn L?i</div>
+            <div class="refund-amount">@Model.so_tien_hoan_lai?.ToString("N0") ?</div>
+            <div class="refund-detail">
+                G?c: @booking.tong_tien.ToString("N0") ? × 70% = @Model.so_tien_hoan_lai?.ToString("N0") ?<br/>
+                Phí h?y 30%: @(Math.Round(booking.tong_tien * 0.3m, 0).ToString("N0")) ?
+            </div>
+        </div>
+
+        <!-- Thông tin ??n ??t -->
+        <div class="info-section">
+            <h3><i class="fas fa-receipt"></i> Thông Tin ??n ??t</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Mã ??n</div>
+                    <div class="info-value">#@booking.Dat_Ve_id</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Phim</div>
+                    <div class="info-value">@(showtime.Phim.ten_phim ?? "N/A")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Ngày Chi?u</div>
+                    <div class="info-value">@(showtime.ngay_chieu.ToString("dd/MM/yyyy") ?? "N/A")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">R?p / Phòng</div>
+                    <div class="info-value">@(showtime.Phong_Chieu.Rap.ten_rap ?? "N/A") / @(showtime.Phong_Chieu.ten_phong ?? "N/A")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">T?ng Ti?n G?c</div>
+                    <div class="info-value">@booking.tong_tien.ToString("N0") ?</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">S? Vé</div>
+                    <div class="info-value">@tickets.Count vé</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách vé -->
+        <div class="info-section">
+            <h3><i class="fas fa-couch"></i> Danh Sách Vé (@tickets.Count)</h3>
+            <div class="tickets-list">
+                @foreach (var ticket in tickets)
+                {
+                    <div class="ticket-box">
+                        <div class="ticket-seat">Gh? @ticket.Ghe.so_ghe</div>
+                        <div class="ticket-price">@ticket.gia_ve.ToString("N0") ?</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Lý do h?y -->
+        @if (!string.IsNullOrEmpty(Model.ly_do_huy))
+        {
+            <div class="info-section">
+                <h3><i class="fas fa-comment"></i> Lý Do H?y</h3>
+                <div style="background: white; padding: 1rem; border-radius: 6px; line-height: 1.6;">
+                    @Model.ly_do_huy
+                </div>
+            </div>
+        }
+
+        <!-- Thông tin duy?t -->
+        <div class="info-section">
+            <h3><i class="fas fa-history"></i> Lịch Sử</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Ngày Gửi Yêu Cầu</div>
+                    <div class="info-value">@Model.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                @if (Model.ngay_duyet.HasValue)
+                {
+                    <div class="info-item">
+                        <div class="info-label">Ngày Duyệt</div>
+                        <div class="info-value">@Model.ngay_duyet.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                }
+                @*@if (Model.admin_duyet_id.HasValue)
+                {
+                    <div class="info-item">
+                        <div class="info-label">Admin Duyệt</div>
+                        <div class="info-value">@(Model.admin_duyet_id. ?? "N/A")</div>
+                    </div>
+                }*@
+            </div>
+        </div>
+
+        <!-- Ghi chú -->
+        @if (!string.IsNullOrEmpty(Model.ghi_chu))
+        {
+            <div class="info-section">
+                <h3><i class="fas fa-note-sticky"></i> Ghi Chú</h3>
+                <div style="background: white; padding: 1rem; border-radius: 6px;">
+                    @Model.ghi_chu
+                </div>
+            </div>
+        }
+
+        <!-- Action Buttons -->
+        @if (Model.trang_thai == "Chờ duyệt")
+        {
+            <div class="btn-container">
+                <button class="btn-action btn-approve" onclick="approveCancel(@Model.yeu_cau_id)">
+                    <i class="fas fa-check"></i> Duy?t & Hoàn Ti?n
+                </button>
+                <button class="btn-action btn-reject" onclick="rejectCancel(@Model.yeu_cau_id)">
+                    <i class="fas fa-times"></i> T? Ch?i
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function approveCancel(requestId) {
+            let reason = prompt("Ghi chú khi duy?t (tùy ch?n):", "?ã chuy?n kho?n");
+            if (reason === null) return;
+
+            $.ajax({
+                url: '@Url.Action("ApproveCancel")',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
+                    id: requestId,
+                    note: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('? ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('? ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('? Có l?i x?y ra!');
+                }
+            });
+        }
+
+        function rejectCancel(requestId) {
+            let reason = prompt("Lý do t? ch?i:");
+            if (reason === null) return;
+
+            $.ajax({
+                url: '@Url.Action("RejectCancel")',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
+                    id: requestId,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('? ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('? ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('? Có l?i x?y ra!');
+                }
+            });
+        }
+    </script>
+}

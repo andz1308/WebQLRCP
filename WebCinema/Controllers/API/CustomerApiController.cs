@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.Http;
 using WebCinema.Infrastructure;
 using WebCinema.Models;
-using Newtonsoft.Json.Linq;
+using static WebCinema.Controllers.PromosController;
 
 namespace WebCinema.Controllers.API
 {
@@ -15,6 +17,7 @@ namespace WebCinema.Controllers.API
     public class CustomerApiController : ApiController
     {
         private CSDLDataContext db = new CSDLDataContext();
+        private string foodItemsJson;
         private const int DEFAULT_PAGE_SIZE = 10;
         private const int MAX_PAGE_SIZE = 100;
 
@@ -1419,14 +1422,15 @@ namespace WebCinema.Controllers.API
                 var ticketDetails = tickets.Select(t => new
                 {
                     ticket_id = t.ve_id,
-                    seat_id = t.ghe_id,
+                    seat_id = t.Ghe != null ? t.Ghe.ghe_id : 0,
                     seat_number = t.Ghe != null ? t.Ghe.so_ghe : "N/A",
                     row = t.Ghe != null ? ((char)('A' + t.Ghe.hang)).ToString() : "N/A",
                     column = t.Ghe != null ? t.Ghe.cot : 0,
                     seat_type = t.Ghe != null && t.Ghe.Loai_Ghe != null ? t.Ghe.Loai_Ghe.ten_loai : "N/A",
                     price = t.gia_ve,
                     status = t.trang_thai_ve,
-                    qr_code = t.ma_qr_code  // ✅ QR CODE CHO TỪNG VÉ
+                    qr_code = t.ma_qr_code,  // ✅ QR CODE CHO TỪNG VÉ
+                    //ticket_created_at = t.ngay_tao.HasValue ? t.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A"
                 }).ToList();
 
                 var invoice = new
@@ -1733,37 +1737,105 @@ namespace WebCinema.Controllers.API
                     return Ok(new { success = false, message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})" });
                 }
 
-                // ✅ KM004: Kiểm tra Combo
+                //// ✅ KM004: Kiểm tra Combo
+                //if (promoCode == "KM004")
+                //{
+                //    bool hasCombo = false;
+
+                //    foreach (var item in foodItems)
+                //    {
+                //        if (item == null) continue;
+
+                //        int foodId = item["food_id"]?.Value<int>() ?? 0;
+
+                //        if (foodId > 0)
+                //        {
+                //            var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                //            if (food != null)
+                //            {
+                //                if ((food.ten_san_pham ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                //                    (food.loai ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                //                {
+                //                    hasCombo = true;
+                //                    break;
+                //                }
+                //            }
+                //        }
+                //    }
+
+                //    if (!hasCombo)
+                //    {
+                //        return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
+                //    }
+                //}
+
+                // KM004: Kiểm tra có Combo trong đồ ăn hay không
                 if (promoCode == "KM004")
                 {
                     bool hasCombo = false;
 
-                    foreach (var item in foodItems)
+                    try
                     {
-                        if (item == null) continue;
+                        // 🟢 Chuyển JSON thành DTO chuẩn
+                        var foodItemsList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FoodItemDTO>>(foodItemsJson ?? "[]");
 
-                        int foodId = item["food_id"]?.Value<int>() ?? 0;
+                        LoggingHelper.LogInfo($"🔍 API KM004 Start: foodItemsJson has {foodItemsList?.Count ?? 0} items");
 
-                        if (foodId > 0)
+                        if (foodItemsList != null && foodItemsList.Count > 0)
                         {
-                            var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                            if (food != null)
+                            foreach (var item in foodItemsList)
                             {
-                                if ((food.ten_san_pham ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    (food.loai ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                                if (item == null)
+                                    continue;
+
+                                LoggingHelper.LogInfo($"API Checking FoodItem: Id={item.FoodId}, Name='{item.FoodName}', Type='{item.FoodType}'");
+
+                                // 1️⃣ Kiểm tra ngay trong dữ liệu client gửi lên — FOOD NAME
+                                if (!string.IsNullOrEmpty(item.FoodName) &&
+                                    item.FoodName.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
                                 {
                                     hasCombo = true;
+                                    LoggingHelper.LogInfo("✅ API KM004: Found Combo in FoodName (Client)");
                                     break;
+                                }
+
+                                // 2️⃣ Kiểm tra database theo FoodId
+                                if (item.FoodId > 0)
+                                {
+                                    var foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == item.FoodId);
+
+                                    if (foodObj != null)
+                                    {
+                                        LoggingHelper.LogInfo($"API DB Check: Name='{foodObj.ten_san_pham}', Type='{foodObj.loai}'");
+
+                                        if ((foodObj.ten_san_pham ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                            (foodObj.loai ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                                        {
+                                            hasCombo = true;
+                                            LoggingHelper.LogInfo("✅ API KM004: Found Combo in DB");
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    if (!hasCombo)
+                        // ❌ Không thấy Combo -> thông báo
+                        if (!hasCombo)
+                        {
+                            LoggingHelper.LogInfo("❌ API KM004: No Combo found -> Cannot apply promo");
+                            return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
+                        }
+
+                        LoggingHelper.LogInfo("✅ API KM004: Combo detected -> Promo can be applied");
+                    }
+                    catch (Exception ex)
                     {
-                        return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
+                        LoggingHelper.LogError(ex);
+                        return Ok(new { success = false, message = "Lỗi kiểm tra mã khuyến mãi" });
                     }
                 }
+
 
                 // ✅ Mã khuyến mãi áp dụng được
                 string discountType = promo.loai_giam_gia == "%" || (promo.loai_giam_gia ?? "").Contains("%") ? "%" : "VND";
@@ -2048,63 +2120,302 @@ namespace WebCinema.Controllers.API
             }
         }
 
-        // Helper: detect Combo in various food item representations sent by clients
-        private bool ContainsComboInFoodItems(Newtonsoft.Json.Linq.JArray foodItems)
+        /// <summary>
+        /// POST: api/customer/generate-seat-qr
+        /// Tạo ảnh QR ghế và tải lên (để mobile app có thể load)
+        /// Trả về URL của ảnh QR ghế được lưu trên server
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPost]
+        [Route("generate-seat-qr")]
+        [Authorize]
+        public IHttpActionResult GenerateSeatQRCode([FromBody] JObject data)
         {
             try
             {
-                if (foodItems == null) return false;
+                int ticketId = data["ticket_id"]?.Value<int>() ?? 0;
 
-                foreach (var item in foodItems)
+                if (ticketId <= 0)
+                    return BadRequest("Ticket ID không hợp lệ");
+
+                var ticket = db.Ves.FirstOrDefault(v => v.ve_id == ticketId);
+                if (ticket == null)
+                    return NotFound();
+
+                // ✅ Nếu vé chưa có mã QR, tạo mới
+                if (string.IsNullOrEmpty(ticket.ma_qr_code))
                 {
-                    if (item == null) continue;
-
-                    // 1) Check common client-side property names for food type
-                    string foodType = item["FoodType"]?.ToString()
-                                      ?? item["food_type"]?.ToString()
-                                      ?? item["loai"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodType) && foodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 2) Check common client-side property names for food name
-                    string foodName = item["FoodName"]?.ToString()
-                                      ?? item["food_name"]?.ToString()
-                                      ?? item["name"]?.ToString()
-                                      ?? item["ten_san_pham"]?.ToString()
-                                      ?? string.Empty;
-
-                    if (!string.IsNullOrEmpty(foodName) && foodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                        return true;
-
-                    // 3) DB lookup fallback using any common id fields
-                    var idToken = item["FoodId"] ?? item["food_id"] ?? item["id"] ?? item["Do_An_id"];
-                    if (idToken != null)
-                    {
-                        if (int.TryParse(idToken.ToString(), out int fid))
-                        {
-                            var fobj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == fid);
-                            if (fobj != null)
-                            {
-                                string dbFoodType = fobj.loai ?? string.Empty;
-                                string dbFoodName = fobj.ten_san_pham ?? string.Empty;
-                                if (dbFoodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    dbFoodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
+                    ticket.ma_qr_code = Guid.NewGuid().ToString();
+                    db.SubmitChanges();
+                    LoggingHelper.LogInfo($"✅ Created new QR code for ticket {ticketId}: {ticket.ma_qr_code}");
                 }
+
+                // ✅ Tạo ảnh QR ghế từ mã QR code và lưu vào server
+                var qrService = new QRCodeTicketService();
+                string qrImagePath = qrService.GenerateAndSaveQRCode(ticket.ma_qr_code);
+
+                if (string.IsNullOrEmpty(qrImagePath))
+                {
+                    return BadRequest("Lỗi khi tạo QR code cho ghế");
+                }
+
+                LoggingHelper.LogInfo($"✅ Generated seat QR code: Ticket {ticketId}, Path: {qrImagePath}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo ảnh QR ghế thành công",
+                    data = new
+                    {
+                        ticket_id = ticketId,
+                        qr_code = ticket.ma_qr_code,
+                        qr_image_url = qrImagePath,
+                        qr_image_full_url = HttpContext.Current?.Request.Url.GetLeftPart(UriPartial.Authority) + qrImagePath
+                    }
+                });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(new Exception("ContainsComboInFoodItems error: " + ex.Message, ex));
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
             }
+        }
 
-            return false;
+        /// <summary>
+        /// GET: api/customer/my-tickets/{customerId}
+        /// Lấy danh sách VÉ CỦA TÔI (tất cả vé của khách hàng kèm QR code)
+        /// Khác với booking là vé là chi tiết từng chỗ ngồi
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpGet]
+        [Route("my-tickets/{customerId}")]
+        [Authorize]
+        public IHttpActionResult GetMyTickets(int customerId)
+        {
+            try
+            {
+                if (customerId <= 0)
+                    return BadRequest("Customer ID không hợp lệ");
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                    return NotFound();
+
+                // ✅ Lấy tất cả vé của khách hàng từ các booking
+                var tickets = db.Ves
+                    .Where(v => v.Dat_Ve != null && v.Dat_Ve.khach_hang_id == customerId)
+                    .OrderByDescending(v => v.Dat_Ve.ngay_tao)
+                    .ToList();
+
+                var qrService = new QRCodeTicketService();
+
+                var ticketList = tickets.Select(v => new
+                {
+                    ticket_id = v.ve_id,
+                    booking_id = v.Dat_Ve_id,
+                    movie_title = v.Suat_Chieu != null && v.Suat_Chieu.Phim != null ? v.Suat_Chieu.Phim.ten_phim : "N/A",
+                    cinema = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null 
+                        ? v.Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
+                    room = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null ? v.Suat_Chieu.Phong_Chieu.ten_phong : "N/A",
+                    seat_number = v.Ghe != null ? v.Ghe.so_ghe : "N/A",
+                    row = v.Ghe != null ? ((char)('A' + v.Ghe.hang)).ToString() : "N/A",
+                    column = v.Ghe != null ? v.Ghe.cot : 0,
+                    seat_type = v.Ghe != null && v.Ghe.Loai_Ghe != null ? v.Ghe.Loai_Ghe.ten_loai : "N/A",
+                    showtime_date = v.Suat_Chieu != null ? v.Suat_Chieu.ngay_chieu.ToString("yyyy-MM-dd") : "N/A",
+                    showtime_time = v.Suat_Chieu != null && v.Suat_Chieu.Ca_Chieu != null ? v.Suat_Chieu.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A",
+                    price = v.gia_ve,
+                    status = v.trang_thai_ve,
+                    qr_code = v.ma_qr_code,
+                    // ✅ Tạo URL QR code động từ mã vé
+                    qr_image_url = !string.IsNullOrEmpty(v.ma_qr_code) ? qrService.GetQRCodePath(v.ma_qr_code) : null,
+                    created_at = v.Dat_Ve != null && v.Dat_Ve.ngay_tao.HasValue ? v.Dat_Ve.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
+                    booking_status = v.Dat_Ve != null ? v.Dat_Ve.trang_thai_Dat_Ve : "N/A"
+                }).ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách vé thành công",
+                    data = new
+                    {
+                        total_tickets = ticketList.Count,
+                        tickets = ticketList
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/cancel-ticket
+        /// Hủy từng vé riêng lẻ (nếu booking chưa thanh toán)
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPost]
+        [Route("cancel-ticket")]
+        [Authorize]
+        public IHttpActionResult CancelTicket([FromBody] JObject data)
+        {
+            try
+            {
+                int ticketId = data["ticket_id"]?.Value<int>() ?? 0;
+
+                if (ticketId <= 0)
+                    return BadRequest("Ticket ID không hợp lệ");
+
+                var ticket = db.Ves.FirstOrDefault(v => v.ve_id == ticketId);
+                if (ticket == null)
+                    return NotFound();
+
+                // ✅ Kiểm tra vé có liên kết booking không
+                if (ticket.Dat_Ve_id == null)
+                {
+                    return Ok(new { success = false, message = "Vé không liên kết với đơn đặt nào" });
+                }
+
+                var booking = ticket.Dat_Ve;
+
+                // ✅ Chỉ hủy được nếu booking chưa thanh toán
+                if (booking.trang_thai_Dat_Ve == "Đã Thanh toán")
+                {
+                    return Ok(new { success = false, message = "Không thể hủy vé của đơn đã thanh toán" });
+                }
+
+                // ✅ Kiểm tra xem booking có những vé nào khác không
+                int totalTicketsInBooking = db.Ves.Count(v => v.Dat_Ve_id == booking.Dat_Ve_id);
+                int ticketsToDelete = 1; // chỉ hủy vé này
+                int remainingTickets = totalTicketsInBooking - ticketsToDelete;
+
+                // ✅ NẾU ĐÂY LÀ VÉ CUỐI CÙNG TRONG BOOKING, HỦY TOÀN BỘ BOOKING
+                if (remainingTickets <= 0)
+                {
+                    // ✅ Hủy tất cả vé trong booking
+                    var allTicketsInBooking = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+                    foreach (var ve in allTicketsInBooking)
+                    {
+                        ve.Dat_Ve_id = null;
+                        ve.trang_thai_ve = "Chưa sử dụng";
+                        ve.ma_qr_code = null;
+                    }
+
+                    // ✅ Xóa đồ ăn liên quan
+                    var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+                    foreach (var food in foodOrders)
+                    {
+                        db.DonHang_DoAns.DeleteOnSubmit(food);
+                    }
+
+                    // ✅ Cập nhật trạng thái booking
+                    booking.trang_thai_Dat_Ve = "Đã Hủy";
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"✅ Hủy toàn bộ booking: Booking {booking.Dat_Ve_id} (vé cuối cùng {ticketId}), Giải phóng {allTicketsInBooking.Count} vé");
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Hủy vé thành công (đó là vé cuối cùng nên booking đã bị hủy)",
+                        booking_cancelled = true,
+                        booking_id = booking.Dat_Ve_id
+                    });
+                }
+
+                // ✅ NẾU KHÔNG PHẢI VÉ CUỐI CÙNG, CHỈ HỦY VÉ ĐÓ
+                ticket.Dat_Ve_id = null;
+                ticket.trang_thai_ve = "Chưa sử dụng";
+                ticket.ma_qr_code = null;
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Hủy vé riêng: Ticket {ticketId} khỏi Booking {booking.Dat_Ve_id}, Còn lại {remainingTickets} vé");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Hủy vé thành công",
+                    ticket_id = ticketId,
+                    booking_id = booking.Dat_Ve_id,
+                    remaining_tickets_in_booking = remainingTickets,
+                    booking_cancelled = false
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/customer/tickets/{bookingId}
+        /// Lấy danh sách vé của một booking cụ thể (kèm QR code)
+        /// Khác với booking detail là chỉ lấy danh sách vé chi tiết hơn
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpGet]
+        [Route("tickets/{bookingId}")]
+        [Authorize]
+        public IHttpActionResult GetTicketsInBooking(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0)
+                    return BadRequest("Booking ID không hợp lệ");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return NotFound();
+
+                var qrService = new QRCodeTicketService();
+
+                var tickets = booking.Ves
+                    .OrderBy(v => v.Ghe != null ? v.Ghe.hang : 0)
+                    .ThenBy(v => v.Ghe != null ? v.Ghe.cot : 0)
+                    .Select(v => new
+                    {
+                        ticket_id = v.ve_id,
+                        booking_id = v.Dat_Ve_id,
+                        movie_title = booking.Ves.FirstOrDefault().Suat_Chieu != null && booking.Ves.FirstOrDefault().Suat_Chieu.Phim != null 
+                            ? booking.Ves.FirstOrDefault().Suat_Chieu.Phim.ten_phim : "N/A",
+                        cinema = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null
+                            ? v.Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
+                        room = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null ? v.Suat_Chieu.Phong_Chieu.ten_phong : "N/A",
+                        seat_number = v.Ghe != null ? v.Ghe.so_ghe : "N/A",
+                        row = v.Ghe != null ? ((char)('A' + v.Ghe.hang)).ToString() : "N/A",
+                        column = v.Ghe != null ? v.Ghe.cot : 0,
+                        seat_type = v.Ghe != null && v.Ghe.Loai_Ghe != null ? v.Ghe.Loai_Ghe.ten_loai : "N/A",
+                        showtime_date = v.Suat_Chieu != null ? v.Suat_Chieu.ngay_chieu.ToString("yyyy-MM-dd") : "N/A",
+                        showtime_time = v.Suat_Chieu != null && v.Suat_Chieu.Ca_Chieu != null ? v.Suat_Chieu.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A",
+                        price = v.gia_ve,
+                        status = v.trang_thai_ve,
+                        qr_code = v.ma_qr_code,
+                        qr_image_url = !string.IsNullOrEmpty(v.ma_qr_code) ? qrService.GetQRCodePath(v.ma_qr_code) : null
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách vé trong booking thành công",
+                    data = new
+                    {
+                        booking_id = bookingId,
+                        total_tickets = tickets.Count,
+                        booking_status = booking.trang_thai_Dat_Ve,
+                        created_at = booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
+                        tickets = tickets
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
         }
     }
 }

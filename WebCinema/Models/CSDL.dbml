@@ -7,20 +7,23 @@
       <Association Name="Ca_Chieu_Suat_Chieu" Member="Suat_Chieus" ThisKey="ca_chieu_id" OtherKey="ca_chieu_id" Type="Suat_Chieu" />
     </Type>
   </Table>
-  <Table Name="dbo.Ve" Member="Ves">
-    <Type Name="Ve">
-      <Column Name="ve_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="ghe_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="Dat_Ve_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="suat_chieu_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ma_qr_code" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="trang_thai_ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="gia_ve" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
-      <Column Name="trang_thai_thanh_toan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Association Name="Ve_Danh_Gia" Member="Danh_Gias" ThisKey="ve_id" OtherKey="ve_id" Type="Danh_Gia" />
-      <Association Name="Dat_Ve_Ve" Member="Dat_Ve" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Dat_Ve" IsForeignKey="true" />
-      <Association Name="Ghe_Ve" Member="Ghe" ThisKey="ghe_id" OtherKey="ghe_id" Type="Ghe" IsForeignKey="true" />
-      <Association Name="Suat_Chieu_Ve" Member="Suat_Chieu" ThisKey="suat_chieu_id" OtherKey="suat_chieu_id" Type="Suat_Chieu" IsForeignKey="true" />
+  <Table Name="dbo.Yeu_Cau_Huy_Ve" Member="Yeu_Cau_Huy_Ves">
+    <Type Name="Yeu_Cau_Huy_Ve">
+      <Column Name="yeu_cau_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="dat_ve_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="khach_hang_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="so_tai_khoan_atm" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="ly_do_huy" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="so_tien_hoan_lai" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
+      <Column Name="phan_tram_hoan_30" Type="System.Decimal" DbType="Decimal(5,2)" CanBeNull="true" />
+      <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="ngay_tao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ngay_duyet" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="admin_duyet_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ghi_chu" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Association Name="Dat_Ve_Yeu_Cau_Huy_Ve" Member="Dat_Ve" ThisKey="dat_ve_id" OtherKey="Dat_Ve_id" Type="Dat_Ve" IsForeignKey="true" />
+      <Association Name="Khach_Hang_Yeu_Cau_Huy_Ve" Member="Khach_Hang" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Khach_Hang" IsForeignKey="true" />
+      <Association Name="Nhan_Vien_Yeu_Cau_Huy_Ve" Member="Nhan_Vien" ThisKey="admin_duyet_id" OtherKey="nhanvien_id" Type="Nhan_Vien" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Chi_Tiet_Phieu_Nhap" Member="Chi_Tiet_Phieu_Nhaps">
@@ -45,9 +48,9 @@
       <Column Name="noi_dung" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="diem_rating" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ngay_Danh_Gia" Type="System.DateTime" DbType="DateTime2" CanBeNull="true" />
-      <Association Name="Ve_Danh_Gia" Member="Ve" ThisKey="ve_id" OtherKey="ve_id" Type="Ve" IsForeignKey="true" />
       <Association Name="Khach_Hang_Danh_Gia" Member="Khach_Hang" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Khach_Hang" IsForeignKey="true" />
       <Association Name="Phim_Danh_Gia" Member="Phim" ThisKey="phim_id" OtherKey="phim_id" Type="Phim" IsForeignKey="true" />
+      <Association Name="Ve_Danh_Gia" Member="Ve" ThisKey="ve_id" OtherKey="ve_id" Type="Ve" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Dao_Dien" Member="Dao_Diens">
@@ -71,9 +74,10 @@
       <Column Name="trang_thai_Dat_Ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="ma_giam_gia_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="phuong_thuc_thanh_toan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Association Name="Dat_Ve_Ve" Member="Ves" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Ve" />
+      <Association Name="Dat_Ve_Yeu_Cau_Huy_Ve" Member="Yeu_Cau_Huy_Ves" ThisKey="Dat_Ve_id" OtherKey="dat_ve_id" Type="Yeu_Cau_Huy_Ve" />
       <Association Name="Dat_Ve_DonHang_DoAn" Member="DonHang_DoAns" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="DonHang_DoAn" />
       <Association Name="Dat_Ve_Lich_Su_Ton_Kho" Member="Lich_Su_Ton_Khos" ThisKey="Dat_Ve_id" OtherKey="dat_ve_id" Type="Lich_Su_Ton_Kho" />
+      <Association Name="Dat_Ve_Ve" Member="Ves" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Ve" />
       <Association Name="Khach_Hang_Dat_Ve" Member="Khach_Hang" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Khach_Hang" IsForeignKey="true" />
       <Association Name="Khuyen_Mai_Dat_Ve" Member="Khuyen_Mai" ThisKey="ma_giam_gia_id" OtherKey="ma_giam_gia_id" Type="Khuyen_Mai" IsForeignKey="true" />
       <Association Name="Nhan_Vien_Dat_Ve" Member="Nhan_Vien" ThisKey="nhan_vien_id" OtherKey="nhanvien_id" Type="Nhan_Vien" IsForeignKey="true" />
@@ -142,6 +146,8 @@
       <Column Name="ngay_sinh" Type="System.DateTime" DbType="Date" CanBeNull="true" />
       <Column Name="gioi_tinh" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
       <Column Name="dia_chi" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="atm" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Association Name="Khach_Hang_Yeu_Cau_Huy_Ve" Member="Yeu_Cau_Huy_Ves" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Yeu_Cau_Huy_Ve" />
       <Association Name="Khach_Hang_Danh_Gia" Member="Danh_Gias" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Danh_Gia" />
       <Association Name="Khach_Hang_Dat_Ve" Member="Dat_Ves" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Dat_Ve" />
     </Type>
@@ -239,10 +245,13 @@
       <Column Name="ngay_vao_lam" Type="System.DateTime" DbType="Date" CanBeNull="true" />
       <Column Name="trang_thai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
       <Column Name="mat_khau" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="rap_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Nhan_Vien_Yeu_Cau_Huy_Ve" Member="Yeu_Cau_Huy_Ves" ThisKey="nhanvien_id" OtherKey="admin_duyet_id" Type="Yeu_Cau_Huy_Ve" />
       <Association Name="Nhan_Vien_Dat_Ve" Member="Dat_Ves" ThisKey="nhanvien_id" OtherKey="nhan_vien_id" Type="Dat_Ve" />
       <Association Name="Nhan_Vien_Lich_Su_Ton_Kho" Member="Lich_Su_Ton_Khos" ThisKey="nhanvien_id" OtherKey="nhan_vien_id" Type="Lich_Su_Ton_Kho" />
       <Association Name="Nhan_Vien_Phieu_Nhap_Hang" Member="Phieu_Nhap_Hangs" ThisKey="nhanvien_id" OtherKey="nguoi_duyet_id" Type="Phieu_Nhap_Hang" />
       <Association Name="Nhan_Vien_Phieu_Nhap_Hang1" Member="Phieu_Nhap_Hangs1" ThisKey="nhanvien_id" OtherKey="nhan_vien_id" Type="Phieu_Nhap_Hang" />
+      <Association Name="Rap_Nhan_Vien" Member="Rap" ThisKey="rap_id" OtherKey="rap_id" Type="Rap" IsForeignKey="true" />
       <Association Name="Role_Nhan_Vien" Member="Role" ThisKey="role_id" OtherKey="role_id" Type="Role" IsForeignKey="true" />
     </Type>
   </Table>
@@ -315,6 +324,7 @@
       <Column Name="dia_chi" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="email" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="mo_ta" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Association Name="Rap_Nhan_Vien" Member="Nhan_Viens" ThisKey="rap_id" OtherKey="rap_id" Type="Nhan_Vien" />
       <Association Name="Rap_Phong_Chieu" Member="Phong_Chieus" ThisKey="rap_id" OtherKey="rap_id" Type="Phong_Chieu" />
     </Type>
   </Table>
@@ -353,6 +363,22 @@
       <Column Name="mo_ta" Type="System.String" DbType="NVarChar(200)" CanBeNull="true" />
       <Association Name="Dien_Vien_Vai_Dien" Member="Dien_Vien" ThisKey="dien_vien_id" OtherKey="dienvien_id" Type="Dien_Vien" IsForeignKey="true" />
       <Association Name="Phim_Vai_Dien" Member="Phim" ThisKey="phim_id" OtherKey="phim_id" Type="Phim" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Ve" Member="Ves">
+    <Type Name="Ve">
+      <Column Name="ve_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ghe_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Dat_Ve_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="suat_chieu_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ma_qr_code" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="trang_thai_ve" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="gia_ve" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
+      <Column Name="trang_thai_thanh_toan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Association Name="Ve_Danh_Gia" Member="Danh_Gias" ThisKey="ve_id" OtherKey="ve_id" Type="Danh_Gia" />
+      <Association Name="Dat_Ve_Ve" Member="Dat_Ve" ThisKey="Dat_Ve_id" OtherKey="Dat_Ve_id" Type="Dat_Ve" IsForeignKey="true" />
+      <Association Name="Ghe_Ve" Member="Ghe" ThisKey="ghe_id" OtherKey="ghe_id" Type="Ghe" IsForeignKey="true" />
+      <Association Name="Suat_Chieu_Ve" Member="Suat_Chieu" ThisKey="suat_chieu_id" OtherKey="suat_chieu_id" Type="Suat_Chieu" IsForeignKey="true" />
     </Type>
   </Table>
 </Database>
