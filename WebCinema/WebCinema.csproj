@@ -409,9 +409,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Areas\Admin\Data\" />
-    <Folder Include="Areas\Admin\Views\Home_admin\" />
     <Folder Include="Areas\Admin\Views\Invoice\" />
-    <Folder Include="Areas\Admin\Views\PromoController\" />
     <Folder Include="Content\images\actors\" />
     <Folder Include="Content\images\directors\" />
     <Folder Include="Content\images\movies\" />
@@ -420,7 +418,6 @@
     <Folder Include="Content\vendor\bootstrap\" />
     <Folder Include="Content\vendor\fontawesome\" />
     <Folder Include="Content\vendor\jquery\" />
-    <Folder Include="Views\Evaluate\" />
     <Folder Include="Views\Promo\" />
   </ItemGroup>
   <ItemGroup>

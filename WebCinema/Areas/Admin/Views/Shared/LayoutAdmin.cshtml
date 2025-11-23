@@ -434,6 +434,31 @@
                 align-items: flex-start;
             }
         }
+
+        /* Submenu */
+        .submenu {
+            display: none;
+            background: rgba(255,255,255,0.05);
+        }
+
+            .submenu .menu-link {
+                padding-left: 3rem;
+                font-size: 0.95rem;
+            }
+
+        .menu-item.open .submenu {
+            display: block;
+        }
+
+        .menu-item .menu-link.toggle {
+            cursor: pointer;
+        }
+        .fa-chevron-down.rotated {
+            transform: rotate(180deg);
+            transition: 0.3s;
+        }
+
+
     </style>
 </head>
 <body>
@@ -453,29 +478,35 @@
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "MovieManagement", new { area = "Admin" })" class="menu-link">
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
                         <i class="fas fa-film menu-icon"></i>
-                        <span>Quản lý Phim</span>
+                        <span>Quản lý Nội Dung</span>
+                        <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
                     </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "ActorManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-user-friends menu-icon"></i>
-                        <span>Quản lý Diễn Viên</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "DirectorManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-video menu-icon"></i>
-                        <span>Quản lý Đạo Diễn</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "ProducerManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-industry menu-icon"></i>
-                        <span>Quản lý Nhà Sản Xuất</span>
-                    </a>
+
+                    <ul class="submenu">
+                        <li>
+                            <a href="@Url.Action("Index", "MovieManagement", new { area = "Admin" })" class="menu-link">
+                                Phim
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "ActorManagement", new { area = "Admin" })" class="menu-link">
+                                Diễn Viên
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "DirectorManagement", new { area = "Admin" })" class="menu-link">
+                                Đạo Diễn
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "ProducerManagement", new { area = "Admin" })" class="menu-link">
+                                Nhà Sản Xuất
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="menu-item">
                     <a href="@Url.Action("Index", "ShowtimeManagement", new { area = "Admin" })" class="menu-link">
@@ -495,78 +526,108 @@
                         <span>Quản lý Rạp</span>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "BookingManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-ticket-alt menu-icon"></i>
-                        <span>Quản lý Đơn Đặt</span>
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
+                        <i class="fas fa-shopping-cart menu-icon"></i>
+                        <span>Quản lý Đơn Hàng</span>
+                        <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
                     </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="@Url.Action("Index", "BookingManagement", new { area = "Admin" })" class="menu-link">
+                                Đơn đặt vé
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "TicketManagement", new { area = "Admin" })" class="menu-link">
+                                Vé suất chiếu
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "TicketRefundManagement", new { area = "Admin" })" class="menu-link">
+                                Hủy vé
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "TicketManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-clipboard-list menu-icon"></i>
-                        <span>Quản lý Vé Suất Chiếu</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "TicketRefundManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-trash-alt menu-icon"></i>
-                        <span>Quản lý Hủy Vé</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "InventoryManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-warehouse menu-icon"></i>
-                        <span>Quản lý Kho Hàng</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "PurchaseOrder", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-truck-loading menu-icon"></i>
-                        <span>Nhập Hàng</span>
-                    </a>
-                </li>
+
                 @*<li class="menu-item">
-                    <a href="@Url.Action("StockWarnings", "InventoryManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-exclamation-triangle menu-icon"></i>
-                        <span>Cảnh Báo Tồn Kho</span>
-                    </a>
-                </li>*@
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "UserManagement", new { area = "Admin" })" class="menu-link">
+            <a href="@Url.Action("Index", "InventoryManagement", new { area = "Admin" })" class="menu-link">
+                <i class="fas fa-warehouse menu-icon"></i>
+                <span>Quản lý Kho Hàng</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="@Url.Action("Index", "PurchaseOrder", new { area = "Admin" })" class="menu-link">
+                <i class="fas fa-truck-loading menu-icon"></i>
+                <span>Nhập Hàng</span>
+            </a>
+        </li>*@
+                @*<li class="menu-item">
+            <a href="@Url.Action("StockWarnings", "InventoryManagement", new { area = "Admin" })" class="menu-link">
+                <i class="fas fa-exclamation-triangle menu-icon"></i>
+                <span>Cảnh Báo Tồn Kho</span>
+            </a>
+        </li>*@
+                @*<li class="menu-item">
+            <a href="@Url.Action("Index", "UserManagement", new { area = "Admin" })" class="menu-link">
+                <i class="fas fa-users menu-icon"></i>
+                <span>Quản lý User</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="@Url.Action("Staff", "UserManagement", new { area = "Admin" })" class="menu-link">
+                <i class="fas fa-user-tie menu-icon"></i>
+                <span>Quản lý Nhân Viên</span>
+            </a>
+        </li>*@
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
                         <i class="fas fa-users menu-icon"></i>
-                        <span>Quản lý User</span>
+                        <span>Quản lý Tài Khoản</span>
+                        <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
                     </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="@Url.Action("Index", "UserManagement", new { area = "Admin" })" class="menu-link">
+                                Khách hàng
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Staff", "UserManagement", new { area = "Admin" })" class="menu-link">
+                                Nhân viên
+                            </a>
+                        </li>
+                    </ul>
                 </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Staff", "UserManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-user-tie menu-icon"></i>
-                        <span>Quản lý Nhân Viên</span>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "ReviewManagement", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-star menu-icon"></i>
-                        <span>Quản lý Đánh Giá</span>
-                    </a>
-                </li>
-                @*<li class="menu-item">
-                    <a href="@Url.Action("Index", "StaffOfflineBooking", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-cash-register menu-icon"></i>
-                        <span>Đặt Vé Offline</span>
-                    </a>
-                </li>*@
-                @*<li class="menu-item">
-                    <a href="@Url.Action("TicketVerification", "StaffOfflineBooking", new { area = "Admin" })" class="menu-link">
-                        <i class="fas fa-check-double menu-icon"></i>
-                        <span>Soát Vé</span>
-                    </a>
-                </li>*@
-                <li class="menu-item">
-                    <a href="@Url.Action("Index", "Promo", new { area = "Admin" })" class="menu-link">
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
                         <i class="fas fa-tag menu-icon"></i>
-                        <span>Quản lý Khuyến Mãi</span>
+                        <span>Quản lý Dịch Vụ</span>
+                        <i class="fas fa-chevron-down" style="margin-left:auto;"></i>
                     </a>
+                    <ul class="submenu">
+                        <li>
+                            <a href="@Url.Action("Index", "ReviewManagement", new { area = "Admin" })" class="menu-link">
+                                Đánh giá
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "Promo", new { area = "Admin" })" class="menu-link">
+                                Khuyến mãi
+                            </a>
+                        </li>
+                        <li>
+                            <a href="@Url.Action("Index", "InventoryManagement", new { area = "Admin" })" class="menu-link">
+                                Sản phẩm
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
                 <li class="menu-item">
                     <a href="@Url.Action("Index", "Home", new { area = "" })" class="menu-link">
                         <i class="fas fa-arrow-left menu-icon"></i>
@@ -617,283 +678,52 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Active menu item
-        $(document).ready(function () {
-            var currentPath = window.location.pathname;
-            $('.menu-link').each(function () {
-                if (this.pathname === currentPath) {
-                    $(this).addClass('active');
-                }
-            });
+        //$(document).ready(function () {
+        //    var currentPath = window.location.pathname;
+        //    $('.menu-link').each(function () {
+        //        if (this.pathname === currentPath) {
+        //            $(this).addClass('active');
+        //        }
+        //    });
 
-            // Auto-hide alerts after 5 seconds
-            setTimeout(function () {
-                $('.alert').fadeOut();
-            }, 5000);
-        });
+        //    // Auto-hide alerts after 5 seconds
+        //    setTimeout(function () {
+        //        $('.alert').fadeOut();
+        //    }, 5000);
+        //});
 
         // Confirm delete
         function confirmDelete(message) {
             return confirm(message || 'Bạn có chắc chắn muốn xóa?');
         }
+
+        $(document).ready(function () {
+            // Active menu item
+            var currentPath = window.location.pathname;
+            $('.menu-link').each(function () {
+                if (this.pathname === currentPath) {
+                    $(this).addClass('active');
+
+                    // Nếu link trong submenu → mở submenu
+                    let parent = $(this).closest('.has-submenu');
+                    parent.addClass('open');
+                }
+            });
+
+            $('.menu-link.toggle').on('click', function () {
+                $(this).parent('.menu-item').toggleClass('open');
+            });
+
+
+
+            // Auto-hide alerts
+            setTimeout(function () {
+                $('.alert').fadeOut();
+            }, 5000);
+        });
+
     </script>
 
     @RenderSection("scripts", required: false)
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
