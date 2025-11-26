@@ -1,0 +1,104 @@
+﻿
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='utf-8'>
+                        <style>
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { font-family: 'Times New Roman', Times, serif; color: #333; }
+                            .invoice-container { max-width: 800px; margin: 0 auto; padding: 30px; border: 1px solid #999; }
+                            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
+                            .header h1 { font-size: 28px; color: #d32f2f; margin-bottom: 5px; }
+                            .header p { font-size: 14px; color: #666; }
+                            .invoice-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+                            .info-section { flex: 1; }
+                            .info-section h3 { font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+                            .info-section p { font-size: 12px; margin-bottom: 3px; }
+                            .info-section strong { display: block; font-size: 14px; margin-bottom: 8px; }
+                            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                            table th { background-color: #f5f5f5; border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; font-weight: bold; }
+                            table td { border: 1px solid #ddd; padding: 10px; font-size: 12px; }
+                            table tr:nth-child(even) { background-color: #fafafa; }
+                            .section-title { font-size: 13px; font-weight: bold; margin-top: 20px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+                            .total-section { margin-top: 20px; border-top: 2px solid #333; padding-top: 15px; }
+                            .total-row { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+                            .total-row span:first-child { width: 200px; text-align: right; }
+                            .total-row span:last-child { width: 100px; text-align: right; font-weight: bold; }
+                            .grand-total { display: flex; justify-content: flex-end; margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd; }
+                            .grand-total span:first-child { width: 200px; text-align: right; font-size: 14px; font-weight: bold; }
+                            .grand-total span:last-child { width: 100px; text-align: right; font-size: 16px; font-weight: bold; color: #d32f2f; }
+                            .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 11px; color: #999; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='invoice-container'>
+                            <div class='header'>
+                                <h1>🎬 HÓA ĐƠN MUA VÉ</h1>
+                                <p>WebCinema - Hệ Thống Đặt Vé Xem Phim Online</p>
+                            </div>
+
+                            <div class='invoice-info'>
+                                <div class='info-section'>
+                                    <h3>Mã Hóa Đơn</h3>
+                                    <strong>BK000141</strong>
+                                    <p><small>Ngày lập: 24-11-2025 20:32:10</small></p>
+                                </div>
+                                <div class='info-section'>
+                                    <h3>Thông Tin Khách Hàng</h3>
+                                    <p><strong>Nguyễn Quang Hải</strong></p>
+                                    <p>Email: duyan9088@gmail.com</p>
+                                    <p>Điện thoại: 03884041774</p>
+                                </div>
+                                <div class='info-section'>
+                                    <h3>Trạng Thái</h3>
+                                    <p style='color: #4caf50; font-weight: bold;'>Đã Thanh toán</p>
+                                </div>
+                            </div>
+
+                            <div class='section-title'>🎥 Thông Tin Suất Chiếu</div>
+                            
+                                <div style='background-color: #f5f5f5; padding: 15px; margin-bottom: 20px; border-radius: 5px;'>
+                                    <p><strong>Phim:</strong> Saving Private Ryan</p>
+                                    <p><strong>Rạp:</strong> DAV Cinemax Đồng Tháp</p>
+                                    <p><strong>Phòng:</strong> Phòng 1</p>
+                                    <p><strong>Ngày chiếu:</strong> 30-11-2025 - <strong>Giờ:</strong> 08:00</p>
+                                </div>
+                            
+
+                            <div class='section-title'>🎟️ Danh Sách Vé</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Ghế</th>
+                                        <th>Loại Ghế</th>
+                                        <th>Giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>A10</td>
+                        <td>Standard</td>
+                        <td style='text-align: right;'>82.000 ₫</td>
+                    </tr>
+                </tbody>
+                            </table>
+
+                            
+
+                            <div class='total-section'>
+                                <div class='total-row'><span>Tổng Tiền Vé:</span><span>82.000 ₫</span></div>
+                                
+                                <div class='grand-total'><span>TỔNG CỘNG:</span><span>82.000 ₫</span></div>
+                            </div>
+
+                            <div class='footer'>
+                                <p>✅ Cảm ơn quý khách đã mua vé tại WebCinema</p>
+                                <p>Vui lòng giữ hóa đơn này để kiểm tra vé tại rạp</p>
+                                <p style='margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;'>© 2024 WebCinema. Địa chỉ: 123 Đường Lê Lợi, TP.HCM | Hotline: 1900-xxxx</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                

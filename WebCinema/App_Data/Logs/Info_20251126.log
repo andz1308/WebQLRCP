@@ -1,0 +1,108 @@
+[2025-11-26 08:15:02] ? BookingExpirationService started
+[2025-11-26 08:15:39] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
+[2025-11-26 08:15:39] Booked seat ids: 202,211,212,221,222,231,232,242
+[2025-11-26 08:15:47] ✅ Tạo Dat_Ve mới: ID=1147, Trạng thái=Chưa thanh toán
+[2025-11-26 08:15:47] ✅ Sinh QR code: DAVCINEMA-1147-769-638997417471951927 -> qr_DAVCINEMA-1147-769-638997417471951927.png
+[2025-11-26 08:15:47] ✅ Cập nhật Dat_Ve: ID=1147, Tổng tiền=97000,00, Vé=1, Đồ ăn=0
+[2025-11-26 08:15:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1147
+[2025-11-26 08:15:47] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:15:47]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:15:47] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:16:56] ✅ Đơn hàng chờ duyệt: Booking ID 1147, PromoCode: 
+[2025-11-26 08:17:05] ✅ ApproveBooking: Duyệt Dat_Ve ID=1147, khách hàng: Nguyễn Quang Hải
+[2025-11-26 08:17:07] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1147
+[2025-11-26 08:17:07] ✅ Hiển thị trang thanh toán thành công: Booking 1147
+[2025-11-26 08:17:07] 🔄 GenerateAndSendFullInvoicePdf: Starting for booking 1147
+[2025-11-26 08:17:07] ✅ Found booking 1147, customer ID: 26
+[2025-11-26 08:17:07] ✅ Customer has email: duyan9088@gmail.com
+[2025-11-26 08:17:07] 🔄 GenerateFullInvoiceHtml: Starting for booking 1147
+[2025-11-26 08:17:07] ✅ Found 1 tickets, showtime: 29
+[2025-11-26 08:17:07] ✅ Totals: tickets=82000,00, food=15000,000000, grand=97000,00, foodItems=1
+[2025-11-26 08:17:07] ✅ Generated HTML, length: 5285
+[2025-11-26 08:17:23] ✅ Generated HTML content, length: 5285
+[2025-11-26 08:17:23] ⚠️ PDF generation failed or returned empty filename for booking 1147, falling back to HTML
+[2025-11-26 08:17:23] ✅ Hóa đơn được lưu: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001147_20251126_081723.html
+[2025-11-26 08:17:23] ✅ Fallback: HTML file created: Invoice_BK001147_20251126_081723.html
+[2025-11-26 08:17:23] 📧 Starting SendInvoiceEmail: recipient=duyan9088@gmail.com, file=Invoice_BK001147_20251126_081723.html
+[2025-11-26 08:17:23] 📁 Invoice file path: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001147_20251126_081723.html
+[2025-11-26 08:17:23] 📁 Server.MapPath('~'): D:\WebQLRCP\WebCinema\
+[2025-11-26 08:17:23] 📁 _invoiceFolder: Content/hoadon
+[2025-11-26 08:17:23] ✅ File exists, size: 5398 bytes
+[2025-11-26 08:17:24] 📤 Connecting to SMTP: smtp.gmail.com:587, SSL=True
+[2025-11-26 08:17:25] ✅ SMTP connected successfully
+[2025-11-26 08:17:25] ✅ SMTP authenticated successfully
+[2025-11-26 08:17:27] ✅ Email sent successfully
+[2025-11-26 08:17:27] ✅ SMTP disconnected
+[2025-11-26 08:17:27] ✅ Email hóa đơn gửi thành công → duyan9088@gmail.com
+[2025-11-26 08:17:27] ✅ Invoice sent successfully: Booking 1147 -> duyan9088@gmail.com
+[2025-11-26 08:17:27] ✅ PaymentSuccess: PDF hóa đơn gửi tự động thành công
+[2025-11-26 08:26:47] ? BookingExpirationService started
+[2025-11-26 08:27:21] SelectSeats (Fresh DB): showtime=29, paidBookings=66, bookedCount=9
+[2025-11-26 08:27:21] Booked seat ids: 202,211,212,221,222,231,232,241,242
+[2025-11-26 08:27:30] ✅ Tạo Dat_Ve mới: ID=1148, Trạng thái=Chưa thanh toán
+[2025-11-26 08:27:30] ✅ Sinh QR code: DAVCINEMA-1148-771-638997424507242605 -> qr_DAVCINEMA-1148-771-638997424507242605.png
+[2025-11-26 08:27:30] ✅ Cập nhật Dat_Ve: ID=1148, Tổng tiền=97000,00, Vé=1, Đồ ăn=0
+[2025-11-26 08:27:30] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1148
+[2025-11-26 08:27:31] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:27:31]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:27:31] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:27:38] ✅ Đơn hàng chờ duyệt: Booking ID 1148, PromoCode: 
+[2025-11-26 08:28:11] ✅ ApproveBooking: Duyệt Dat_Ve ID=1148, khách hàng: Nguyễn Quang Hải
+[2025-11-26 08:28:13] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1148
+[2025-11-26 08:28:13] ✅ Hiển thị trang thanh toán thành công: Booking 1148
+[2025-11-26 08:28:13] 🔄 GenerateAndSendFullInvoicePdf: Starting for booking 1148
+[2025-11-26 08:28:13] ✅ Found booking 1148, customer ID: 26
+[2025-11-26 08:28:13] ✅ Customer has email: duyan9088@gmail.com
+[2025-11-26 08:28:13] 🔄 GenerateFullInvoiceHtml: Starting for booking 1148
+[2025-11-26 08:28:13] ✅ Found 1 tickets, showtime: 29
+[2025-11-26 08:28:13] ✅ Totals: tickets=82000,00, food=15000,000000, grand=97000,00, foodItems=1
+[2025-11-26 08:28:13] ✅ Generated HTML, length: 5285
+[2025-11-26 08:28:31] ✅ Generated HTML content, length: 5238
+[2025-11-26 08:28:31] ⚠️ PDF generation failed or returned empty filename for booking 1148, falling back to HTML
+[2025-11-26 08:28:31] ✅ Hóa đơn được lưu: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001148_20251126_082831.html
+[2025-11-26 08:28:31] ✅ Fallback: HTML file created: Invoice_BK001148_20251126_082831.html
+[2025-11-26 08:28:31] 📧 Starting SendInvoiceEmail: recipient=duyan9088@gmail.com, file=Invoice_BK001148_20251126_082831.html
+[2025-11-26 08:28:31] 📁 Invoice file path: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001148_20251126_082831.html
+[2025-11-26 08:28:31] 📁 Server.MapPath('~'): D:\WebQLRCP\WebCinema\
+[2025-11-26 08:28:31] 📁 _invoiceFolder: Content/hoadon
+[2025-11-26 08:28:31] ✅ File exists, size: 5398 bytes
+[2025-11-26 08:28:31] 📤 Connecting to SMTP: smtp.gmail.com:587, SSL=True
+[2025-11-26 08:28:33] ✅ SMTP connected successfully
+[2025-11-26 08:28:33] ✅ SMTP authenticated successfully
+[2025-11-26 08:28:34] ✅ Email sent successfully
+[2025-11-26 08:28:35] ✅ SMTP disconnected
+[2025-11-26 08:28:35] ✅ Email hóa đơn gửi thành công → duyan9088@gmail.com
+[2025-11-26 08:28:35] ✅ Invoice sent successfully: Booking 1148 -> duyan9088@gmail.com
+[2025-11-26 08:28:35] ✅ PaymentSuccess: PDF hóa đơn gửi tự động thành công
+[2025-11-26 08:42:58] ? BookingExpirationService started
+[2025-11-26 08:44:19] ✅ Email HTML gửi thành công → duyan9088@gmail.com
+[2025-11-26 08:44:19] ✅ Hủy vé liền: Booking 1148, Customer 26, Ngân hàng: VCB, STK: 1234567888, Hoàn: 67900,000
+[2025-11-26 08:47:08] ✅ Email HTML gửi thành công → duyan9088@gmail.com
+[2025-11-26 08:47:08] ✅ Hủy vé liền: Booking 1147, Customer 26, Ngân hàng: VCB, STK: 1234567888, Hoàn: 67900,000
+[2025-11-26 08:58:34] ? BookingExpirationService started
+[2025-11-26 08:58:56] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
+[2025-11-26 08:58:56] Booked seat ids: 202,211,212,221,222,231,232,242
+[2025-11-26 08:59:56] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
+[2025-11-26 08:59:56] Booked seat ids: 202,211,212,221,222,231,232,242
+[2025-11-26 09:03:42] ? BookingExpirationService started
+[2025-11-26 09:03:53] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
+[2025-11-26 09:03:53] Booked seat ids: 202,211,212,221,222,231,232,242
+[2025-11-26 09:04:00] ✅ Chuẩn bị thanh toán (chưa lưu DB): 1 ghế, tổng: 122000,00
+[2025-11-26 09:04:29] ✅ Chuẩn bị thanh toán (chưa lưu DB): 1 ghế, tổng: 122000,00
+[2025-11-26 09:29:21] ? BookingExpirationService started
+[2025-11-26 09:30:06] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
+[2025-11-26 09:30:06] Booked seat ids: 202,211,212,221,222,231,232,242
+[2025-11-26 09:50:59] ? BookingExpirationService started
+[2025-11-26 10:07:03] ? BookingExpirationService started
+[2025-11-26 10:08:09] ✅ Delete: Xóa Dat_Ve ID=1, đã xóa 0 vé và 1 đồ ăn
+[2025-11-26 10:08:26] ✅ Delete: Xóa Dat_Ve ID=3, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:08:32] ✅ Delete: Xóa Dat_Ve ID=2, đã xóa 0 vé và 1 đồ ăn
+[2025-11-26 10:10:00] ✅ Delete: Xóa Dat_Ve ID=4, đã xóa 0 vé và 1 đồ ăn
+[2025-11-26 10:10:04] ✅ Delete: Xóa Dat_Ve ID=5, đã xóa 2 vé và 0 đồ ăn
+[2025-11-26 10:10:07] ✅ Delete: Xóa Dat_Ve ID=6, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:10:10] ✅ Delete: Xóa Dat_Ve ID=7, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:10:14] ✅ Delete: Xóa Dat_Ve ID=8, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:10:17] ✅ Delete: Xóa Dat_Ve ID=9, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:10:21] ✅ Delete: Xóa Dat_Ve ID=10, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:10:24] ✅ Delete: Xóa Dat_Ve ID=11, đã xóa 0 vé và 0 đồ ăn
+[2025-11-26 10:24:51] ? Staff Cancel: H?y Dat_Ve ID=150, gi?i phóng 1 vé

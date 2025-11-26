@@ -1,0 +1,458 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+using iText.Html2pdf;
+using iText.Kernel.Pdf;
+
+namespace WebCinema.Services
+{
+    public class InvoiceService
+    {
+        private readonly string _invoiceFolder = "Content/hoadon";
+
+        public InvoiceService()
+        {
+            string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _invoiceFolder);
+            if (!Directory.Exists(folderPath))
+            {
+                Directory.CreateDirectory(folderPath);
+            }
+        }
+
+        /// <summary>
+        /// Tạo HTML hóa đơn từ Dat_Ve
+        /// </summary>
+        public string GenerateInvoiceHtml(Dat_Ve booking)
+        {
+            try
+            {
+                if (booking == null) return "";
+
+                // Lấy thông tin từ database
+                using (var db = new CSDLDataContext())
+                {
+                    // Lấy danh sách vé
+                    var tickets = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+
+                    // Lấy showtime từ vé đầu tiên
+                    var firstTicket = tickets.FirstOrDefault();
+                    var showtime = firstTicket?.Suat_Chieu;
+
+                    // Tính tổng tiền vé
+                    decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+
+                    // Lấy danh sách đồ ăn
+                    var foodItems = db.DonHang_DoAns
+                        .Where(f => f.Dat_Ve_id == booking.Dat_Ve_id)
+                        .Select(f => new
+                        {
+                            FoodName = f.Do_An.ten_san_pham,
+                            Quantity = (int)f.so_luong,
+                            Price = (decimal)(f.Do_An.gia ?? 0m),
+                            TotalPrice = (decimal)(f.so_luong * (f.Do_An.gia ?? 0m))
+                        })
+                        .ToList<dynamic>();
+
+                    decimal foodTotal = foodItems.Sum(f => (decimal)f.TotalPrice);
+
+                    // Tạo HTML
+                    return GenerateInvoiceHtml(booking, showtime, tickets, foodItems, ticketTotal, foodTotal, "");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Error in GenerateInvoiceHtml(Dat_Ve)");
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Tạo HTML hóa đơn theo giao diện Razor
+        /// </summary>
+        public string GenerateInvoiceHtml(Dat_Ve booking, Suat_Chieu showtime, List<Ve> tickets, List<dynamic> foodItems, decimal ticketTotal, decimal foodTotal, string qrCodeUrl)
+        {
+            if (booking == null) return "";
+
+            decimal grandTotal = booking.tong_tien;
+
+            string gioBatDau = "N/A";
+            if (showtime?.Ca_Chieu != null)
+            {
+                try { gioBatDau = showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm"); }
+                catch { gioBatDau = "N/A"; }
+            }
+
+            // HTML template
+            string html = $@"
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<style>
+/* --- copy CSS từ Razor page của bạn --- */
+.success-container {{ max-width: 1000px; margin: 2rem auto; padding: 0 2rem; }}
+.success-header {{ background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; padding: 3rem 2rem; border-radius: 12px; text-align: center; margin-bottom: 2rem; }}
+.success-header h1 {{ font-size: 2.5rem; margin: 0 0 0.5rem 0; }}
+.success-message {{ font-size: 1.1rem; opacity: 0.95; }}
+.invoice-box {{ background: white; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }}
+.invoice-header-section {{ background: #f8f9fa; padding: 1.5rem; border-bottom: 2px solid #e0e0e0; }}
+.invoice-header-section h2 {{ margin: 0; color: #333; font-size: 1.5rem; text-align: center; }}
+.invoice-body {{ padding: 2rem; }}
+.info-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f0f0f0; }}
+.info-item {{ display: flex; justify-content: space-between; padding: 0.5rem 0; }}
+.info-label {{ color: #666; font-weight: 500; }}
+.info-value {{ color: #333; font-weight: 600; }}
+.ticket-section {{ margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid #f0f0f0; }}
+.ticket-section h3 {{ color: #333; font-size: 1.1rem; margin-bottom: 1rem; font-weight: 600; }}
+.ticket-list {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 0.8rem; }}
+.ticket-item {{ background: #f9f9f9; border: 2px solid #667eea; border-radius: 6px; padding: 0.8rem; text-align: center; color: #667eea; font-weight: 600; font-size: 0.85rem; }}
+.food-table {{ width: 100%; border-collapse: collapse; margin-bottom: 2rem; }}
+.food-table th {{ background: #f0f0f0; padding: 0.8rem; text-align: left; font-weight: 600; border-bottom: 2px solid #e0e0e0; }}
+.food-table td {{ padding: 0.8rem; border-bottom: 1px solid #e0e0e0; }}
+.total-section {{ background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%); color: white; padding: 1.5rem; margin-bottom: 2rem; }}
+.total-item {{ display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.2); }}
+.total-final {{ display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: bold; padding-top: 1rem; border-top: 2px solid rgba(255,255,255,0.3); margin-top: 1rem; }}
+</style>
+</head>
+<body>
+<div class='success-container'>
+    <div class='success-header'>
+        <h1>Thanh Toán Thành Công!</h1>
+        <p>Đơn hàng của bạn đã được xác nhận.</p>
+    </div>
+
+    <div class='invoice-box'>
+        <div class='invoice-header-section'>
+            <h2>HÓA ĐƠN ĐẶT VÉ</h2>
+        </div>
+        <div class='invoice-body'>
+            <div class='info-grid'>
+                <div>
+                    <div class='info-item'><span class='info-label'>Mã Đơn Hàng:</span><span class='info-value'>#{booking.Dat_Ve_id}</span></div>
+                    <div class='info-item'><span class='info-label'>Ngày Tạo:</span><span class='info-value'>{(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")}</span></div>
+                    <div class='info-item'><span class='info-label'>Trạng Thái:</span><span class='info-value' style='color: #27ae60;'>Đã Thanh Toán</span></div>
+                </div>
+                <div>
+                    <div class='info-item'><span class='info-label'>Khách Hàng:</span><span class='info-value'>{booking.Khach_Hang?.ho_ten ?? "N/A"}</span></div>
+                    <div class='info-item'><span class='info-label'>Email:</span><span class='info-value'>{booking.Khach_Hang?.email ?? "N/A"}</span></div>
+                    <div class='info-item'><span class='info-label'>Số Điện Thoại:</span><span class='info-value'>{booking.Khach_Hang?.so_dien_thoai ?? "N/A"}</span></div>
+                </div>
+            </div>
+
+            <div class='info-grid'>
+                <div>
+                    <div class='info-item'><span class='info-label'>Tên Phim:</span><span class='info-value'>{showtime?.Phim?.ten_phim ?? "N/A"}</span></div>
+                    <div class='info-item'><span class='info-label'>Rạp:</span><span class='info-value'>{showtime?.Phong_Chieu?.Rap?.ten_rap ?? "N/A"}</span></div>
+                </div>
+                <div>
+                    <div class='info-item'><span class='info-label'>Phòng:</span><span class='info-value'>{showtime?.Phong_Chieu?.ten_phong ?? "N/A"}</span></div>
+                    <div class='info-item'><span class='info-label'>Ngày & Giờ Chiếu:</span><span class='info-value'>{showtime?.ngay_chieu.ToString("dd/MM/yyyy") ?? "N/A"} lúc {gioBatDau}</span></div>
+                </div>
+            </div>
+
+            <div class='ticket-section'>
+                <h3>Danh Sách Vé ({tickets?.Count ?? 0} vé)</h3>
+                <div class='ticket-list'>";
+            foreach (var t in tickets)
+            {
+                html += $"<div class='ticket-item'>{t.Ghe?.so_ghe ?? "N/A"}</div>";
+            }
+            html += "</div></div>";
+
+            // Đồ ăn
+            if (foodItems != null && foodItems.Count > 0)
+            {
+                html += "<div class='ticket-section'><h3>Đồ Ăn & Thức Uống</h3><table class='food-table'><thead><tr><th>Tên</th><th>SL</th><th>Đơn Giá</th><th>Thành Tiền</th></tr></thead><tbody>";
+                foreach (var item in foodItems)
+                {
+                    var name = item?.FoodName ?? "N/A";
+                    var qty = (int)(item?.Quantity ?? 0);
+                    var price = (decimal)(item?.Price ?? 0m);
+                    var total = (decimal)(item?.TotalPrice ?? 0m);
+                    html += $"<tr><td>{name}</td><td>{qty}</td><td>{price:N0} đ</td><td>{total:N0} đ</td></tr>";
+                }
+                html += "</tbody></table></div>";
+            }
+
+            // Tổng cộng
+            html += $@"
+            <div class='total-section'>
+                <div class='total-item'><span>Tiền Vé:</span><span>{ticketTotal:N0} đ</span></div>";
+            if (foodTotal > 0)
+            {
+                html += $"<div class='total-item'><span>Đồ Ăn & Thức Uống:</span><span>{foodTotal:N0} đ</span></div>";
+            }
+            html += $"<div class='total-final'><span>TỔNG THANH TOÁN</span><span>{grandTotal:N0} đ</span></div></div></div></div></div></div></body></html>";
+
+            return html;
+        }
+
+        /// <summary>
+        /// Lưu HTML thành file
+        /// </summary>
+        public string SaveInvoiceToFile(Dat_Ve booking)
+        {
+            try
+            {
+                string html = GenerateInvoiceHtml(booking);
+                if (string.IsNullOrEmpty(html))
+                    return "";
+
+                string fileName = $"Invoice_BK{booking.Dat_Ve_id:D6}_{DateTime.Now:yyyyMMdd_HHmmss}.html";
+                string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _invoiceFolder);
+                string filePath = Path.Combine(folderPath, fileName);
+
+                // Ghi file
+                File.WriteAllText(filePath, html, System.Text.Encoding.UTF8);
+
+                LoggingHelper.LogInfo($"✅ Hóa đơn được lưu: {filePath}");
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Error saving invoice to file");
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Lưu HTML thành PDF
+        /// </summary>
+        public string SaveInvoiceToPdf(string htmlContent, int bookingId)
+        {
+            try
+            {
+                string fileName = $"Invoice_BK{bookingId}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _invoiceFolder);
+                string filePath = Path.Combine(folderPath, fileName);
+
+                // Dùng FileStream thay vì PdfDocument trực tiếp
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    iText.Html2pdf.HtmlConverter.ConvertToPdf(htmlContent, fs);
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                // logging nếu muốn
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Tạo file hóa đơn và gửi email cho khách hàng
+        /// </summary>
+        public bool GenerateAndSendInvoiceEmail(int bookingId)
+        {
+            try
+            {
+                using (var db = new CSDLDataContext())
+                {
+                    // Lấy thông tin booking
+                    var booking = db.Dat_Ves
+                                    .Where(b => b.Dat_Ve_id == bookingId)
+                                    .FirstOrDefault();
+
+                    if (booking == null) return false;
+
+                    // Kiểm tra email khách hàng
+                    if (booking.Khach_Hang == null || string.IsNullOrWhiteSpace(booking.Khach_Hang.email))
+                    {
+                        LoggingHelper.LogError(new Exception($"Customer {booking.khach_hang_id} has no email"));
+                        return false;
+                    }
+
+                    // Tạo file hóa đơn
+                    string invoiceFileName = SaveInvoiceToFile(booking);
+                    if (string.IsNullOrEmpty(invoiceFileName))
+                        return false;
+
+                    // Gửi email
+                    var emailService = new EmailService();
+                    bool emailSent = emailService.SendInvoiceEmail(
+                        booking.Khach_Hang.email,
+                        booking.Khach_Hang.ho_ten,
+                        invoiceFileName
+                    );
+
+                    if (emailSent)
+                    {
+                        LoggingHelper.LogInfo($"✅ Hóa đơn được gửi qua email: Booking {bookingId} -> {booking.Khach_Hang.email}");
+                    }
+
+                    return emailSent;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ Lỗi GenerateAndSendInvoiceEmail: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tạo PDF từ HTML và lưu file
+        /// </summary>
+        public string SaveInvoiceToPdfFromHtml(string htmlContent, int bookingId)
+        {
+            try
+            {
+                string fileName = $"Invoice_BK{bookingId:D6}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                string folderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _invoiceFolder);
+                string filePath = Path.Combine(folderPath, fileName);
+
+                // Tạo PDF từ HTML
+                using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                {
+                    iText.Html2pdf.HtmlConverter.ConvertToPdf(htmlContent, fs);
+                }
+
+                LoggingHelper.LogInfo($"✅ PDF hóa đơn được lưu: {filePath}");
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Error saving PDF from HTML");
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Tạo HTML đầy đủ từ PaymentSuccess.cshtml template
+        /// </summary>
+        public string GenerateFullInvoiceHtml(Dat_Ve booking)
+        {
+            try
+            {
+                LoggingHelper.LogInfo($"🔄 GenerateFullInvoiceHtml: Starting for booking {booking?.Dat_Ve_id}");
+
+                if (booking == null)
+                {
+                    LoggingHelper.LogError(new Exception("Booking is null"));
+                    return "";
+                }
+
+                using (var db = new CSDLDataContext())
+                {
+                    // Lấy thông tin tickets
+                    var tickets = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+                    var showtime = tickets.FirstOrDefault()?.Suat_Chieu;
+
+                    LoggingHelper.LogInfo($"✅ Found {tickets.Count} tickets, showtime: {showtime?.suat_chieu_id}");
+
+                    // Tính toán totals
+                    decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                    var foodItems = db.DonHang_DoAns
+                        .Where(f => f.Dat_Ve_id == booking.Dat_Ve_id)
+                        .Select(f => new
+                        {
+                            FoodName = f.Do_An.ten_san_pham,
+                            Quantity = (int)f.so_luong,
+                            Price = (decimal)(f.Do_An.gia ?? 0m),
+                            TotalPrice = (decimal)(f.so_luong * (f.Do_An.gia ?? 0m))
+                        })
+                        .ToList<dynamic>();
+                    decimal foodTotal = foodItems.Sum(f => (decimal)f.TotalPrice);
+                    decimal grandTotal = booking.tong_tien;
+
+                    LoggingHelper.LogInfo($"✅ Totals: tickets={ticketTotal}, food={foodTotal}, grand={grandTotal}, foodItems={foodItems.Count}");
+
+                    // Tạo HTML đầy đủ từ template
+                    string html = GenerateInvoiceHtml(booking, showtime, tickets, foodItems, ticketTotal, foodTotal, "");
+
+                    LoggingHelper.LogInfo($"✅ Generated HTML, length: {html?.Length ?? 0}");
+
+                    return html;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Error in GenerateFullInvoiceHtml");
+                return "";
+            }
+        }
+
+        /// <summary>
+        /// Tạo PDF từ booking ID và gửi email
+        /// </summary>
+        public bool GenerateAndSendFullInvoicePdf(int bookingId)
+        {
+            try
+            {
+                LoggingHelper.LogInfo($"🔄 GenerateAndSendFullInvoicePdf: Starting for booking {bookingId}");
+
+                using (var db = new CSDLDataContext())
+                {
+                    var booking = db.Dat_Ves
+                                    .Where(b => b.Dat_Ve_id == bookingId)
+                                    .FirstOrDefault();
+
+                    if (booking == null)
+                    {
+                        LoggingHelper.LogError(new Exception($"Booking {bookingId} not found"));
+                        return false;
+                    }
+
+                    LoggingHelper.LogInfo($"✅ Found booking {bookingId}, customer ID: {booking.khach_hang_id}");
+
+                    if (booking.Khach_Hang == null || string.IsNullOrWhiteSpace(booking.Khach_Hang.email))
+                    {
+                        LoggingHelper.LogError(new Exception($"Customer {booking.khach_hang_id} has no email"));
+                        return false;
+                    }
+
+                    LoggingHelper.LogInfo($"✅ Customer has email: {booking.Khach_Hang.email}");
+
+                    // Tạo HTML đầy đủ từ template
+                    string htmlContent = GenerateFullInvoiceHtml(booking);
+                    if (string.IsNullOrEmpty(htmlContent))
+                    {
+                        LoggingHelper.LogError(new Exception("GenerateFullInvoiceHtml returned empty string"));
+                        return false;
+                    }
+
+                    LoggingHelper.LogInfo($"✅ Generated HTML content, length: {htmlContent.Length}");
+
+                    // Tạo PDF
+                    string pdfFileName = SaveInvoiceToPdfFromHtml(htmlContent, bookingId);
+                    if (string.IsNullOrEmpty(pdfFileName))
+                    {
+                        LoggingHelper.LogError(new Exception("SaveInvoiceToPdfFromHtml returned empty string"));
+                        return false;
+                    }
+
+                    LoggingHelper.LogInfo($"✅ Created PDF file: {pdfFileName}");
+
+                    // Gửi email với PDF đính kèm
+                    var emailService = new Services.EmailService();
+                    bool emailSent = emailService.SendInvoiceEmail(
+                        booking.Khach_Hang.email,
+                        booking.Khach_Hang.ho_ten,
+                        pdfFileName
+                    );
+
+                    if (emailSent)
+                    {
+                        LoggingHelper.LogInfo($"✅ PDF hóa đơn được gửi qua email: Booking {bookingId} -> {booking.Khach_Hang.email}");
+                        return true;
+                    }
+                    else
+                    {
+                        LoggingHelper.LogError(new Exception("SendInvoiceEmail returned false"));
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ Lỗi GenerateAndSendFullInvoicePdf: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}

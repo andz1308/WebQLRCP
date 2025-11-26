@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace WebCinema.Models
+{
+    /// <summary>
+    /// DTO cho đồ ăn - dùng trong quá trình kiểm tra khuyến mãi
+    /// </summary>
+    public class FoodItemDTO
+    {
+        public int FoodId { get; set; }
+        public string FoodName { get; set; }
+        public string FoodType { get; set; }
+        public int Quantity { get; set; }
+    }
+}

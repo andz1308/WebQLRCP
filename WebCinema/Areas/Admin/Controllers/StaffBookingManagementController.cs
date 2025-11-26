@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Web.Mvc;
 using WebCinema.Models;
@@ -67,7 +67,7 @@ namespace WebCinema.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                TempData["ErrorMessage"] = "L?i khi t?i chi ti?t ??n ??t: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi khi tải chi tiết đơn đặt: " + ex.Message;
                 return RedirectToAction("Index", "StaffShowtimeTicketManagement");
             }
         }
@@ -81,21 +81,21 @@ namespace WebCinema.Areas.Admin.Controllers
                 var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == id);
                 if (booking == null)
                 {
-                    return Json(new { success = false, message = "Kh�ng t�n t?i." });
+                    return Json(new { success = false, message = "Không tồn tại." });
                 }
 
-                booking.trang_thai_Dat_Ve = "?� H?y";
+                booking.trang_thai_Dat_Ve = "Đã Hủy";
 
-                // ? B??C 1: Gi?i ph�ng T?T C? v� c?a booking n�y
+                // ? B??C 1: Gi?i phóng T?T C? vé c?a booking này
                 var allVesInBooking = db.Ves.Where(v => v.Dat_Ve_id == id).ToList();
                 foreach (var ticket in allVesInBooking)
                 {
                     ticket.Dat_Ve_id = null;
-                    ticket.trang_thai_ve = "Ch?a s? d?ng";
+                    ticket.trang_thai_ve = "Chưa sử dụng";
                     ticket.ma_qr_code = null;
                 }
 
-                // ? B??C 2: X�a t?t c? ??n h�ng ?? ?n
+                // ? B??C 2: Xóa t?t c? ??n hàng ?? ?n
                 var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == id).ToList();
                 foreach (var food in foodOrders)
                 {
@@ -104,14 +104,14 @@ namespace WebCinema.Areas.Admin.Controllers
 
                 db.SubmitChanges();
 
-                LoggingHelper.LogInfo($"? Staff Cancel: H?y Dat_Ve ID={id}, gi?i ph�ng {allVesInBooking.Count} v�");
+                LoggingHelper.LogInfo($"? Staff Cancel: Hủy Dat_Ve ID={id}, giải phóng {allVesInBooking.Count} vé");
 
-                return Json(new { success = true, message = "H?y ??n ??t th�nh c�ng!" });
+                return Json(new { success = true, message = "Hủy đơn đặt thành công!" });
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                return Json(new { success = false, message = "C� l?i x?y ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
 

@@ -1,0 +1,224 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Configuration;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using System.IO;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Services
+{
+    public class EmailService
+    {
+        private readonly string _smtpServer;
+        private readonly int _smtpPort;
+        private readonly string _senderEmail;
+        private readonly string _senderPassword;
+        private readonly bool _enableSSL;
+        private readonly string _invoiceFolder;
+
+        public EmailService()
+        {
+            _smtpServer = WebConfigurationManager.AppSettings["Email:SmtpServer"] ?? "smtp.gmail.com";
+            _smtpPort = int.TryParse(WebConfigurationManager.AppSettings["Email:SmtpPort"], out var port) ? port : 587;
+            _senderEmail = WebConfigurationManager.AppSettings["Email:SenderEmail"] ?? "daianh2k00@gmail.com";
+            _senderPassword = WebConfigurationManager.AppSettings["Email:SenderPassword"] ?? "oxpf ewhq bqyx gvwf";
+            _enableSSL = bool.TryParse(WebConfigurationManager.AppSettings["Email:EnableSSL"], out var ssl) ? ssl : true;
+            _invoiceFolder = WebConfigurationManager.AppSettings["Email:InvoiceFolder"] ?? "Content/hoadon";
+        }
+
+        // ====================================
+        // 1. Gửi email hóa đơn (có file đính kèm)
+        // ====================================
+        public bool SendInvoiceEmail(string recipientEmail, string customerName, string invoiceFileName)
+        {
+            try
+            {
+                LoggingHelper.LogInfo($"📧 Starting SendInvoiceEmail: recipient={recipientEmail}, file={invoiceFileName}");
+
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    throw new Exception("❌ Recipient email is empty");
+                }
+
+                string invoiceFilePath = Path.Combine(HttpContext.Current.Server.MapPath("~"), _invoiceFolder, invoiceFileName);
+                LoggingHelper.LogInfo($"📁 Invoice file path: {invoiceFilePath}");
+
+                if (!File.Exists(invoiceFilePath))
+                {
+                    throw new FileNotFoundException($"❌ Invoice file not found: {invoiceFilePath}");
+                }
+
+                LoggingHelper.LogInfo($"✅ File exists, size: {new FileInfo(invoiceFilePath).Length} bytes");
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("DAV Cinema", _senderEmail));
+                message.To.Add(new MailboxAddress(customerName, recipientEmail));
+                message.Subject = "Hóa Đơn Mua Vé Xem Phim - DAV Cinema";
+
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = $@"
+                    <html><body>
+                    <h2>Xin chào {customerName}</h2>
+                    <p>Cảm ơn bạn đã mua vé tại DAV Cinema.</p>
+                    <p>Hóa đơn của bạn được đính kèm.</p>
+                    <p><strong>Lưu ý:</strong> Vui lòng giữ file hóa đơn để kiểm tra vé tại rạp.</p>
+                    </body></html>";
+
+                bodyBuilder.Attachments.Add(invoiceFilePath);
+                message.Body = bodyBuilder.ToMessageBody();
+
+                LoggingHelper.LogInfo($"📤 Connecting to SMTP: {_smtpServer}:{_smtpPort}, SSL={_enableSSL}");
+
+                using (var client = new SmtpClient())
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    client.Connect(_smtpServer, _smtpPort, SecureSocketOptions.StartTls);
+                    LoggingHelper.LogInfo("✅ SMTP connected successfully");
+
+                    client.Authenticate(_senderEmail, _senderPassword);
+                    LoggingHelper.LogInfo("✅ SMTP authenticated successfully");
+
+                    client.Send(message);
+                    LoggingHelper.LogInfo("✅ Email sent successfully");
+
+                    client.Disconnect(true);
+                    LoggingHelper.LogInfo("✅ SMTP disconnected");
+                }
+
+                LoggingHelper.LogInfo($"✅ Email hóa đơn gửi thành công → {recipientEmail}");
+                return true;
+            }
+            catch (SmtpCommandException ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ SMTP Command Error ({ex.ErrorCode}) | Status: {ex.StatusCode} | Message: {ex.Message}");
+                return false;
+            }
+            catch (SmtpProtocolException ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ SMTP Protocol Error: {ex.Message}");
+                return false;
+            }
+            catch (AuthenticationException ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ SMTP Authentication Error: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ Lỗi khi gửi email hóa đơn: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                return false;
+            }
+        }
+
+        // ====================================
+        // 2. Gửi email hóa đơn HTML
+        // ====================================
+        public bool SendInvoiceEmailWithHtml(string recipientEmail, string customerName, string invoiceHtml, string invoiceFileName = "")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    throw new Exception("❌ Recipient email is empty");
+                }
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("WebCinema", _senderEmail));
+                message.To.Add(new MailboxAddress(customerName, recipientEmail));
+                message.Subject = "Hóa Đơn Mua Vé Xem Phim - WebCinema";
+
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = $@"
+                    <html><body>
+                    <h2>Xin chào {customerName}</h2>
+                    {invoiceHtml}
+                    </body></html>";
+
+                if (!string.IsNullOrWhiteSpace(invoiceFileName))
+                {
+                    string fullPath = Path.Combine(HttpContext.Current.Server.MapPath("~"), _invoiceFolder, invoiceFileName);
+                    if (File.Exists(fullPath))
+                        bodyBuilder.Attachments.Add(fullPath);
+                }
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using (var client = new SmtpClient())
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    client.Connect(_smtpServer, _smtpPort, SecureSocketOptions.StartTls);
+
+                    client.Authenticate(_senderEmail, _senderPassword);
+
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+
+                LoggingHelper.LogInfo($"✅ Email HTML gửi thành công → {recipientEmail}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ Lỗi khi gửi email HTML: {ex.Message}");
+                return false;
+            }
+        }
+
+        // ====================================
+        // 3. Email xác nhận thanh toán
+        // ====================================
+        public bool SendPaymentConfirmationEmail(string recipientEmail, string customerName, int bookingId, decimal amount)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    throw new Exception("❌ Recipient email is empty");
+                }
+
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("WebCinema", _senderEmail));
+                message.To.Add(new MailboxAddress(customerName, recipientEmail));
+                message.Subject = "Thanh Toán Thành Công - WebCinema";
+
+                var bodyBuilder = new BodyBuilder();
+                bodyBuilder.HtmlBody = $@"
+                    <html><body>
+                        <h2>Thanh toán thành công!</h2>
+                        <p>Xin chào {customerName},</p>
+                        <p>Mã đơn: <b>{bookingId}</b></p>
+                        <p>Số tiền: <b>{amount:N0} ₫</b></p>
+                        <p>Ngày: {DateTime.Now:dd/MM/yyyy HH:mm}</p>
+                    </body></html>";
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using (var client = new SmtpClient())
+                {
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    client.Connect(_smtpServer, _smtpPort, SecureSocketOptions.StartTls);
+
+                    client.Authenticate(_senderEmail, _senderPassword);
+
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+
+                LoggingHelper.LogInfo($"✅ Email thanh toán gửi thành công → {recipientEmail}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"❌ Lỗi email thanh toán: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                return false;
+            }
+        }
+    }
+}

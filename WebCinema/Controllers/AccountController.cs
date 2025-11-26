@@ -230,21 +230,26 @@ namespace WebCinema.Controllers
                     return RedirectToAction("Logout");
                 }
 
-                // ✅ Lấy lịch sử đặt vé
                 var db = new CSDLDataContext();
                 var bookings = db.Dat_Ves
-                    .Where(b => b.khach_hang_id == customerId)
+                    .Where(b => b.khach_hang_id == customerId
+                             && b.trang_thai_Dat_Ve == "Đã Thanh toán")   // 👈 Lọc tại đây
                     .OrderByDescending(b => b.ngay_tao)
-                    .ToList()  // ✅ Chuyển sang LINQ to Objects trước
-                    .Select(b => new CustomerBookingViewModel
+                    .ToList()
+                    .Select(b =>
                     {
-                        booking_id = b.Dat_Ve_id,
-                        movie_name = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.Phim.ten_phim : "N/A",
-                        show_date = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.ngay_chieu.ToString("dd/MM/yyyy") : "N/A",
-                        cinema_name = b.Ves.FirstOrDefault() != null ? b.Ves.FirstOrDefault().Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
-                        ticket_count = b.Ves.Count,
-                        total_amount = b.tong_tien,
-                        status = b.trang_thai_Dat_Ve
+                        var firstTicket = b.Ves.FirstOrDefault();
+
+                        return new CustomerBookingViewModel
+                        {
+                            booking_id = b.Dat_Ve_id,
+                            movie_name = firstTicket?.Suat_Chieu.Phim.ten_phim ?? "",
+                            show_date = firstTicket?.Suat_Chieu.ngay_chieu.ToString("dd/MM/yyyy") ?? "",
+                            cinema_name = firstTicket?.Suat_Chieu.Phong_Chieu.Rap.ten_rap ?? "",
+                            ticket_count = b.Ves.Count,
+                            total_amount = b.tong_tien,
+                            status = b.trang_thai_Dat_Ve
+                        };
                     })
                     .ToList();
 

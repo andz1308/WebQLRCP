@@ -176,6 +176,22 @@
         min-height: 100px;
     }
 
+    .form-select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
     .alert {
         padding: 1rem;
         border-radius: 8px;
@@ -238,11 +254,21 @@
             }
             else if (cancelRequest.trang_thai == "Đã Hủy")
             {
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i> <strong>Vé đã hủy thành công</strong><br/>
-                    Số tiền hoàn lại: @cancelRequest.so_tien_hoan_lai?.ToString("N0") ₫ (Ngân hàng: ****@cancelRequest.so_tai_khoan_atm.Substring(cancelRequest.so_tai_khoan_atm.Length - 4))<br/>
-                    Ngày duyệt: @cancelRequest.ngay_duyet.Value.ToString("dd/MM/yyyy HH:mm")
-                </div>
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i> <strong>Vé đã hủy thành công</strong><br />
+        Số tiền hoàn lại: @(cancelRequest.so_tien_hoan_lai.HasValue
+            ? cancelRequest.so_tien_hoan_lai.Value.ToString("N0") + " ₫"
+            : "")
+        <br />
+        @{
+            var bankInfo = cancelRequest.so_tai_khoan_atm.Split(':');
+            if (bankInfo != null && bankInfo.Length == 2)
+            {
+                <text>Ngân hàng: @bankInfo[0]<br /></text>
+                <text>Số tài khoản: ****@bankInfo[1].Substring(Math.Max(0, bankInfo[1].Length - 4))<br /></text>
+            }
+        }
+    </div>
             }
             else if (cancelRequest.trang_thai == "Từ chối")
             {
@@ -338,11 +364,36 @@
 
                         <div class="form-group" style="margin-top: 1.5rem;">
                             <label class="form-label">
-                                <i class="fas fa-bank"></i> Số Tài Khoản ATM (để nhận hoàn tiền)
+                                <i class="fas fa-bank"></i> Chọn Ngân Hàng <span style="color:red;">*</span>
+                            </label>
+                            <select name="bankCode" id="bankCode" class="form-select" required>
+                                <option value="">-- Vui lòng chọn ngân hàng --</option>
+                                <option value="VCB">🏦 Vietcombank (VCB)</option>
+                                <option value="BIDV">🏦 BIDV</option>
+                                <option value="TCB">🏦 Techcombank (TCB)</option>
+                                <option value="MB">🏦 MB Bank</option>
+                                <option value="ACB">🏦 ACB</option>
+                                <option value="SHB">🏦 SHB</option>
+                                <option value="STB">🏦 Sacombank (STB)</option>
+                                <option value="VIB">🏦 VIB</option>
+                                <option value="OCB">🏦 OCB</option>
+                                <option value="ABBANK">🏦 ABBank</option>
+                                <option value="HDB">🏦 HDBank (HDB)</option>
+                                <option value="MSB">🏦 MSB</option>
+                                <option value="NAB">🏦 Nam A Bank (NAB)</option>
+                                <option value="EIB">🏦 Eximbank (EIB)</option>
+                                <option value="Agribank">🏦 Agribank</option>
+                                <option value="DongABank">🏦 Dong A Bank</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-credit-card"></i> Số Tài Khoản <span style="color:red;">*</span>
                             </label>
                             <input type="text" name="bankAccount" id="bankAccount" class="form-input" 
-                                   placeholder="Nhập 10-20 chữ số" minlength="10" maxlength="20" pattern="\d{10,20}">
-                            <small style="color: #666;">Nếu bạn đã lưu tài khoản trước, có thể để trống</small>
+                                   placeholder="Nhập 10-20 chữ số" minlength="10" maxlength="20" pattern="\d{10,20}" required>
+                            <small style="color: #666;">Nhập số tài khoản ngân hàng để nhận hoàn tiền</small>
                         </div>
 
                         <div class="form-group">
@@ -368,19 +419,28 @@
 @section scripts {
     <script>
         function submitCancelRequest() {
+            const bankCode = document.getElementById('bankCode').value.trim();
             const bankAccount = document.getElementById('bankAccount').value.trim();
             const reason = document.getElementById('reason').value.trim();
 
-            if (!bankAccount && !confirm("Bạn chưa nhập số tài khoản ATM. Bạn có tài khoản được lưu từ trước không?")) {
+            // Kiểm tra ngân hàng
+            if (!bankCode) {
+                alert("❌ Vui lòng chọn Ngân hàng");
                 return false;
             }
 
-            if (bankAccount && (bankAccount.length < 10 || bankAccount.length > 20 || !/^\d+$/.test(bankAccount))) {
-                alert("Số tài khoản phải là 10-20 chữ số");
+            // Kiểm tra số tài khoản
+            if (!bankAccount) {
+                alert("❌ Vui lòng nhập số tài khoản");
                 return false;
             }
 
-            if (!confirm("⚠️ Bạn sắp hủy vé này!\n\n💰 Bạn sẽ nhận được 70% giá trị vé\n(Phí hủy 30%: @(Math.Round(Model.tong_tien * 0.3m, 0).ToString("N0")) ₫)\n\nXác nhận?")) {
+            if (bankAccount.length < 10 || bankAccount.length > 20 || !/^\d+$/.test(bankAccount)) {
+                alert("❌ Số tài khoản phải là 10-20 chữ số");
+                return false;
+            }
+
+            if (!confirm("⚠️ Bạn sắp hủy vé này!\n\n💰 Bạn sẽ nhận được 70% giá trị vé\n(Phí hủy 30%: @(Math.Round(Model.tong_tien * 0.3m, 0).ToString("N0")) ₫)\n\n🏦 Ngân hàng: " + bankCode + "\n\nXác nhận?")) {
                 return false;
             }
 
@@ -390,6 +450,7 @@
                 data: {
                     __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
                     bookingId: @Model.Dat_Ve_id,
+                    bankCode: bankCode,
                     bankAccount: bankAccount,
                     reason: reason
                 },

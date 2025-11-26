@@ -73,7 +73,7 @@ namespace WebCinema.Controllers
                     .ToList();
 
                 var bookedSeats = freshDb.Ves
-                    .Where(v => v.Suat_Chieu.suat_chieu_id == id 
+                    .Where(v => v.Suat_Chieu.suat_chieu_id == id
                         && v.Dat_Ve_id != null
                         && paidBookingIds.Contains(v.Dat_Ve_id.Value))
                     .Select(v => v.ghe_id)
@@ -189,7 +189,7 @@ namespace WebCinema.Controllers
 
             // Get food items
             var foods = db.Do_Ans.ToList();
-            
+
             var showtimeId = (int)Session["ShowtimeId"];
             var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
 
@@ -199,7 +199,7 @@ namespace WebCinema.Controllers
             return View();
         }
 
-        // **BƯỚC 3: ĐI THẲNG ĐẾN CHECKOUT - LƯUL ĐẶTK VÉ VÀO DB**
+        // **BƯỚC 3: ĐI THẲNG ĐẾN CHECKOUT - LƯU ĐẶT VÉ VÀO DB**
         [HttpPost]
         public ActionResult Payment(string selectedFoods)
         {
@@ -215,7 +215,7 @@ namespace WebCinema.Controllers
                 selectedFoods = selectedFoods ?? "";
 
                 var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
-                
+
                 var tickets = db.Ves
                     .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
                     .ToList();
@@ -228,7 +228,7 @@ namespace WebCinema.Controllers
                     .ToList();
 
                 var unavailableSeats = tickets
-                    .Where(t => t.Dat_Ve_id != null 
+                    .Where(t => t.Dat_Ve_id != null
                         && paidBookingIds.Contains(t.Dat_Ve_id.Value))
                     .ToList();
 
@@ -241,8 +241,8 @@ namespace WebCinema.Controllers
                 decimal foodTotal = 0;
 
                 var khachHangId = Session["CustomerId"] as int? ?? 1;
-                
-                // ✅ TẠO ĐƠN VỚI TRẠNG THÁI "CHƯA THANH TOÁN" NGAY KHI CHỌN XONGs GHẾ & ĐỒ ĂN
+
+                // ✅ TẠO ĐƠN VỚI TRẠNG THÁI "CHƯA THANH TOÁN" NGAY KHI CHỌN XONG GHẾ & ĐỒ ĂN
                 var booking = new Dat_Ve
                 {
                     khach_hang_id = khachHangId,
@@ -263,7 +263,7 @@ namespace WebCinema.Controllers
                     ticket.Dat_Ve_id = booking.Dat_Ve_id;
                     ticket.trang_thai_ve = "Chưa sử dụng";
                     ticket.ma_qr_code = GenerateQRCode(booking.Dat_Ve_id, ticket.ve_id);
-                    
+
                     // ✅ Sinh QR code ảnh
                     var qrTicketService = new QRCodeTicketService();
                     qrTicketService.GenerateAndSaveQRCode(ticket.ma_qr_code);
@@ -276,11 +276,11 @@ namespace WebCinema.Controllers
                     foreach (var item in foodData)
                     {
                         if (string.IsNullOrEmpty(item)) continue;
-                        
+
                         var parts = item.Split(':');
                         if (!int.TryParse(parts[0], out int foodId) || !int.TryParse(parts[1], out int quantity))
                             continue;
-                        
+
                         var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
                         if (food != null)
                         {
@@ -311,8 +311,9 @@ namespace WebCinema.Controllers
                 Session.Remove("SelectedFoods");
 
                 // Chuyển đến Checkout
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     redirectUrl = Url.Action("Checkout", "Booking")
                 });
             }
@@ -341,7 +342,7 @@ namespace WebCinema.Controllers
 
             int bookingId = (int)Session["BookingId"];
             var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-            
+
             if (booking == null)
             {
                 return RedirectToAction("Index", "Home");
@@ -353,17 +354,17 @@ namespace WebCinema.Controllers
             // Calculate food price
             decimal foodTotal = 0;
             List<dynamic> foodItems = new List<dynamic>();
-            
+
             foreach (var foodOrder in booking.DonHang_DoAns)
             {
                 var food = foodOrder.Do_An;
                 decimal unitPrice = food.gia ?? 0m;
                 decimal itemTotal = unitPrice * foodOrder.so_luong;
                 foodTotal += itemTotal;
-                
+
                 // ✅ Thêm thông tin loai vào foodItems để KM004 có thể check Combo
-                foodItems.Add(new 
-                { 
+                foodItems.Add(new
+                {
                     FoodId = food.Do_An_id,
                     FoodName = food.ten_san_pham,
                     Price = unitPrice,
@@ -444,94 +445,7 @@ namespace WebCinema.Controllers
                             {
                                 LoggingHelper.LogInfo($"🔍 KM004 Start: foodItemsJson={(!string.IsNullOrEmpty(foodItemsJson) ? "exist" : "null")}");
 
-                                // Parse foodItems JSON - đây là array từ Checkout view
-                                //var foodItems = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(foodItemsJson ?? "[]");
-
-                                //if (foodItems != null && foodItems.Any())
-                                //{
-                                //    LoggingHelper.LogInfo($"  → Parsed {foodItems.Count} food items");
-
-                                //    foreach (var item in foodItems)
-                                //    {
-                                //        try
-                                //        {
-                                //            // ✅ CÁCH 1: Kiểm tra FoodType property (nếu có)
-                                //            var foodTypeProp = item.GetType().GetProperty("FoodType");
-                                //            if (foodTypeProp != null)
-                                //            {
-                                //                var foodTypeValue = foodTypeProp.GetValue(item, null);
-                                //                if (foodTypeValue != null)
-                                //                {
-                                //                    string foodTypeStr = foodTypeValue.ToString();
-                                //                    LoggingHelper.LogInfo($"  → Checking FoodType: '{foodTypeStr}'");
-                                //                    if (foodTypeStr.Contains("Combo"))
-                                //                    {
-                                //                        hasCombo = true;
-                                //                        LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodType!");
-                                //                        break;
-                                //                    }
-                                //                }
-                                //            }
-
-                                //            // ✅ CÁCH 2: Kiểm tra FoodName nếu chứa "Combo"
-                                //            if (!hasCombo)
-                                //            {
-                                //                var foodNameProp = item.GetType().GetProperty("FoodName");
-                                //                if (foodNameProp != null)
-                                //                {
-                                //                    var foodNameValue = foodNameProp.GetValue(item, null);
-                                //                    if (foodNameValue != null)
-                                //                    {
-                                //                        string foodNameStr = foodNameValue.ToString();
-                                //                        LoggingHelper.LogInfo($"  → Checking FoodName: '{foodNameStr}'");
-                                //                        if (foodNameStr.Contains("Combo"))
-                                //                        {
-                                //                            hasCombo = true;
-                                //                            LoggingHelper.LogInfo($"✅ KM004: Found Combo in FoodName!");
-                                //                            break;
-                                //                        }
-                                //                    }
-                                //                }
-                                //            }
-
-                                //            // ✅ CÁCH 3: Kiểm tra FoodId - tìm trong database
-                                //            if (!hasCombo)
-                                //            {
-                                //                var foodIdProp = item.GetType().GetProperty("FoodId");
-                                //                if (foodIdProp != null)
-                                //                {
-                                //                    var foodIdValue = foodIdProp.GetValue(item, null);
-                                //                    int foodId;
-                                //                    if (int.TryParse(foodIdValue.ToString(), out foodId))
-                                //                    {
-                                //                        Do_An foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                                //                        if (foodObj != null)
-                                //                        {
-                                //                            string foodNameCheck = foodObj.ten_san_pham ?? "";
-                                //                            string foodLoaiCheck = foodObj.loai ?? "";
-                                //                            LoggingHelper.LogInfo($"  → FoodId {foodId}: Name='{foodNameCheck}', Type='{foodLoaiCheck}'");
-
-                                //                            if (foodNameCheck.Contains("Combo") || foodLoaiCheck.Contains("Combo"))
-                                //                            {
-                                //                                hasCombo = true;
-                                //                                LoggingHelper.LogInfo($"✅ KM004: Found Combo in Database!");
-                                //                                break;
-                                //                            }
-                                //                        }
-                                //                    }
-                                //                }
-                                //            }
-                                //        }
-                                //        catch (Exception itemEx) 
-                                //        { 
-                                //            LoggingHelper.LogError(new Exception($"KM004 Item check error: {itemEx.Message}", itemEx));
-                                //        }
-                                //    }
-                                //}
-                                //else
-                                //{
-                                //    LoggingHelper.LogInfo($"  → No food items to check");
-                                //}
+                             
                                 var foodItems = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson ?? "[]");
 
                                 foreach (var item in foodItems)
@@ -564,8 +478,8 @@ namespace WebCinema.Controllers
 
                                 LoggingHelper.LogInfo($"✅ KM004 Complete: hasCombo={hasCombo}");
                             }
-                            catch (Exception ex) 
-                            { 
+                            catch (Exception ex)
+                            {
                                 LoggingHelper.LogError(new Exception($"KM004 JSON parse error: {ex.Message}", ex));
                             }
 
@@ -696,7 +610,7 @@ namespace WebCinema.Controllers
                 var selectedFoods = Session["SelectedFoods"]?.ToString() ?? "";
 
                 var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
-                
+
                 var tickets = db.Ves
                     .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
                     .ToList();
@@ -708,7 +622,7 @@ namespace WebCinema.Controllers
                     .ToList();
 
                 var unavailableSeats = tickets
-                    .Where(t => t.Dat_Ve_id != null 
+                    .Where(t => t.Dat_Ve_id != null
                         && paidBookingIds.Contains(t.Dat_Ve_id.Value))
                     .ToList();
 
@@ -752,8 +666,9 @@ namespace WebCinema.Controllers
                 };
 
                 // Chuyển đến trang Payment Gateway
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     redirectUrl = Url.Action("PaymentGateway", "Booking")
                 });
             }
@@ -792,11 +707,11 @@ namespace WebCinema.Controllers
                     // ❌ Thanh toán thất bại - CẬP NHẬT BOOKING THÀNH "ĐÃ HỦY"
                     int bookingId = (int)Session["BookingId"];
                     var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                    
+
                     if (booking != null)
                     {
                         booking.trang_thai_Dat_Ve = "Đã Hủy";
-                        
+
                         // ✅ GIẢI PHÓNG TẤT CẢ VÉ CỦA BOOKING NÀY
                         var allVesInBooking = db.Ves.Where(v => v.Dat_Ve_id == bookingId).ToList();
                         foreach (var ticket in allVesInBooking)
@@ -812,17 +727,18 @@ namespace WebCinema.Controllers
                         {
                             db.DonHang_DoAns.DeleteOnSubmit(food);
                         }
-                        
+
                         db.SubmitChanges();
 
                         LoggingHelper.LogInfo($"❌ PaymentCallback failed: Hủy Dat_Ve ID={bookingId}, giải phóng {allVesInBooking.Count} vé");
                     }
-                    
+
                     Session.Remove("BookingId");
-                    
+
                     var showtime = booking?.Ves.FirstOrDefault()?.Suat_Chieu;
-                    return Json(new { 
-                        success = false, 
+                    return Json(new
+                    {
+                        success = false,
                         message = "Thanh toán thất bại: " + message,
                         redirectUrl = Url.Action("SelectSeats", "Booking", new { id = showtime?.suat_chieu_id ?? 0 })
                     });
@@ -831,7 +747,7 @@ namespace WebCinema.Controllers
                 // ✅ THANH TOÁN THÀNH CÔNG - CẬP NHẬT TRẠNG THÁI THÀNH "ĐÃ THANH TOÁN"
                 int paidBookingId = (int)Session["BookingId"];
                 var paidBooking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == paidBookingId);
-                
+
                 if (paidBooking != null)
                 {
                     paidBooking.trang_thai_Dat_Ve = "Đã Thanh toán";
@@ -843,7 +759,7 @@ namespace WebCinema.Controllers
                     {
                         // Đếm tất cả vé trong đơn (không xét trạng thái từng vé)
                         int ticketCount = paidBooking.Ves.Count;
-                        
+
                         // Cộng điểm: 1 vé = 1 điểm
                         customer.diem_tich_luy = (customer.diem_tich_luy ?? 0) + ticketCount;
                         db.SubmitChanges();
@@ -856,8 +772,9 @@ namespace WebCinema.Controllers
 
                 Session.Remove("BookingId");
 
-                return Json(new { 
-                    success = true, 
+                return Json(new
+                {
+                    success = true,
                     message = "Thanh toán thành công!",
                     bookingId = paidBookingId,
                     redirectUrl = Url.Action("Success", "Booking", new { id = paidBookingId })
@@ -927,11 +844,11 @@ namespace WebCinema.Controllers
                     if (promo != null)
                     {
                         decimal giaTriGiam = promo.gia_tri_giam;  // ✅ NOT nullable
-                        
+
                         // ✅ Xác định loại giảm (% hay VND)
-                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) && 
+                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
                             (promo.loai_giam_gia.Contains("Phần trăm") || promo.loai_giam_gia.Contains("%"));
-                        
+
                         if (isPercent)
                         {
                             discountAmount = (originalTotal * giaTriGiam) / 100m;

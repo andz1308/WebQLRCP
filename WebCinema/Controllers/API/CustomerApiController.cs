@@ -1961,7 +1961,8 @@ namespace WebCinema.Controllers.API
                             }
                             catch (Exception ex)
                             {
-                                LoggingHelper.LogError(new Exception("KM004 JSON parse error: " + ex.Message, ex));
+                                LoggingHelper.LogError(ex);
+                                return Ok(new { success = false, message = "Lỗi kiểm tra mã khuyến mãi" });
                             }
 
                             if (!hasCombo)
@@ -2100,7 +2101,7 @@ namespace WebCinema.Controllers.API
                 }
 
                 // ✅ TẠO QR CODE MỚI VỚI GIÁ ĐÚNG
-                var qrService = new WebCinema.Infrastructure.QRCodePaymentService();
+                var qrService = new QRCodePaymentService();
                 string desc = qrService.GenerateTransactionDescription(bookingId);
                 string newQr = qrService.GenerateQRCodeUrl(finalTotal, desc);
 
@@ -2415,6 +2416,308 @@ namespace WebCinema.Controllers.API
             {
                 LoggingHelper.LogError(ex);
                 return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/send-invoice-email/{bookingId}
+        /// Gửi hóa đơn qua email cho khách hàng
+        /// ✅ Yêu cầu xác thực
+        /// ✅ Chỉ gửi nếu khách hàng có email thật
+        /// </summary>
+        [HttpPost]
+        [Route("send-invoice-email/{bookingId}")]
+        [Authorize]
+        public IHttpActionResult SendInvoiceEmail(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0)
+                    return BadRequest("Booking ID không hợp lệ");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return NotFound();
+
+                // Kiểm tra khách hàng có email không
+                if (booking.Khach_Hang == null || string.IsNullOrWhiteSpace(booking.Khach_Hang.email))
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Khách hàng không có địa chỉ email. Vui lòng cập nhật email trong hồ sơ." 
+                    });
+                }
+
+                // Tạo hóa đơn và gửi email
+                var invoiceService = new Services.InvoiceService();
+                bool result = invoiceService.GenerateAndSendInvoiceEmail(bookingId);
+
+                if (result)
+                {
+                    LoggingHelper.LogInfo($"✅ Hóa đơn gửi email thành công: Booking {bookingId} -> {booking.Khach_Hang.email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = $"Hóa đơn đã được gửi thành công đến: {booking.Khach_Hang.email}",
+                        booking_id = booking.Dat_Ve_id,
+                        customer_email = booking.Khach_Hang.email
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Lỗi khi gửi hóa đơn. Vui lòng thử lại."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/test-send-invoice
+        /// Endpoint test gửi hóa đơn (dùng để kiểm tra cấu hình email)
+        /// </summary>
+        [HttpPost]
+        [Route("test-send-invoice/{bookingId}")]
+        [Authorize]
+        public IHttpActionResult TestSendInvoice(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0)
+                    return BadRequest("Booking ID không hợp lệ");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return NotFound();
+
+                var customer = booking.Khach_Hang;
+                if (customer == null || string.IsNullOrWhiteSpace(customer.email))
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Khách hàng không có email"
+                    });
+                }
+
+                LoggingHelper.LogInfo($"🧪 TEST: Bắt đầu gửi invoice cho booking {bookingId} -> {customer.email}");
+
+                // Tạo hóa đơn
+                var invoiceService = new Services.InvoiceService();
+                string html = invoiceService.GenerateInvoiceHtml(booking);
+
+                if (string.IsNullOrEmpty(html))
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Lỗi tạo HTML hóa đơn"
+                    });
+                }
+
+                // Lưu file hóa đơn
+                string fileName = invoiceService.SaveInvoiceToFile(booking);
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Lỗi lưu file hóa đơn"
+                    });
+                }
+
+                LoggingHelper.LogInfo($"✅ File hóa đơn được lưu: {fileName}");
+
+                // Gửi email
+                var emailService = new Services.EmailService();
+                bool emailSent = emailService.SendInvoiceEmail(customer.email, customer.ho_ten, fileName);
+
+                if (emailSent)
+                {
+                    LoggingHelper.LogInfo($"✅ EMAIL SENT SUCCESSFULLY to {customer.email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "✅ Email hóa đơn gửi thành công!",
+                        details = new
+                        {
+                            recipient = customer.email,
+                            customer_name = customer.ho_ten,
+                            invoice_file = fileName,
+                            booking_id = bookingId
+                        }
+                    });
+                }
+                else
+                {
+                    LoggingHelper.LogError(new Exception("Email send returned false"));
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "❌ Lỗi khi gửi email. Kiểm tra logs.",
+                        details = new
+                        {
+                            recipient = customer.email,
+                            invoice_file = fileName
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new
+                {
+                    success = false,
+                    message = $"❌ Exception: {ex.Message}",
+                    error_details = ex.ToString()
+                });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/auto-send-invoice-on-payment/{bookingId}
+        /// Tự động gửi hóa đơn khi thanh toán thành công
+        /// Gọi này từ payment success callback
+        /// </summary>
+        [HttpPost]
+        [Route("auto-send-invoice-on-payment/{bookingId}")]
+        [AllowAnonymous]  // Cho phép gọi từ payment gateway callback
+        public IHttpActionResult AutoSendInvoiceOnPayment(int bookingId)
+        {
+            try
+            {
+                if (bookingId <= 0)
+                    return BadRequest("Booking ID không hợp lệ");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return Ok(new { success = false, message = "Booking not found" });
+
+                var customer = booking.Khach_Hang;
+                if (customer == null || string.IsNullOrWhiteSpace(customer.email))
+                {
+                    LoggingHelper.LogInfo($"⚠️ Customer {booking.khach_hang_id} has no email");
+                    return Ok(new { success = false, message = "Customer has no email" });
+                }
+
+                LoggingHelper.LogInfo($"🔄 AUTO-SEND: Bắt đầu gửi hóa đơn cho booking {bookingId} -> {customer.email}");
+
+                // Tạo hóa đơn
+                var invoiceService = new Services.InvoiceService();
+                string html = invoiceService.GenerateInvoiceHtml(booking);
+
+                if (string.IsNullOrEmpty(html))
+                {
+                    return Ok(new { success = false, message = "Failed to generate invoice HTML" });
+                }
+
+                // Lưu file
+                string fileName = invoiceService.SaveInvoiceToFile(booking);
+                if (string.IsNullOrEmpty(fileName))
+                {
+                    return Ok(new { success = false, message = "Failed to save invoice file" });
+                }
+
+                // Gửi email
+                var emailService = new Services.EmailService();
+                bool emailSent = emailService.SendInvoiceEmail(customer.email, customer.ho_ten, fileName);
+
+                if (emailSent)
+                {
+                    LoggingHelper.LogInfo($"✅ AUTO-SEND SUCCESS: Invoice sent to {customer.email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Invoice sent successfully",
+                        recipient = customer.email,
+                        booking_id = bookingId
+                    });
+                }
+                else
+                {
+                    LoggingHelper.LogError(new Exception("SendInvoiceEmail returned false"));
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Failed to send email"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new
+                {
+                    success = false,
+                    message = $"Error: {ex.Message}"
+                });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/test-pdf-generation
+        /// Test tạo PDF
+        /// </summary>
+        [HttpPost]
+        [Route("test-pdf-generation")]
+        [AllowAnonymous]
+        public IHttpActionResult TestPdfGeneration()
+        {
+            try
+            {
+                var invoiceService = new Services.InvoiceService();
+                bool success = invoiceService.TestPdfGeneration();
+
+                if (success)
+                {
+                    return Ok(new { success = true, message = "PDF generation test successful" });
+                }
+                else
+                {
+                    return Ok(new { success = false, message = "PDF generation test failed" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = $"Exception: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/test-smtp-connection
+        /// Test SMTP connection
+        /// </summary>
+        [HttpPost]
+        [Route("test-smtp-connection")]
+        [AllowAnonymous]
+        public IHttpActionResult TestSmtpConnection()
+        {
+            try
+            {
+                var emailService = new Services.EmailService();
+                bool success = emailService.TestSmtpConnection();
+
+                if (success)
+                {
+                    return Ok(new { success = true, message = "SMTP connection test successful" });
+                }
+                else
+                {
+                    return Ok(new { success = false, message = "SMTP connection test failed - check logs" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = $"Exception: {ex.Message}" });
             }
         }
     }
