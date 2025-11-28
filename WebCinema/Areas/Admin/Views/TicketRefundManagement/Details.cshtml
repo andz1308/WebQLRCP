@@ -3,14 +3,14 @@
     Response.Charset = "utf-8";
 }
 
-@model WebCinema.Models.Yeu_Cau_Huy_Ve
+@model WebCinema.Models.HuyVe
 
 @{
     ViewBag.Title = "Chi Tiết Hủy Vé";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
 
     var booking = Model != null ? Model.Dat_Ve : null;
-    var customer = Model != null ? Model.Khach_Hang : null;
+    var customer = booking != null ? booking.Khach_Hang : null;  // ✅ LẤY từ booking
     var tickets = ViewBag.Tickets as System.Collections.Generic.List<WebCinema.Models.Ve> ?? new System.Collections.Generic.List<WebCinema.Models.Ve>();
     var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
     var timeSlot = ViewBag.TimeSlot as WebCinema.Models.Ca_Chieu;  // Lấy ca chiếu
@@ -226,17 +226,17 @@
             <i class="fas fa-trash-alt"></i> Yêu Cầu Hủy Vé #@Model.yeu_cau_id
         </h2>
         <div style="display: flex; gap: 1rem; align-items: center;">
-            @if (Model != null && Model.trang_thai == "Chờ duyệt")
+            @if (Model != null && Model.trang_thai == "Chờ xác nhận")
             {
-                <span class="status-badge status-pending">⏳ Chờ duyệt</span>
+                <span class="status-badge status-pending">⏳ Chờ xác nhận chuyển tiền</span>
             }
-            else if (Model != null && Model.trang_thai == "Đã Hủy")
+            else if (Model != null && Model.trang_thai == "Đã xác nhận")
             {
-                <span class="status-badge status-approved">✅ Đã duyệt</span>
+                <span class="status-badge status-approved">✅ Đã xác nhận chuyển tiền</span>
             }
             else
             {
-                <span class="status-badge status-rejected">❌ Từ chối</span>
+                <span class="status-badge status-rejected">❓ @Model.trang_thai</span>
             }
             <a href="@Url.Action("Index")" class="btn-action btn-back">
                 <i class="fas fa-arrow-left"></i> Quay Lại
@@ -250,15 +250,15 @@
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Họ Tên</div>
-                <div class="info-value">@(customer != null ? customer.ho_ten : "N/A")</div>
+                <div class="info-value">@(customer != null ? customer.ho_ten : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
-                <div class="info-value">@(customer != null ? (customer.email ?? "N/A") : "N/A")</div>
+                <div class="info-value">@(customer != null ? (customer.email ?? "") : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Số Điện Thoại</div>
-                <div class="info-value">@(customer != null ? (customer.so_dien_thoai ?? "N/A") : "N/A")</div>
+                <div class="info-value">@(customer != null ? (customer.so_dien_thoai ?? "") : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Điểm Tích Lũy</div>
@@ -267,34 +267,13 @@
         </div>
     </div>
 
-    <!-- Thông tin ngân hàng -->
-    <div class="bank-info">
-        <div class="bank-label">
-            <i class="fas fa-bank"></i> Tài Khoản Nhận Tiền
-        </div>
-        <div class="bank-account">
-            @{
-                string bankDisplay = "N/A";
-                if (Model != null && !string.IsNullOrEmpty(Model.so_tai_khoan_atm))
-                {
-                    int startIndex = Math.Max(0, Model.so_tai_khoan_atm.Length - 100);
-                    bankDisplay = Model.so_tai_khoan_atm.Substring(startIndex);
-                }
-            }
-            @bankDisplay
-        </div>
-        <div style="font-size: 0.9rem; margin-top: 0.8rem; opacity: 0.9;">
-            ⏳ Khách sẽ nhận tiền trong 1-3 ngày làm việc
-        </div>
-    </div>
-
     <!-- Số tiền hoàn lại -->
     <div class="refund-highlight">
         <div style="margin-bottom: 0.8rem; font-weight: 600;">Số Tiền Hoàn Lại</div>
         <div class="refund-amount">@((Model != null ? (Model.so_tien_hoan_lai ?? 0) : 0).ToString("N0")) ₫</div>
         <div class="refund-detail">
-            Gốc: @((booking != null && booking.tong_tien != null) ? booking.tong_tien.ToString("N0") : "0") ₫ × 70% = @((Model != null ? (Model.so_tien_hoan_lai ?? 0) : 0).ToString("N0")) ₫<br/>
-            Phí hủy 30%: @((booking != null && booking.tong_tien != null) ? Math.Round(booking.tong_tien * 0.3m, 0).ToString("N0") : "0") ₫
+            Gốc: @((booking != null && booking.tong_tien != null) ? booking.tong_tien.ToString("N0") : "") ₫ × 70% = @((Model != null ? (Model.so_tien_hoan_lai ?? 0) : 0).ToString("N0")) ₫<br/>
+            Phí hủy 30%: @((booking != null && booking.tong_tien != null) ? Math.Round(booking.tong_tien * 0.3m, 0).ToString("N0") : "") ₫
         </div>
     </div>
 
@@ -308,23 +287,23 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Phim</div>
-                <div class="info-value">@((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "N/A")</div>
+                <div class="info-value">@((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Ngày Chiếu</div>
-                <div class="info-value">@((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "N/A")</div>
+                <div class="info-value">@((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Ca Chiếu</div>
-                <div class="info-value">@((timeSlot != null && timeSlot.gio_bat_dau != null) ? timeSlot.gio_bat_dau.ToString(@"hh\:mm") : "N/A")</div>
+                <div class="info-value">@((timeSlot != null && timeSlot.gio_bat_dau != null) ? timeSlot.gio_bat_dau.ToString(@"hh\:mm") : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Rạp / Phòng</div>
-                <div class="info-value">@((showtime != null && showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null) ? showtime.Phong_Chieu.Rap.ten_rap : "N/A") / @((showtime != null && showtime.Phong_Chieu != null) ? showtime.Phong_Chieu.ten_phong : "N/A")</div>
+                <div class="info-value">@((showtime != null && showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null) ? showtime.Phong_Chieu.Rap.ten_rap : "") / @((showtime != null && showtime.Phong_Chieu != null) ? showtime.Phong_Chieu.ten_phong : "")</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Tổng Tiền Gốc</div>
-                <div class="info-value">@((booking != null && booking.tong_tien != null) ? booking.tong_tien.ToString("N0") : "0") ₫</div>
+                <div class="info-value">@((booking != null && booking.tong_tien != null) ? booking.tong_tien.ToString("N0") : "") ₫</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Số Vé</div>
@@ -342,7 +321,7 @@
                 @foreach (var ticket in tickets)
                 {
                     <div class="ticket-box">
-                        <div class="ticket-seat">Ghế @(ticket.Ghe != null ? ticket.Ghe.so_ghe : "N/A")</div>
+                        <div class="ticket-seat">Ghế @(ticket.Ghe != null ? ticket.Ghe.so_ghe : "")</div>
                         <div class="ticket-price">@((ticket.gia_ve).ToString("N0")) ₫</div>
                     </div>
                 }
@@ -402,15 +381,19 @@
     }
 
     <!-- Nút hành động -->
-    @if (Model != null && Model.trang_thai == "Chờ duyệt")
+    @if (Model != null && Model.trang_thai == "Chờ xác nhận")
     {
         <div class="btn-container">
             <button class="btn-action btn-approve" onclick="approveCancel(@Model.yeu_cau_id)">
-                <i class="fas fa-check"></i> Duyệt & Hoàn Tiền
+                <i class="fas fa-check"></i> Xác Nhận Đã Chuyển Khoản
             </button>
-            <button class="btn-action btn-reject" onclick="rejectCancel(@Model.yeu_cau_id)">
-                <i class="fas fa-times"></i> Từ Chối
-            </button>
+        </div>
+    }
+    else if (Model != null && Model.trang_thai == "Đã xác nhận")
+    {
+        <div style="padding: 1.5rem; background: #d4edda; border: 2px solid #27ae60; border-radius: 8px; text-align: center;">
+            <i class="fas fa-check-circle" style="font-size: 2rem; color: #27ae60;"></i>
+            <h3 style="color: #155724; margin-top: 0.5rem;">Yêu Cầu Đã Được Xác Nhận</h3>
         </div>
     }
 </div>
@@ -418,7 +401,7 @@
 @section scripts {
     <script>
         function approveCancel(requestId) {
-            var reason = prompt("Ghi chú khi duyệt (tùy chọn):", "Đã chuyển khoản");
+            var reason = prompt("Ghi chú khi xác nhận (tùy chọn):", "Đã xác nhận chuyển khoản");
             if (reason === null) return;
 
             $.ajax({
@@ -428,38 +411,6 @@
                     __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
                     id: requestId,
                     note: reason
-                },
-                success: function(response) {
-                    if (response.success) {
-                        alert('✅ ' + response.message);
-                        location.reload();
-                    } else {
-                        alert('❌ ' + response.message);
-                    }
-                },
-                error: function(xhr) {
-                    var msg = '❌ Có lỗi xảy ra!';
-                    try {
-                        if (xhr && xhr.responseText) {
-                            msg += '\n' + xhr.responseText;
-                        }
-                    } catch (e) { }
-                    alert(msg);
-                }
-            });
-        }
-
-        function rejectCancel(requestId) {
-            var reason = prompt("Lý do từ chối:");
-            if (reason === null) return;
-
-            $.ajax({
-                url: '@Url.Action("RejectCancel", "TicketRefundManagement", new { area = "Admin" })',
-                type: 'POST',
-                data: {
-                    __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
-                    id: requestId,
-                    reason: reason
                 },
                 success: function(response) {
                     if (response.success) {

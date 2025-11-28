@@ -76,12 +76,12 @@
             border-left: 3px solid transparent;
         }
 
-        .menu-link:hover,
-        .menu-link.active {
-            background: rgba(0, 0, 0, 0.2);
-            color: white;
-            border-left-color: white;
-        }
+            .menu-link:hover,
+            .menu-link.active {
+                background: rgba(0, 0, 0, 0.2);
+                color: white;
+                border-left-color: white;
+            }
 
         .menu-icon {
             width: 20px;
@@ -149,10 +149,10 @@
             display: inline-block;
         }
 
-        .btn-logout:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
+            .btn-logout:hover {
+                background: #c0392b;
+                transform: translateY(-2px);
+            }
 
         /* Content Card */
         .content-card {
@@ -195,28 +195,28 @@
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
-        }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+            }
 
         .btn-secondary {
             background: #95a5a6;
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
+            .btn-secondary:hover {
+                background: #7f8c8d;
+            }
 
         .btn-danger {
             background: #e74c3c;
             color: white;
         }
 
-        .btn-danger:hover {
-            background: #c0392b;
-        }
+            .btn-danger:hover {
+                background: #c0392b;
+            }
 
         /* Alert Messages */
         .alert {
@@ -315,6 +315,18 @@
                     <a href="@Url.Action("Index", "StaffInventoryManagement", new { area = "Admin" })" class="menu-link">
                         <i class="fas fa-warehouse menu-icon"></i>
                         <span>Quản Lý Kho Hàng</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "StaffPurchaseOrder", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-warehouse menu-icon"></i>
+                        <span>Quản Lý Nhập Hàng</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "StaffPromotion", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-warehouse menu-icon"></i>
+                        <span>Quản Lý Khuyến Mãi</span>
                     </a>
                 </li>
                 <li class="menu-item">

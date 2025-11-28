@@ -1,11 +1,14 @@
 ﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 using WebCinema.Infrastructure;
 using WebCinema.Models;
+using WebCinema.Services;
 using static WebCinema.Controllers.PromosController;
 
 namespace WebCinema.Controllers.API
@@ -106,6 +109,8 @@ namespace WebCinema.Controllers.API
 
                 // Build view models similar to HomeController
                 var movieService = new Services.MovieService();
+                string baseUrl = Request.RequestUri.GetLeftPart(UriPartial.Authority);
+
                 var movieViewModels = moviesList.Select(m => new
                 {
                     movie_id = m.phim_id,
@@ -113,7 +118,9 @@ namespace WebCinema.Controllers.API
                     description = m.mo_ta,
                     duration = m.thoi_luong,
                     release_date = m.ngay_khoi_chieu,
-                    image = m.hinh_anh,
+                    image = !string.IsNullOrEmpty(m.hinh_anh)
+                        ? (m.hinh_anh.StartsWith("http") ? m.hinh_anh : baseUrl + m.hinh_anh)
+                        : "",
                     genres = m.Phim_LoaiPhims != null ? m.Phim_LoaiPhims.Select(pl => pl.Loai_Phim != null ? pl.Loai_Phim.ten_loai : null).Where(x => x != null).ToList() : new List<string>(),
                     avg_rating = movieService.GetAverageRating(m.phim_id),
                     rating_count = movieService.GetRatingCount(m.phim_id)
@@ -242,44 +249,57 @@ namespace WebCinema.Controllers.API
 
         /// <summary>
         /// GET: api/customer/bookings/{customerId}
-        /// Lấy lịch sử đặt vé của khách hàng
+        /// Lấy lịch sử đặt vé của khách hàng (CHỈ ĐÃ THANH TOÁN)
         /// ✅ Yêu cầu xác thực
         /// </summary>
         [HttpGet]
         [Route("bookings/{customerId}")]
-        [Authorize]  // ✅ Thêm Authorization
+        [Authorize]
         public IHttpActionResult GetBookings(int customerId)
         {
             try
             {
-                // ✅ Validation: customerId phải > 0
                 if (customerId <= 0)
                 {
                     return BadRequest("Customer ID không hợp lệ");
                 }
 
-                // ✅ Kiểm tra khách hàng tồn tại
                 var customerExists = db.Khach_Hangs.Any(k => k.khach_hang_id == customerId);
                 if (!customerExists)
                 {
                     return Ok(new { success = false, message = "Khách hàng không tồn tại" });
                 }
 
-                // ✅ FIX N+1 Query: Dùng .Include() hoặc Select chính xác để tránh lazy loading
-                var bookings = db.Dat_Ves
-                    .Where(b => b.khach_hang_id == customerId)
+                // ✅ CHỈ LẤY ĐƠN ĐÃ THANH TOÁN
+                var bookingsData = db.Dat_Ves
+                    .Where(b => b.khach_hang_id == customerId && b.trang_thai_Dat_Ve == "Đã Thanh toán")
                     .OrderByDescending(b => b.ngay_tao)
                     .Select(b => new
                     {
                         booking_id = b.Dat_Ve_id,
-                        created_at = b.ngay_tao.HasValue ? b.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                        created_at = b.ngay_tao,
                         status = b.trang_thai_Dat_Ve,
                         total_amount = b.tong_tien,
                         tickets_count = b.Ves.Count,
-                        // ✅ FIX: Tránh gọi FirstOrDefault() lần 2
-                        movie_title = b.Ves.Select(v => v.Suat_Chieu.Phim.ten_phim).FirstOrDefault() ?? "N/A"
+                        movie_title = b.Ves.Select(v => v.Suat_Chieu.Phim.ten_phim).FirstOrDefault() ?? "N/A",
+                        movie_image = b.Ves.Select(v => v.Suat_Chieu.Phim.hinh_anh).FirstOrDefault() ?? ""
                     })
                     .ToList();
+
+                string baseUrl = Request.RequestUri.GetLeftPart(UriPartial.Authority);
+
+                var bookings = bookingsData.Select(b => new
+                {
+                    booking_id = b.booking_id,
+                    created_at = b.created_at.HasValue ? b.created_at.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                    status = b.status,
+                    total_amount = b.total_amount,
+                    tickets_count = b.tickets_count,
+                    movie_title = b.movie_title,
+                    movie_image = !string.IsNullOrEmpty(b.movie_image)
+                        ? (b.movie_image.StartsWith("http") ? b.movie_image : baseUrl + b.movie_image)
+                        : ""
+                }).ToList();
 
                 return Ok(new
                 {
@@ -302,7 +322,7 @@ namespace WebCinema.Controllers.API
         /// </summary>
         [HttpGet]
         [Route("booking/{bookingId}")]
-        [Authorize]  // ✅ Thêm Authorization
+        [Authorize]
         public IHttpActionResult GetBookingDetail(int bookingId)
         {
             try
@@ -560,6 +580,8 @@ namespace WebCinema.Controllers.API
                         .ToList()
                     : new List<object>();
 
+                string baseUrl = Request.RequestUri.GetLeftPart(UriPartial.Authority);
+
                 var movieDetail = new
                 {
                     movie_id = movie.phim_id,
@@ -567,7 +589,9 @@ namespace WebCinema.Controllers.API
                     description = movie.mo_ta,
                     duration = movie.thoi_luong,
                     release_date = movie.ngay_khoi_chieu,
-                    image = movie.hinh_anh,
+                    image = !string.IsNullOrEmpty(movie.hinh_anh)
+                        ? (movie.hinh_anh.StartsWith("http") ? movie.hinh_anh : baseUrl + movie.hinh_anh)
+                        : "",
                     video = !string.IsNullOrEmpty(movie.video) ? movie.video : null, // ✅ Trả về video URL từ DB
                     director = director != null ? new
                     {
@@ -607,6 +631,8 @@ namespace WebCinema.Controllers.API
             try
             {
                 // ✅ Lấy phim có trạng thái "Đang chiếu" với nhiều đánh giá nhất hoặc rating cao
+                string baseUrl = Request.RequestUri.GetLeftPart(UriPartial.Authority);
+
                 var trendingMovies = db.Phims
                     .Where(p => p.trang_thai == "Đang chiếu" && p.ngay_khoi_chieu <= DateTime.Now)
                     .AsEnumerable()
@@ -618,7 +644,9 @@ namespace WebCinema.Controllers.API
                     {
                         movie_id = p.phim_id,
                         title = p.ten_phim,
-                        image = p.hinh_anh,
+                        image = !string.IsNullOrEmpty(p.hinh_anh)
+                            ? (p.hinh_anh.StartsWith("http") ? p.hinh_anh : baseUrl + p.hinh_anh)
+                            : "",
                         rating = p.Danh_Gias != null && p.Danh_Gias.Any()
                             ? p.Danh_Gias.Average(d => (double)(d.diem_rating ?? 0))
                             : 0,
@@ -690,10 +718,246 @@ namespace WebCinema.Controllers.API
         }
 
         /// <summary>
+        /// GET: api/customer/profile/{customerId}
+        /// Lấy thông tin hồ sơ khách hàng
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpGet]
+        [Route("profile/{customerId}")]
+        [Authorize]
+        public IHttpActionResult GetUserProfile(int customerId)
+        {
+            try
+            {
+                if (customerId <= 0)
+                {
+                    return BadRequest("Customer ID không hợp lệ");
+                }
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        customer_id = customer.khach_hang_id,
+                        full_name = customer.ho_ten,
+                        email = customer.email,
+                        phone_number = customer.so_dien_thoai,
+                        gender = customer.gioi_tinh,
+                        birth_date = customer.ngay_sinh?.ToString("yyyy-MM-dd"),
+                        address = customer.dia_chi,
+                        points = customer.diem_tich_luy
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "GetUserProfile");
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/profile/{customerId}
+        /// Cập nhật thông tin hồ sơ khách hàng
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPost]
+        [Route("profile/{customerId}")]
+        [Authorize]
+        public IHttpActionResult UpdateUserProfile(int customerId, [FromBody] JObject data)
+        {
+            try
+            {
+                if (customerId <= 0)
+                {
+                    return BadRequest("Customer ID không hợp lệ");
+                }
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+
+                if (customer == null)
+                {
+                    return NotFound();
+                }
+
+                string fullName = data["full_name"]?.Value<string>();
+                string phoneNumber = data["phone_number"]?.Value<string>();
+                string gender = data["gender"]?.Value<string>();
+                string address = data["address"]?.Value<string>();
+                string birthDateStr = data["birth_date"]?.Value<string>();
+
+                if (!string.IsNullOrWhiteSpace(fullName))
+                {
+                    customer.ho_ten = fullName;
+                }
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    customer.so_dien_thoai = phoneNumber;
+                }
+                if (!string.IsNullOrWhiteSpace(gender))
+                {
+                    customer.gioi_tinh = gender;
+                }
+                if (address != null)
+                {
+                    customer.dia_chi = address;
+                }
+                if (DateTime.TryParse(birthDateStr, out DateTime birthDate))
+                {
+                    customer.ngay_sinh = birthDate;
+                }
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Cập nhật profile cho khách hàng: {customerId}");
+
+                return Ok(new { success = true, message = "Cập nhật thông tin thành công" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "UpdateUserProfile");
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/available-promos
+        /// Lấy danh sách mã khuyến mãi khả dụng (GIỐNG WEB)
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPost]
+        [Route("available-promos")]
+        [Authorize]
+        public IHttpActionResult GetAvailablePromoCodes([FromBody] JObject data)
+        {
+            LoggingHelper.LogInfo("🔴 GetAvailablePromoCodes ENTRY POINT REACHED");
+            try
+            {
+                if (data == null)
+                {
+                    LoggingHelper.LogError(new Exception("Request body is null"));
+                    return BadRequest("Request body is required");
+                }
+
+                int customerId = data["customer_id"]?.Value<int>() ?? 0;
+                LoggingHelper.LogInfo($"✅ API GetAvailablePromoCodes called: CustomerId={customerId}");
+                // Support both formats: direct array or json string (legacy/web compat)
+                var foodItems = new List<JObject>();
+
+                if (data["food_items"] != null)
+                {
+                    foodItems = data["food_items"].ToObject<List<JObject>>() ?? new List<JObject>();
+                }
+                else if (data["food_items_json"] != null)
+                {
+                    string json = data["food_items_json"].Value<string>();
+                    try
+                    {
+                        foodItems = JArray.Parse(json).ToObject<List<JObject>>();
+                    }
+                    catch { }
+                }
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null) return Ok(new { success = true, data = new List<object>() });
+
+                // Parse giỏ hàng
+                var cartItems = new List<int>();
+                foreach (var item in foodItems)
+                {
+                    int fid = item["food_id"]?.Value<int>() ?? 0;
+                    if (fid > 0) cartItems.Add(fid);
+                }
+
+                var promoCodes = db.Khuyen_Mais.Where(k => k.trang_thai == "Hoạt động").ToList();
+                LoggingHelper.LogInfo($"✅ Found {promoCodes.Count} active promos in DB");
+                var result = new List<dynamic>();
+
+                foreach (var km in promoCodes)
+                {
+                    bool isApplicable = true;
+                    string reason = "";
+
+                    // 1. Kiểm tra hạn sử dụng & số lượng
+                    if (DateTime.Now < km.ngay_bat_dau) { isApplicable = false; reason = "Chưa đến ngày áp dụng"; }
+                    else if (DateTime.Now > km.ngay_ket_thuc) { isApplicable = false; reason = "Đã hết hạn"; }
+                    else if (km.so_luong_con_lai <= 0) { isApplicable = false; reason = "Đã hết số lượng"; }
+
+                    // 2. Kiểm tra điều kiện điểm tích lũy
+                    if (isApplicable && km.mo_ta.Contains("VIP") && (customer.diem_tich_luy ?? 0) < 100)
+                    {
+                        isApplicable = false; reason = "Dành cho khách hàng VIP (100+ điểm)";
+                    }
+
+                    // 3. KIỂM TRA PHẠM VI ÁP DỤNG
+                    if (isApplicable)
+                    {
+                        if (km.pham_vi_ap_dung == 1)
+                        {
+                            var allowedFoods = GetAllowedFoodsForPromo(km.ma_giam_gia_id);
+
+                            // ❌ Nếu không có danh sách combo cụ thể, reject luôn
+                            if (allowedFoods.Count == 0)
+                            {
+                                isApplicable = false;
+                                reason = "Khuyến mãi này chỉ áp dụng cho combo cụ thể";
+                            }
+                            else
+                            {
+                                bool hasMatch = cartItems.Any(id => allowedFoods.Contains(id));
+                                if (!hasMatch)
+                                {
+                                    isApplicable = false;
+                                    reason = "Không áp dụng cho các món trong giỏ";
+                                }
+                            }
+                        }
+                    }
+
+                    string loaiGiam = "%";
+                    if (!string.IsNullOrEmpty(km.loai_giam_gia) && !km.loai_giam_gia.Contains("%") && !km.loai_giam_gia.Contains("Phần"))
+                    {
+                        loaiGiam = "VND";
+                    }
+
+                    var promoObj = new
+                    {
+                        ma_khuyen_mai = km.ma_khuyen_mai,
+                        mo_ta = km.mo_ta,
+                        gia_tri_giam = km.gia_tri_giam,
+                        loai_giam_gia = loaiGiam,
+                        so_luong_con_lai = km.so_luong_con_lai,
+                        isApplicable = isApplicable,
+                        reason = reason,
+                        isProductSpecific = (km.pham_vi_ap_dung == 1)
+                    };
+                    result.Add(promoObj);
+                    LoggingHelper.LogInfo($"✅ Added promo: {km.ma_khuyen_mai}, applicable={isApplicable}, reason={reason}");
+                }
+
+                LoggingHelper.LogInfo($"✅ Returning {result.Count} promos to client");
+                return Ok(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, $"Error in GetAvailablePromoCodes: {ex.Message}");
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
         /// POST: api/customer/create-booking
         /// Tạo đơn đặt vé (khách hàng online) - GIỐNG WEB
         /// ✅ Yêu cầu xác thực
-        /// ✅ Support mã khuyến mãi KM004
+        /// ✅ Support mã khuyến mãi KM004 + tất cả các mã khác
         /// </summary>
         [HttpPost]
         [Route("create-booking")]
@@ -773,7 +1037,7 @@ namespace WebCinema.Controllers.API
                     }
                 }
 
-                // ✅ KIỂM TRA VÀ ÁP DỤNG MÃ KHUYẾN MÃI KM004
+                // ✅ KIỂM TRA VÀ ÁP DỤNG MÃ KHUYẾN MÃI
                 decimal discountAmount = 0m;
                 string appliedPromoCode = "";
 
@@ -797,65 +1061,69 @@ namespace WebCinema.Controllers.API
                         return Ok(new { success = false, message = "Mã khuyến mãi đã hết" });
                     }
 
-                    // ✅ KM004: KIỂM TRA CÓ COMBO TRONG ĐỒ ĂN KHÔNG
-                    if (promoCode == "KM004")
+                    // ✅ KIỂM TRA NGÀY SỬ DỤNG
+                    var today = DateTime.Today;
+                    if (promo.ngay_bat_dau != DateTime.MinValue && today < promo.ngay_bat_dau)
                     {
-                        bool hasCombo = false;
-                        try
+                        return Ok(new { success = false, message = $"Mã này chưa hoạt động. Bắt đầu từ {promo.ngay_bat_dau:dd/MM/yyyy}" });
+                    }
+
+                    if (promo.ngay_ket_thuc != DateTime.MinValue && today > promo.ngay_ket_thuc)
+                    {
+                        return Ok(new { success = false, message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})" });
+                    }
+
+                    // ✅ TÍNH TOÁN DISCOUNT THEO SCOPE
+                    decimal baseTotal = ticketTotal + foodTotal;
+
+                    // TH1: Giảm toàn đơn (scope = 0)
+                    if (promo.pham_vi_ap_dung == 0 || promo.pham_vi_ap_dung == null)
+                    {
+                        if (promo.loai_giam_gia == "%" || (promo.loai_giam_gia ?? "").Contains("%"))
                         {
-                            foreach (var item in foodItems)
+                            discountAmount = (baseTotal * promo.gia_tri_giam) / 100m;
+                        }
+                        else
+                        {
+                            discountAmount = promo.gia_tri_giam;
+                        }
+                    }
+                    // TH2: Giảm theo món (scope = 1)
+                    else if (promo.pham_vi_ap_dung == 1)
+                    {
+                        var allowedFoodIds = GetAllowedFoodsForPromo(promo.ma_giam_gia_id);
+
+                        foreach (var foodOrder in db.DonHang_DoAns)
+                        {
+                            // Nếu có allowedFoodIds, chỉ áp dụng cho những món trong danh sách
+                            if (allowedFoodIds.Count > 0)
                             {
-                                if (item == null) continue;
-                                int foodId = item["food_id"]?.Value<int>() ?? 0;
+                                if (!allowedFoodIds.Contains(foodOrder.Do_An_id))
+                                    continue;
+                            }
 
-                                if (foodId > 0)
-                                {
-                                    var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                                    if (food != null)
-                                    {
-                                        // ✅ KIỂM TRA 1: Cột loai (FoodType) - CHÍNH
-                                        if ((food.loai ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                        {
-                                            hasCombo = true;
-                                            LoggingHelper.LogInfo($"✅ KM004: Found Combo in loai field for food {foodId}");
-                                            break;
-                                        }
+                            decimal foodSubTotal = (foodOrder.Do_An?.gia ?? 0) * foodOrder.so_luong;
 
-                                        // ✅ KIỂM TRA 2: Cột ten_san_pham (FoodName) - PHỤ
-                                        if ((food.ten_san_pham ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                        {
-                                            hasCombo = true;
-                                            LoggingHelper.LogInfo($"✅ KM004: Found Combo in ten_san_pham field for food {foodId}");
-                                            break;
-                                        }
-                                    }
-                                }
+                            bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
+                                (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%"));
+
+                            if (isPercent)
+                            {
+                                discountAmount += (foodSubTotal * promo.gia_tri_giam) / 100m;
+                            }
+                            else
+                            {
+                                discountAmount += (promo.gia_tri_giam * foodOrder.so_luong);
                             }
                         }
-                        catch (Exception ex)
-                        {
-                            LoggingHelper.LogError(ex, "Error checking KM004 combo");
-                        }
-
-                        if (!hasCombo)
-                        {
-                            return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
-                        }
                     }
 
-                    // ✅ TÍNH TOÁN DISCOUNT
-                    decimal baseTotal = ticketTotal + foodTotal;
-                    if (promo.loai_giam_gia == "%" || (promo.loai_giam_gia ?? "").Contains("%"))
-                    {
-                        discountAmount = (baseTotal * promo.gia_tri_giam) / 100m;
-                    }
-                    else
-                    {
-                        discountAmount = promo.gia_tri_giam;
-                    }
+                    // ✅ Không cho discount vượt quá tổng tiền
+                    discountAmount = Math.Floor(discountAmount);
+                    if (discountAmount > baseTotal) discountAmount = baseTotal;
 
                     appliedPromoCode = promoCode;
-                    LoggingHelper.LogInfo($"✅ API Applied {promoCode}: Base={baseTotal}, Discount={discountAmount}");
+                    LoggingHelper.LogInfo($"✅ API Applied {promoCode}: Base={baseTotal}, Discount={discountAmount}, Scope={promo.pham_vi_ap_dung}");
                 }
 
                 // ✅ TẠOBOOKING VỚI TRẠNG THÁI "CHƯA THANH TOÁN" NGAY (GIỐNG WEB)
@@ -885,7 +1153,8 @@ namespace WebCinema.Controllers.API
                     {
                         // Lưu original total vào session để ApplyPromoToBooking sử dụng
                         session[$"Booking_{booking.Dat_Ve_id}_OriginalTotal"] = totalBeforeDiscount;
-                        LoggingHelper.LogInfo($"✅ Lưu Session Booking_{booking.Dat_Ve_id}_OriginalTotal = {totalBeforeDiscount}");
+                        session[$"Booking_{booking.Dat_Ve_id}_AppliedPromo"] = appliedPromoCode;
+                        LoggingHelper.LogInfo($"✅ Lưu Session Booking_{booking.Dat_Ve_id}_OriginalTotal = {totalBeforeDiscount}, Promo = {appliedPromoCode}");
                     }
                 }
                 catch (Exception sessEx)
@@ -893,12 +1162,23 @@ namespace WebCinema.Controllers.API
                     LoggingHelper.LogError(sessEx, $"Failed to save original total to session for booking {booking.Dat_Ve_id}");
                 }
 
-                // ✅ Cập nhật vé
+                // ✅ Cập nhật vé (sinh QR giống Web)
                 foreach (var ticket in selectedTickets)
                 {
                     ticket.Dat_Ve_id = booking.Dat_Ve_id;
                     ticket.trang_thai_ve = "Chưa sử dụng";
-                    ticket.ma_qr_code = Guid.NewGuid().ToString();
+                    // Sinh QR code theo cùng định dạng với BookingController
+                    ticket.ma_qr_code = $"DAVCINEMA-{booking.Dat_Ve_id}-{ticket.ve_id}-{DateTime.Now.Ticks}";
+
+                    try
+                    {
+                        var qrTicketService = new QRCodeTicketService();
+                        qrTicketService.GenerateAndSaveQRCode(ticket.ma_qr_code);
+                    }
+                    catch (Exception qrEx)
+                    {
+                        LoggingHelper.LogError(qrEx, "Failed to generate/save ticket QR code");
+                    }
                 }
 
                 // ✅ Thêm đồ ăn
@@ -935,11 +1215,11 @@ namespace WebCinema.Controllers.API
                     {
                         promo.so_luong_con_lai--;
                         db.SubmitChanges();
-                        LoggingHelper.LogInfo($"✅ Decrement KM004: Remaining {promo.so_luong_con_lai}");
+                        LoggingHelper.LogInfo($"✅ Decrement {appliedPromoCode}: Remaining {promo.so_luong_con_lai}");
                     }
                 }
 
-                LoggingHelper.LogInfo($"✅ Tạo đơn đặt online: Booking ID {booking.Dat_Ve_id}, Trạng thái: Chưa thanh toán, Vé: {selectedTickets.Count}, PromoCode: {appliedPromoCode}");
+                LoggingHelper.LogInfo($"✅ Tạo đơn đặt online: Booking ID {booking.Dat_Ve_id}, Trạng thái: Chưa thanh toán, Vé: {selectedTickets.Count}, PromoCode: {appliedPromoCode}, Discount: {discountAmount}");
 
                 return Ok(new
                 {
@@ -975,57 +1255,12 @@ namespace WebCinema.Controllers.API
         [Authorize]
         public IHttpActionResult CancelBooking([FromBody] JObject data)
         {
-            try
+            // Cancellation via API has been disabled intentionally.
+            return Ok(new
             {
-                int bookingId = data["booking_id"]?.Value<int>() ?? 0;
-
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                {
-                    return NotFound();
-                }
-
-                // ✅ Chỉ huỷ được nếu chưa thanh toán (GIỐNG WEB)
-                if (booking.trang_thai_Dat_Ve == "Đã Thanh toán")
-                    return Ok(new { success = false, message = "Không thể huỷ đơn đã thanh toán" });
-
-                // ✅ GIẢI PHÓNG TẤT CẢ VÉ (xóa Dat_Ve_id, clear QR code)
-                var allVesInBooking = db.Ves.Where(v => v.Dat_Ve_id == bookingId).ToList();
-                foreach (var ticket in allVesInBooking)
-                {
-                    ticket.Dat_Ve_id = null;
-                    ticket.trang_thai_ve = "Chưa sử dụng";
-                    ticket.ma_qr_code = null;
-                }
-
-                // ✅ XÓA CÁC ĐỒ ĂN LIÊN QUAN
-                var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == bookingId).ToList();
-                foreach (var food in foodOrders)
-                {
-                    db.DonHang_DoAns.DeleteOnSubmit(food);
-                }
-
-                // ✅ CẬP NHẬT TRẠNG THÁI BOOKING THÀNH "ĐÃ HỦY" hoặc XÓA
-                booking.trang_thai_Dat_Ve = "Đã Hủy";
-
-                db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Huỷ đơn đặt: Booking {bookingId}, giải phóng {allVesInBooking.Count} vé, xóa {foodOrders.Count} đồ ăn");
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Huỷ đơn đặt thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
+                success = false,
+                message = "Hủy vé đã bị vô hiệu hóa qua API. Vui lòng liên hệ bộ phận hỗ trợ nếu cần hỗ trợ."
+            });
         }
 
         /// <summary>
@@ -1119,6 +1354,14 @@ namespace WebCinema.Controllers.API
                     return NotFound();
                 }
 
+                // ✅ KIỂM TRA VÀ TẠO VÉ NẾU CHƯA CÓ (GIỐNG WEB)
+                // Nếu chưa có vé trong bảng Ve, hệ thống sẽ tự động sinh vé để đảm bảo quy trình đặt vé hoạt động
+                bool hasTickets = db.Ves.Any(v => v.suat_chieu_id == showtimeId);
+                if (!hasTickets)
+                {
+                    GenerateTicketsForShowtime(showtime);
+                }
+
                 // ✅ Lấy hệ số giá ngày
                 var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => ln.loai_ngay_id == showtime.loai_ngay_id);
                 decimal hesoNgay = loaiNgay?.phu_phi ?? 0m;
@@ -1150,7 +1393,7 @@ namespace WebCinema.Controllers.API
                     {
                         seat_id = g.ghe_id,
                         seat_number = g.so_ghe ?? "N/A",
-                        row = ((char)('A' + g.hang)).ToString(), // ✅ Convert int (0,1,2...) to String (A,B,C...)
+                        row = ((char)('A' + g.hang)).ToString(),
                         column = g.cot,
                         seat_type = g.Loai_Ghe != null ? new
                         {
@@ -1159,7 +1402,6 @@ namespace WebCinema.Controllers.API
                             surcharge = g.Loai_Ghe.phu_phi ?? 0
                         } : null,
                         status = bookedSeats.Contains(g.ghe_id) ? "booked" : (g.trang_thai == 0 ? "aisle" : "available"),
-                        // ✅ GIÁ ĐỘNG: Giá gốc + (Giá gốc × Hệ số ngày %) + (Giá gốc × Phí ghế %)
                         price = showtime.gia_ve +
                                 (showtime.gia_ve * hesoNgay / 100) +
                                 (showtime.gia_ve * (g.Loai_Ghe != null ? (g.Loai_Ghe.phu_phi ?? 0) : 0) / 100)
@@ -1170,16 +1412,20 @@ namespace WebCinema.Controllers.API
                 int totalSeatsCount = allSeats.Count;
                 int bookedCount = seats.Count(s => s.status == "booked");
                 int availableCount = seats.Count(s => s.status == "available");
+
+                try
+                {
+                    
+                }
+                catch { }
                 var typeSummary = allSeats
                     .GroupBy(g => g.Loai_Ghe != null ? g.Loai_Ghe.ten_loai : "Unknown")
                     .Select(gr => new { type = gr.Key, count = gr.Count() })
                     .ToList();
 
-                // Use explicit room values for rows/columns
                 int rowsCount = showtime.Phong_Chieu?.so_hang ?? (allSeats.Any() ? allSeats.Max(s => s.hang) + 1 : 0);
                 int columnsCount = showtime.Phong_Chieu?.so_cot ?? (allSeats.Any() ? allSeats.Max(s => s.cot) : 0);
 
-                // If client requests a flat layout, return layout marker and zero rows/columns
                 if (flat)
                 {
                     return Ok(new
@@ -1229,20 +1475,34 @@ namespace WebCinema.Controllers.API
             }
         }
 
+        [HttpPost]
+        [Route("request-cancel")]
+        [Authorize]
+        public IHttpActionResult RequestCancelTicket([FromBody] JObject data)
+        {
+            // Request-cancel via API has been disabled intentionally.
+            return Ok(new
+            {
+                success = false,
+                message = "Yêu cầu hủy vé đã bị vô hiệu hóa qua API. Vui lòng liên hệ bộ phận hỗ trợ nếu cần hoàn tiền hoặc trợ giúp."
+            });
+        }
+
         /// <summary>
-        /// POST: api/customer/confirm-qr-payment
-        /// Xác nhận thanh toán QR (cập nhật booking thành "Chờ Duyệt", admin sẽ duyệt)
+        /// POST: api/customer/process-vnpay-payment
+        /// Xử lý thanh toán VNPay callback (thay thế confirm-qr-payment)
         /// ✅ Yêu cầu xác thực
         /// </summary>
         [HttpPost]
-        [Route("confirm-qr-payment")]
+        [Route("process-vnpay-payment")]
         [Authorize]
-        public IHttpActionResult ConfirmQRPayment([FromBody] JObject data)
+        public IHttpActionResult ProcessVNPayPayment([FromBody] JObject data)
         {
             try
             {
                 int bookingId = data["booking_id"]?.Value<int>() ?? 0;
-                string promoCode = data["promo_code"]?.Value<string>() ?? "";
+                string responseCode = data["response_code"]?.Value<string>() ?? "";
+                string transactionNo = data["transaction_no"]?.Value<string>() ?? "";
 
                 if (bookingId <= 0)
                     return BadRequest("Booking ID không hợp lệ");
@@ -1251,91 +1511,231 @@ namespace WebCinema.Controllers.API
                 if (booking == null)
                     return NotFound();
 
-                // ✅ Kiểm tra trạng thái - phải là "Chưa thanh toán"
+                // ✅ KIỂM TRA RESPONSE CODE
+                if (responseCode == "00")
+                {
+                    // ✅ THANH TOÁN THÀNH CÔNG
+                    if (booking.trang_thai_Dat_Ve != "Đã Thanh toán")
+                    {
+                        booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+                        booking.phuong_thuc_thanh_toan = "VNPay";
+
+                        // 1. TRỪ KHO (Gọi Service)
+                        var firstTicket = booking.Ves.FirstOrDefault();
+                        if (firstTicket != null)
+                        {
+                            int rapId = firstTicket.Suat_Chieu.Phong_Chieu.rap_id;
+
+                            var stockItems = booking.DonHang_DoAns.Select(x => new WebCinema.Services.StockModel
+                            {
+                                DoAnId = x.Do_An_id,
+                                SoLuong = x.so_luong
+                            }).ToList();
+
+                            var foodService = new WebCinema.Services.FoodService(db);
+                            foodService.UpdateStock(rapId, stockItems, false);
+                        }
+
+                        // 2. CỘNG ĐIỂM
+                        var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == booking.khach_hang_id);
+                        if (customer != null)
+                        {
+                            customer.diem_tich_luy = (customer.diem_tich_luy ?? 0) + booking.Ves.Count;
+                        }
+
+                        db.SubmitChanges();
+
+                        // 3. GỬI EMAIL THÔNG BÁO THANH TOÁN THÀNH CÔNG
+                        try
+                        {
+                            if (customer != null && !string.IsNullOrEmpty(customer.email))
+                            {
+                                var pdfService = new Services.InvoicePdfService();
+                                string pdfFileName = pdfService.GenerateInvoicePdf(bookingId);
+
+                                string invoiceDir = System.Web.HttpContext.Current?.Server.MapPath("~/Content/hoadon")
+                                    ?? System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content/hoadon");
+                                string pdfFilePath = System.IO.Path.Combine(invoiceDir, pdfFileName);
+
+                                var emailService = new EmailServiceMailKit();
+                                string customMessage = $"Đơn hàng của bạn đã được thanh toán thành công. Mã đơn: #{bookingId}. Vui lòng kiểm tra file PDF đính kèm để xem chi tiết.";
+
+                                bool emailSent = emailService.SendInvoiceEmail(
+                                    customer.email,
+                                    customer.ho_ten,
+                                    pdfFileName,
+                                    pdfFilePath,
+                                    customMessage
+                                );
+
+                                if (emailSent)
+                                    LoggingHelper.LogInfo($"✅ Gửi email hóa đơn thành công cho khách {customer.khach_hang_id} ({customer.email})");
+                            }
+                        }
+                        catch (Exception emailEx)
+                        {
+                            LoggingHelper.LogError(emailEx, "Lỗi gửi email hóa đơn");
+                        }
+
+                        LoggingHelper.LogInfo($"✅ API VNPay Payment Success: Booking {bookingId}, Customer {customer?.khach_hang_id}, TransactionNo: {transactionNo}");
+                    }
+
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Thanh toán VNPay thành công!",
+                        booking_id = bookingId,
+                        status = "Đã Thanh toán",
+                        transaction_no = transactionNo
+                    });
+                }
+                else
+                {
+                    // ❌ THANH TOÁN THẤT BẠI
+                    booking.trang_thai_Dat_Ve = "Đã Hủy";
+
+                    // Giải phóng vé
+                    var tickets = db.Ves.Where(v => v.Dat_Ve_id == bookingId).ToList();
+                    foreach (var ticket in tickets)
+                    {
+                        ticket.Dat_Ve_id = null;
+                        ticket.trang_thai_ve = "Chưa sử dụng";
+                        ticket.ma_qr_code = null;
+                    }
+
+                    // Xóa đồ ăn
+                    var foods = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == bookingId).ToList();
+                    db.DonHang_DoAns.DeleteAllOnSubmit(foods);
+
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"❌ API VNPay Payment Failed: Booking {bookingId}, ResponseCode: {responseCode}");
+
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Thanh toán VNPay thất bại (Mã lỗi: {responseCode})",
+                        booking_id = bookingId,
+                        status = "Đã Hủy"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/customer/get-vnpay-payment-url
+        /// Lấy URL thanh toán VNPay để redirect user
+        /// ✅ Yêu cầu xác thực
+        /// </summary>
+        [HttpPost]
+        [Route("get-vnpay-payment-url")]
+        [Authorize]
+        public IHttpActionResult GetVNPayPaymentUrl([FromBody] JObject data)
+        {
+            try
+            {
+                int bookingId = data?["booking_id"]?.Value<int>() ?? 0;
+
+                if (bookingId <= 0)
+                    return BadRequest("Booking ID không hợp lệ");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return NotFound();
+
+                // ✅ Kiểm tra trạng thái booking phải là "Chưa thanh toán"
                 if (booking.trang_thai_Dat_Ve != "Chưa thanh toán")
                 {
-                    return Ok(new { success = false, message = "Đơn hàng đã được xử lý hoặc bị hủy" });
-                }
-
-                // ✅ NẾU CÓ PROMO CODE, GIẢM SỐ LƯỢNG (nếu chưa giảm lúc apply)
-                if (!string.IsNullOrEmpty(promoCode))
-                {
-                    var promoCodeRecord = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
-                    
-                    if (promoCodeRecord != null && (promoCodeRecord.so_luong_con_lai ?? 0) > 0)
+                    return Ok(new
                     {
-                        // ✅ Giảm số lượng mã
-                        promoCodeRecord.so_luong_con_lai--;
-                        db.SubmitChanges();
-                        
-                        LoggingHelper.LogInfo($"✅ Giảm mã khuyến mãi: {promoCode}, Còn lại: {promoCodeRecord.so_luong_con_lai}");
-                    }
+                        success = false,
+                        message = "Đơn hàng không ở trạng thái chưa thanh toán"
+                    });
                 }
 
-                // ✅ Cập nhật trạng thái thành "Chờ Duyệt" (chờ Admin duyệt)
-                booking.trang_thai_Dat_Ve = "Chờ Duyệt";
-                db.SubmitChanges();
+                // ✅ Lấy thông tin booking
+                decimal totalAmount = booking.tong_tien;
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == booking.khach_hang_id);
+                string customerEmail = customer?.email ?? "unknown@example.com";
+                string customerName = customer?.ho_ten ?? "Khách hàng";
 
-                LoggingHelper.LogInfo($"✅ Xác nhận QR Payment: Booking ID {bookingId}, Trạng thái: Chờ Duyệt, PromoCode: {promoCode ?? "None"}");
+                // ✅ Lấy VNPay Config từ Web.config (GIỐNG WEB)
+                string vnp_Url = System.Configuration.ConfigurationManager.AppSettings["vnp_Url"];
+                string vnp_ReturnUrl = System.Configuration.ConfigurationManager.AppSettings["vnp_Returnurl"];
+                string vnp_TmnCode = System.Configuration.ConfigurationManager.AppSettings["vnp_TmnCode"];
+                string vnp_HashSecret = System.Configuration.ConfigurationManager.AppSettings["vnp_HashSecret"];
+
+                // ✅ Dùng VnPayLibrary (GIỐNG WEB)
+                VnPayLibrary vnpay = new VnPayLibrary();
+
+                vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
+                vnpay.AddRequestData("vnp_Command", "pay");
+                vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+
+                // Số tiền * 100 (QUAN TRỌNG!)
+                vnpay.AddRequestData("vnp_Amount", ((long)(totalAmount * 100)).ToString());
+
+                vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                vnpay.AddRequestData("vnp_CurrCode", "VND");
+                vnpay.AddRequestData("vnp_IpAddr", GetClientIpAddress());
+                vnpay.AddRequestData("vnp_Locale", "vn");
+
+                vnpay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang:" + bookingId);
+                vnpay.AddRequestData("vnp_OrderType", "other");
+                vnpay.AddRequestData("vnp_ReturnUrl", vnp_ReturnUrl);
+
+                // Mã tham chiếu (Thêm ticks để tránh trùng lặp)
+                vnpay.AddRequestData("vnp_TxnRef", bookingId.ToString() + "_" + DateTime.Now.Ticks);
+
+                // ✅ Gọi CreateRequestUrl của VnPayLibrary (CHÍNH XÁC GIỐNG WEB)
+                string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+
+                LoggingHelper.LogInfo($"✅ API Generated VNPay URL: BookingId={bookingId}, Amount={totalAmount}₫");
 
                 return Ok(new
                 {
                     success = true,
-                    message = "Đơn hàng đã gửi, vui lòng chờ Admin duyệt",
-                    booking_id = booking.Dat_Ve_id,
-                    status = booking.trang_thai_Dat_Ve
+                    message = "Lấy URL thanh toán VNPay thành công",
+                    data = new
+                    {
+                        payment_url = paymentUrl,
+                        amount = totalAmount,
+                        customer_email = customerEmail,
+                        customer_name = customerName,
+                        booking_id = bookingId
+                    }
                 });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
+                LoggingHelper.LogError(ex, "GetVNPayPaymentUrl");
                 return InternalServerError(ex);
             }
         }
 
         /// <summary>
-        /// POST: api/customer/check-booking-status
-        /// Kiểm tra trạng thái booking (dùng để polling xem có được Admin duyệt không)
-        /// ✅ Yêu cầu xác thực
+        /// Helper: Get client IP address
         /// </summary>
-        [HttpPost]
-        [Route("check-booking-status")]
-        [Authorize]
-        public IHttpActionResult CheckBookingStatus([FromBody] JObject data)
+        private string GetClientIpAddress()
         {
             try
             {
-                int bookingId = data["booking_id"]?.Value<int>() ?? 0;
-
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                return Ok(new
+                if (HttpContext.Current?.Request.ServerVariables["HTTP_X_FORWARDED_FOR"] != null)
                 {
-                    success = true,
-                    booking_id = booking.Dat_Ve_id,
-                    status = booking.trang_thai_Dat_Ve,
-                    total_amount = booking.tong_tien
-                });
+                    return HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"].ToString();
+                }
+                if (HttpContext.Current?.Request.UserHostAddress != null)
+                {
+                    return HttpContext.Current.Request.UserHostAddress;
+                }
             }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db?.Dispose();
-            }
-            base.Dispose(disposing);
+            catch { }
+            return "127.0.0.1";
         }
 
         /// <summary>
@@ -1367,9 +1767,12 @@ namespace WebCinema.Controllers.API
                         // session value might be stored as string or int
                         var raw = session["CustomerId"];
                         if (raw is int) customerId = (int)raw;
-                        else if (raw is string) {
+                        else if (raw is string)
+                        {
                             if (int.TryParse((string)raw, out var tmp)) customerId = tmp;
-                        } else {
+                        }
+                        else
+                        {
                             try { customerId = Convert.ToInt32(raw); } catch { customerId = null; }
                         }
                     }
@@ -1510,10 +1913,13 @@ namespace WebCinema.Controllers.API
                         // session value might be stored as string or int
                         var raw = session["CustomerId"];
                         if (raw is int) customerId = (int)raw;
-                        else if (raw is string) {
-                          if (int.TryParse((string)raw, out var tmp)) customerId = tmp;
-                        } else {
-                          try { customerId = Convert.ToInt32(raw); } catch { customerId = null; }
+                        else if (raw is string)
+                        {
+                            if (int.TryParse((string)raw, out var tmp)) customerId = tmp;
+                        }
+                        else
+                        {
+                            try { customerId = Convert.ToInt32(raw); } catch { customerId = null; }
                         }
                     }
                 }
@@ -1582,610 +1988,464 @@ namespace WebCinema.Controllers.API
         }
 
         /// <summary>
-        /// GET: api/customer/profile/{customerId}
-        /// Lấy thông tin profile khách hàng (đầy đủ bao gồm các cột mới)
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpGet]
-        [Route("profile/{customerId}")]
-        [Authorize]
-        public IHttpActionResult GetCustomerProfile(int customerId)
-        {
-            try
-            {
-                if (customerId <= 0)
-                    return BadRequest("Customer ID không hợp lệ");
-
-                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
-                if (customer == null)
-                    return NotFound();
-
-                var profile = new
-                {
-                    customer_id = customer.khach_hang_id,
-                    full_name = customer.ho_ten,
-                    email = customer.email,
-                    phone = customer.so_dien_thoai,
-                    // ✅ Thêm các cột mới
-                    date_of_birth = customer.ngay_sinh.HasValue ? customer.ngay_sinh.Value.ToString("yyyy-MM-dd") : null,
-                    gender = customer.gioi_tinh ?? "N/A",
-                    address = customer.dia_chi ?? "N/A",
-                    registration_date = customer.ngay_dang_ky.HasValue ? customer.ngay_dang_ky.Value.ToString("yyyy-MM-dd") : "N/A",
-                    total_bookings = customer.Dat_Ves.Count,
-                    total_spent = customer.Dat_Ves.Sum(d => (decimal?)d.tong_tien) ?? 0m
-                };
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Lấy thông tin profile thành công",
-                    data = profile
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// PUT: api/customer/profile/{customerId}
-        /// Cập nhật thông tin profile khách hàng
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpPut]
-        [Route("profile/{customerId}")]
-        [Authorize]
-        public IHttpActionResult UpdateCustomerProfile(int customerId, [FromBody] JObject data)
-        {
-            try
-            {
-                if (customerId <= 0)
-                    return BadRequest("Customer ID không hợp lệ");
-
-                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
-                if (customer == null)
-                    return NotFound();
-
-                // ✅ Cập nhật các field
-                if (data["full_name"] != null)
-                    customer.ho_ten = data["full_name"].Value<string>();
-
-                if (data["phone"] != null)
-                    customer.so_dien_thoai = data["phone"].Value<string>();
-
-                // ✅ Cập nhật các cột mới
-                if (data["date_of_birth"] != null && DateTime.TryParse(data["date_of_birth"].Value<string>(), out var dob))
-                    customer.ngay_sinh = dob;
-
-                if (data["gender"] != null)
-                    customer.gioi_tinh = data["gender"].Value<string>();
-
-                if (data["address"] != null)
-                    customer.dia_chi = data["address"].Value<string>();
-
-                db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Cập nhật profile: Customer {customerId}");
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Cập nhật profile thành công"
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
         /// POST: api/customer/check-promo
-        /// Kiểm tra xem mã khuyến mãi có áp dụng được không
-        /// Hiện tại chỉ support KM004 (cần mua Combo)
+        /// Kiểm tra mã khuyến mãi
+        /// ✅ Yêu cầu xác thực
         /// </summary>
         [HttpPost]
         [Route("check-promo")]
-        [AllowAnonymous]
-        public IHttpActionResult CheckPromoCode([FromBody] JObject data)
+        [Authorize]
+        public IHttpActionResult CheckPromo([FromBody] JObject data)
         {
             try
             {
                 string promoCode = data["promo_code"]?.Value<string>() ?? "";
-                var foodItems = data["food_items"]?.ToObject<List<JObject>>() ?? new List<JObject>();
 
-                if (string.IsNullOrWhiteSpace(promoCode))
-                {
-                    return BadRequest("Vui lòng nhập mã khuyến mãi");
-                }
+                if (string.IsNullOrEmpty(promoCode))
+                    return BadRequest("Mã khuyến mãi không được để trống");
 
-                // ✅ Hiện tại chỉ hỗ trợ KM004
-                if (promoCode != "KM004")
-                {
-                    return Ok(new { success = false, message = "Mã khuyến mãi này chưa được hỗ trợ trên API" });
-                }
-
+                // Tìm khuyến mãi theo mã
                 var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == promoCode);
+
                 if (promo == null)
                 {
-                    return Ok(new { success = false, message = "Mã khuyến mãi không tồn tại" });
-                }
-
-                // Kiểm tra số lượng còn lại
-                if (promo.so_luong_con_lai <= 0)
-                {
-                    return Ok(new { success = false, message = "Mã khuyến mãi đã hết" });
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi không tồn tại hoặc đã hết hạn"
+                    });
                 }
 
                 // Kiểm tra trạng thái
                 if (promo.trang_thai != "Hoạt động")
                 {
-                    return Ok(new { success = false, message = "Mã khuyến mãi hiện không hoạt động" });
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi không hoạt động"
+                    });
                 }
 
-                // Kiểm tra ngày
+                // Kiểm tra số lượng
+                if (promo.so_luong_con_lai <= 0)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi đã hết"
+                    });
+                }
+
+                // Kiểm tra ngày sử dụng
                 if (promo.ngay_bat_dau != DateTime.MinValue && DateTime.Now < promo.ngay_bat_dau)
                 {
-                    return Ok(new { success = false, message = $"Mã này chưa hoạt động. Bắt đầu từ {promo.ngay_bat_dau:dd/MM/yyyy}" });
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Mã này chưa hoạt động. Bắt đầu từ {promo.ngay_bat_dau:dd/MM/yyyy}"
+                    });
                 }
 
                 if (promo.ngay_ket_thuc != DateTime.MinValue && DateTime.Now > promo.ngay_ket_thuc)
                 {
-                    return Ok(new { success = false, message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})" });
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})"
+                    });
                 }
 
-                //// ✅ KM004: Kiểm tra Combo
-                //if (promoCode == "KM004")
-                //{
-                //    bool hasCombo = false;
-
-                //    foreach (var item in foodItems)
-                //    {
-                //        if (item == null) continue;
-
-                //        int foodId = item["food_id"]?.Value<int>() ?? 0;
-
-                //        if (foodId > 0)
-                //        {
-                //            var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                //            if (food != null)
-                //            {
-                //                if ((food.ten_san_pham ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                //                    (food.loai ?? "").IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                //                {
-                //                    hasCombo = true;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //    }
-
-                //    if (!hasCombo)
-                //    {
-                //        return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
-                //    }
-                //}
-
-                // KM004: Kiểm tra có Combo trong đồ ăn hay không
-                if (promoCode == "KM004")
+                // Xác định loại giảm giá
+                string discountType = "%";
+                if (!string.IsNullOrEmpty(promo.loai_giam_gia) &&
+                    !promo.loai_giam_gia.Contains("%") &&
+                    !promo.loai_giam_gia.Contains("Phần"))
                 {
-                    bool hasCombo = false;
-
-                    try
-                    {
-                        // 🟢 Chuyển JSON thành DTO chuẩn
-                        var foodItemsList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<FoodItemDTO>>(foodItemsJson ?? "[]");
-
-                        LoggingHelper.LogInfo($"🔍 API KM004 Start: foodItemsJson has {foodItemsList?.Count ?? 0} items");
-
-                        if (foodItemsList != null && foodItemsList.Count > 0)
-                        {
-                            foreach (var item in foodItemsList)
-                            {
-                                if (item == null)
-                                    continue;
-
-                                LoggingHelper.LogInfo($"API Checking FoodItem: Id={item.FoodId}, Name='{item.FoodName}', Type='{item.FoodType}'");
-
-                                // 1️⃣ Kiểm tra ngay trong dữ liệu client gửi lên — FOOD NAME
-                                if (!string.IsNullOrEmpty(item.FoodName) &&
-                                    item.FoodName.IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                {
-                                    hasCombo = true;
-                                    LoggingHelper.LogInfo("✅ API KM004: Found Combo in FoodName (Client)");
-                                    break;
-                                }
-
-                                // 2️⃣ Kiểm tra database theo FoodId
-                                if (item.FoodId > 0)
-                                {
-                                    var foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == item.FoodId);
-
-                                    if (foodObj != null)
-                                    {
-                                        LoggingHelper.LogInfo($"API DB Check: Name='{foodObj.ten_san_pham}', Type='{foodObj.loai}'");
-
-                                        if ((foodObj.ten_san_pham ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                            (foodObj.loai ?? "").IndexOf("combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                        {
-                                            hasCombo = true;
-                                            LoggingHelper.LogInfo("✅ API KM004: Found Combo in DB");
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // ❌ Không thấy Combo -> thông báo
-                        if (!hasCombo)
-                        {
-                            LoggingHelper.LogInfo("❌ API KM004: No Combo found -> Cannot apply promo");
-                            return Ok(new { success = false, message = "Mã KM004 cần mua Combo để áp dụng" });
-                        }
-
-                        LoggingHelper.LogInfo("✅ API KM004: Combo detected -> Promo can be applied");
-                    }
-                    catch (Exception ex)
-                    {
-                        LoggingHelper.LogError(ex);
-                        return Ok(new { success = false, message = "Lỗi kiểm tra mã khuyến mãi" });
-                    }
+                    discountType = "VND";
                 }
-
-
-                // ✅ Mã khuyến mãi áp dụng được
-                string discountType = promo.loai_giam_gia == "%" || (promo.loai_giam_gia ?? "").Contains("%") ? "%" : "VND";
 
                 return Ok(new
                 {
                     success = true,
+                    message = "Mã khuyến mãi hợp lệ",
                     data = new
                     {
-                        promo_code = promo.ma_khuyen_mai,
-                        description = promo.mo_ta,
-                        discount_value = promo.gia_tri_giam,
-                        discount_type = discountType,
+                        ma_khuyen_mai = promo.ma_khuyen_mai,
+                        mo_ta = promo.mo_ta,
+                        gia_tri_giam = promo.gia_tri_giam,
+                        loai_giam_gia = discountType,
+                        so_luong_con_lai = promo.so_luong_con_lai,
+                        ngay_bat_dau = promo.ngay_bat_dau.ToString("yyyy-MM-dd"),
+                        ngay_ket_thuc = promo.ngay_ket_thuc.ToString("yyyy-MM-dd")
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "CheckPromo");
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+
+        /// <summary>
+        /// POST: api/customer/booking/{bookingId}/apply-promo
+        /// Áp dụng mã khuyến mãi cho đơn đặt vé
+        /// ✅ Yêu cầu xác thực
+        /// ✅ Tính discount theo scope (toàn đơn hoặc theo món)
+        /// </summary>
+        [HttpPost]
+        [Route("booking/{bookingId}/apply-promo")]
+        [Authorize]
+        public IHttpActionResult ApplyPromoToBooking(int bookingId, [FromBody] JObject data)
+        {
+            try
+            {
+                string promoCode = data["promo_code"]?.Value<string>() ?? "";
+                LoggingHelper.LogInfo($"🔴 ApplyPromoToBooking called: bookingId={bookingId}, promoCode={promoCode}, requestData={data.ToString()}");
+
+                if (string.IsNullOrEmpty(promoCode))
+                    return BadRequest("Mã khuyến mãi không được để trống");
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    return NotFound();
+
+                // ✅ Tìm khuyến mãi
+                var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == promoCode);
+
+                if (promo == null)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi không tồn tại"
+                    });
+                }
+
+                // ✅ Kiểm tra trạng thái
+                if (promo.trang_thai != "Hoạt động")
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi không hoạt động"
+                    });
+                }
+
+                if (promo.so_luong_con_lai <= 0)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Mã khuyến mãi đã hết"
+                    });
+                }
+
+                // ✅ Kiểm tra ngày sử dụng
+                var today = DateTime.Today;
+                if (promo.ngay_bat_dau != DateTime.MinValue && today < promo.ngay_bat_dau)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Mã này chưa hoạt động. Bắt đầu từ {promo.ngay_bat_dau:dd/MM/yyyy}"
+                    });
+                }
+
+                if (promo.ngay_ket_thuc != DateTime.MinValue && today > promo.ngay_ket_thuc)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"Mã này đã hết hạn (kết thúc {promo.ngay_ket_thuc:dd/MM/yyyy})"
+                    });
+                }
+
+                // ✅ Áp dụng giảm giá - LẤY ORIGINAL TOTAL TỪ SESSION HOẶC TÍNH LẠI
+                decimal originalTotal = booking.tong_tien;
+
+                // Cố gắng lấy originalTotal từ session
+                try
+                {
+                    var session = System.Web.HttpContext.Current?.Session;
+                    if (session != null && session[$"Booking_{bookingId}_OriginalTotal"] != null)
+                    {
+                        object sessionValue = session[$"Booking_{bookingId}_OriginalTotal"];
+                        if (sessionValue is decimal) originalTotal = (decimal)sessionValue;
+                        else if (decimal.TryParse(sessionValue.ToString(), out var parsed))
+                            originalTotal = parsed;
+
+                        LoggingHelper.LogInfo($"✅ Lấy OriginalTotal từ session: {originalTotal}");
+                    }
+                    else
+                    {
+                        // Tính lại từ vé + đồ ăn
+                        decimal ticketTotal = booking.Ves.Sum(v => v.gia_ve);
+                        decimal foodTotal = booking.DonHang_DoAns.Sum(f => (f.Do_An?.gia ?? 0) * f.so_luong);
+                        originalTotal = ticketTotal + foodTotal;
+
+                        LoggingHelper.LogInfo($"✅ Tính OriginalTotal từ booking: Vé={ticketTotal}, Đồ ăn={foodTotal}, Total={originalTotal}");
+                    }
+                }
+                catch (Exception sessEx)
+                {
+                    LoggingHelper.LogError(sessEx, $"Failed to get original total from session for booking {bookingId}. Using current total: {originalTotal}");
+                }
+
+                decimal discountAmount = 0;
+
+                // ✅ TH1: Giảm toàn đơn (scope = 0)
+                if (promo.pham_vi_ap_dung == 0 || promo.pham_vi_ap_dung == null)
+                {
+                    bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
+                        (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%"));
+
+                    if (isPercent)
+                    {
+                        discountAmount = (originalTotal * promo.gia_tri_giam) / 100m;
+                    }
+                    else
+                    {
+                        discountAmount = promo.gia_tri_giam;
+                    }
+                }
+                // ✅ TH2: Giảm theo món (scope = 1)
+                else if (promo.pham_vi_ap_dung == 1)
+                {
+                    var allowedFoodIds = GetAllowedFoodsForPromo(promo.ma_giam_gia_id);
+
+                    // ❌ Kiểm tra: Nếu scope=1 mà allowedFoodIds có danh sách, đơn hàng PHẢI có những combo này
+                    if (allowedFoodIds.Count > 0)
+                    {
+                        bool hasMatchingFood = booking.DonHang_DoAns.Any(f => allowedFoodIds.Contains(f.Do_An_id));
+                        if (!hasMatchingFood)
+                        {
+                            //LoggingHelper.LogInfo($"❌ Promo {promoCode} (scope=1) yêu cầu combo nhất định. Order có: {string.Join(',', booking.DonHang_DoAns.Select(f => f.Do_An_id))}, Allowed: {string.Join(',', allowedFoodIds)}");
+                            return Ok(new
+                            {
+                                success = false,
+                                message = "Mã khuyến mãi này chỉ áp dụng cho những combo nhất định. Đơn hàng của bạn không có combo này."
+                            });
+                        }
+                    }
+
+                    foreach (var foodOrder in booking.DonHang_DoAns)
+                    {
+                        // Nếu có allowedFoodIds, chỉ áp dụng cho những món trong danh sách
+                        if (allowedFoodIds.Count > 0)
+                        {
+                            if (!allowedFoodIds.Contains(foodOrder.Do_An_id))
+                                continue;
+                        }
+
+                        decimal foodSubTotal = (foodOrder.Do_An?.gia ?? 0) * foodOrder.so_luong;
+
+                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
+                            (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%"));
+
+                        if (isPercent)
+                        {
+                            discountAmount += (foodSubTotal * promo.gia_tri_giam) / 100m;
+                        }
+                        else
+                        {
+                            discountAmount += (promo.gia_tri_giam * foodOrder.so_luong);
+                        }
+                    }
+                }
+
+                discountAmount = Math.Floor(discountAmount);
+                if (discountAmount > originalTotal) discountAmount = originalTotal;
+
+                decimal finalTotal = originalTotal - discountAmount;
+                if (finalTotal < 0) finalTotal = 0;
+
+                // ✅ Cập nhật booking với khuyến mãi
+                booking.tong_tien = finalTotal;
+                db.SubmitChanges();
+
+                // ✅ Giảm số lượng mã khuyến mãi
+                promo.so_luong_con_lai--;
+                db.SubmitChanges();
+
+                // ✅ Lưu promo vào session
+                try
+                {
+                    var session = System.Web.HttpContext.Current?.Session;
+                    if (session != null)
+                    {
+                        session[$"Booking_{bookingId}_AppliedPromo"] = promoCode;
+                        LoggingHelper.LogInfo($"✅ Lưu AppliedPromo vào session: {promoCode}");
+                    }
+                }
+                catch { }
+
+                LoggingHelper.LogInfo($"✅ Áp dụng khuyến mãi {promoCode} cho booking {bookingId}: {originalTotal} → {finalTotal}₫ (Giảm {discountAmount}₫)");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = $"Áp dụng khuyến mãi thành công. Tiết kiệm {discountAmount:F0}₫",
+                    data = new
+                    {
+                        original_total = originalTotal,
+                        discount_amount = Math.Round(discountAmount, 0),
+                        final_total = Math.Round(finalTotal, 0),
+                        promo_code = promoCode,
                         remaining_quantity = promo.so_luong_con_lai
                     }
                 });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
+                LoggingHelper.LogError(ex, "ApplyPromoToBooking");
                 return InternalServerError(ex);
             }
         }
 
         /// <summary>
-        /// POST: api/customer/available-promos
-        /// Lấy danh sách mã khuyến mãi có thể áp dụng cho khách hàng và các đồ ăn (giống BookingController.GetAvailablePromoCodes)
+        /// Helper: Lấy danh sách Do_An_id được áp dụng cho một mã khuyến mãi
+        /// </summary>
+        private List<int> GetAllowedFoodsForPromo(int promoId)
+        {
+            // ✅ Bảng Khuyen_Mai_DoAn không tồn tại trong DB
+            // Trả về empty list - mã khuyến mãi áp dụng cho tất cả đồ ăn
+            // Nếu cần giới hạn theo món, có thể thêm logic dựa trên mo_ta hoặc ten_khuyen_mai
+            return new List<int>();
+        }
+
+        /// <summary>
+        /// POST: api/customer/get-applicable-promos
+        /// Lấy danh sách mã khuyến mãi phù hợp dựa trên đồ ăn được chọn
         /// ✅ Yêu cầu xác thực
         /// </summary>
         [HttpPost]
-        [Route("available-promos")]
+        [Route("get-applicable-promos")]
         [Authorize]
-        public IHttpActionResult GetAvailablePromoCodes([FromBody] JObject data)
+        public IHttpActionResult GetApplicablePromos([FromBody] JObject data)
         {
             try
             {
-                int customerId = data["customer_id"]?.Value<int>() ?? 0;
-                var foodItemsJson = data["food_items_json"]?.Value<string>() ?? "[]";
+                var foodItemsJson = data["foodItemsJson"]?.Value<string>() ?? "[]";
 
-                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
-                if (customer == null)
+                // ✅ Parse JSON danh sách đồ ăn
+                List<dynamic> foodItems = new List<dynamic>();
+                try
                 {
-                    return Ok(new { success = true, data = new List<object>() });
+                    foodItems = JsonConvert.DeserializeObject<List<dynamic>>(foodItemsJson) ?? new List<dynamic>();
+                }
+                catch (Exception parseEx)
+                {
+                    LoggingHelper.LogError(parseEx, "Error parsing foodItemsJson");
+                    foodItems = new List<dynamic>();
                 }
 
-                var promoCodes = db.Khuyen_Mais.ToList();
-                var result = new List<object>();
+                // ✅ Lấy danh sách mã khuyến mãi hoạt động
+                var today = DateTime.Today;
+                var applicablePromos = db.Khuyen_Mais
+                    .Where(k => k.trang_thai == "Hoạt động"
+                        && k.so_luong_con_lai > 0
+                        && (k.ngay_bat_dau == DateTime.MinValue || k.ngay_bat_dau <= today)
+                        && (k.ngay_ket_thuc == DateTime.MinValue || k.ngay_ket_thuc >= today))
+                    .ToList();
 
-                foreach (var km in promoCodes)
+                var result = new List<dynamic>();
+
+                foreach (var promo in applicablePromos)
                 {
-                    try
+                    bool isApplicable = true;
+                    string reason = "";
+
+                    // ✅ Kiểm tra điều kiện áp dụng (nếu có)
+                    // TH1: Khuyến mãi theo món (scope = 1)
+                    if (promo.pham_vi_ap_dung == 1  // Áp dụng cho các món cụ thể
+                    )
                     {
-                        bool isApplicable = true;
-                        string reason = "";
+                        // Lấy danh sách ID món từ bảng Khuyen_Mai_DoAn nếu có quan hệ
+                        // Hoặc check từ mo_ta, ten_khuyen_mai có chứa tên món
+                        isApplicable = false;
+                        reason = "Khuyến mãi dành riêng cho những món cụ thể";
 
-                        string maKhuyen = km.ma_khuyen_mai;
-
-                        if (maKhuyen == "KM001")
+                        // Nếu có foodItems, check xem có monkey hợp không
+                        if (foodItems.Count > 0)
                         {
-                            if (DateTime.Now.Month != 12)
+                            // Lấy danh sách Do_An_id được áp dụng khuyến mãi này (nếu có)
+                            var allowedFoodIds = GetAllowedFoodsForPromo(promo.ma_giam_gia_id);
+
+                            if (allowedFoodIds.Count > 0)
                             {
-                                isApplicable = false; reason = "Chỉ áp dụng tháng 12";
-                            }
-                        }
-                        else if (maKhuyen == "KM003")
-                        {
-                            int points = customer.diem_tich_luy ?? 0;
-                            if (points < 20) { isApplicable = false; reason = $"Cần 20+ điểm (hiện có {points})"; }
-                        }
-                        else if (maKhuyen == "KM004")
-                        {
-                            bool hasCombo = false;
-                            try
-                            {
-                                LoggingHelper.LogInfo($"🔍 KM004 Start: foodItemsJson={(!string.IsNullOrEmpty(foodItemsJson) ? "exist" : "null")}");
-
-                                var foodItems = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson ?? "[]");
-
+                                // Check xem có food nào trong foodItems match với allowedFoodIds không
                                 foreach (var item in foodItems)
                                 {
-                                    // ✅ KIỂM TRA 1: FoodType (cột loai trong DB) - CHÍNH
-                                    string foodType = item["FoodType"]?.ToString() ?? "";
-                                    LoggingHelper.LogInfo($"  → Checking FoodType: '{foodType}'");
-                                    if (foodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
+                                    if (item is JObject jItem)
                                     {
-                                        hasCombo = true;
-                                        LoggingHelper.LogInfo("✅ KM004: Found Combo in FoodType!");
-                                        break;
-                                    }
+                                        int foodId = jItem["id"]?.Value<int>() ?? 0;
+                                        int quantity = jItem["quantity"]?.Value<int>() ?? 0;
 
-                                    // ✅ KIỂM TRA 2: FoodName (cột ten_san_pham trong DB) - PHỤ
-                                    string foodName = item["FoodName"]?.ToString() ?? "";
-                                    LoggingHelper.LogInfo($"  → Checking FoodName: '{foodName}'");
-                                    if (foodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                    {
-                                        hasCombo = true;
-                                        LoggingHelper.LogInfo("✅ KM004: Found Combo in FoodName!");
-                                        break;
-                                    }
-
-                                    // ✅ KIỂM TRA 3: Database theo FoodId - BACKUP
-                                    if (int.TryParse(item["FoodId"]?.ToString(), out int fid))
-                                    {
-                                        var fobj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == fid);
-                                        if (fobj != null)
+                                        if (allowedFoodIds.Contains(foodId) && quantity > 0)
                                         {
-                                            string dbFoodType = fobj.loai ?? "";
-                                            string dbFoodName = fobj.ten_san_pham ?? "";
-                                            LoggingHelper.LogInfo($"  → FoodId {fid}: Type='{dbFoodType}', Name='{dbFoodName}'");
-
-                                            if (dbFoodType.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                                dbFoodName.IndexOf("Combo", StringComparison.OrdinalIgnoreCase) >= 0)
-                                            {
-                                                hasCombo = true;
-                                                LoggingHelper.LogInfo("✅ KM004: Found Combo in DB!");
-                                                break;
-                                            }
+                                            isApplicable = true;
+                                            break;
                                         }
                                     }
                                 }
-
-                                LoggingHelper.LogInfo($"✅ KM004 Complete: hasCombo={hasCombo}");
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                LoggingHelper.LogError(ex);
-                                return Ok(new { success = false, message = "Lỗi kiểm tra mã khuyến mãi" });
-                            }
-
-                            if (!hasCombo)
-                            {
-                                isApplicable = false; reason = "Cần mua Combo";
+                                // Nếu không có mapping, mặc định là phù hợp (old behavior)
+                                isApplicable = true;
+                                reason = "";
                             }
                         }
+                    }
+                    // TH2: Khuyến mãi cho toàn đơn (scope = 0)
+                    else
+                    {
+                        isApplicable = true;
+                        reason = "";
+                    }
 
-                        // date checks
-                        if (isApplicable && km.ngay_bat_dau != DateTime.MinValue && DateTime.Now < km.ngay_bat_dau) { isApplicable = false; reason = "Chưa đến ngày áp dụng"; }
-                        if (isApplicable && km.ngay_ket_thuc != DateTime.MinValue && DateTime.Now > km.ngay_ket_thuc) { isApplicable = false; reason = "Đã hết hạn áp dụng"; }
-                        if (km.so_luong_con_lai <= 0) { isApplicable = false; reason = "Mã đã hết"; }
-                        if (km.trang_thai != "Hoạt động") { isApplicable = false; reason = "Không hoạt động"; }
-
-                        decimal giaTri = km.gia_tri_giam;
-                        string loaiGiam = "%";
-                        if (!string.IsNullOrEmpty(km.loai_giam_gia) && !(km.loai_giam_gia.Contains("Phần") || km.loai_giam_gia.Contains("%"))) loaiGiam = "VND";
+                    // ✅ Nếu phù hợp, thêm vào danh sách kết quả
+                    if (isApplicable)
+                    {
+                        var allowedFoods = GetAllowedFoodsForPromo(promo.ma_giam_gia_id);
 
                         result.Add(new
                         {
-                            maKhuyen = km.ma_khuyen_mai,
-                            moTa = km.mo_ta ?? "",
-                            giaTriGiam = giaTri,
-                            loaiGiam = loaiGiam,
-                            soLuongConLai = km.so_luong_con_lai,
-                            isApplicable = isApplicable,
-                            reason = reason
+                            maKhuyen = promo.ma_khuyen_mai,
+                            giaTriGiam = promo.gia_tri_giam,
+                            loaiGiam = promo.loai_giam_gia,
+                            moTa = promo.mo_ta,
+                            soLuongConLai = promo.so_luong_con_lai,
+                            isProductScope = promo.pham_vi_ap_dung == 1,
+                            AllowedFoods = allowedFoods
                         });
                     }
-                    catch (Exception itemEx)
-                    {
-                        LoggingHelper.LogError(itemEx);
-                    }
                 }
 
-                return Ok(new { success = true, data = result });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/booking/{bookingId}/apply-promo
-        /// Áp dụng mã khuyến mãi lên booking và trả về QR mới (giống BookingController.UpdateQRCodeWithPromo)
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpPost]
-        [Route("booking/{bookingId:int}/apply-promo")]
-        [Authorize]
-        public IHttpActionResult ApplyPromoToBooking(int bookingId, [FromBody] JObject data)
-        {
-            try
-            {
-                string promoCode = data["promo_code"]?.Value<string>() ?? string.Empty;
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null) return NotFound();
-
-                // ✅ LẤY ORIGINAL TOTAL TỪ SESSION (GIỐNG WEB BookingController.UpdateQRCodeWithPromo)
-                // Nếu có session thì dùng, nếu không thì dùng booking hiện tại
-                decimal originalTotal = booking.tong_tien;
-                try
-                {
-                    var session = System.Web.HttpContext.Current?.Session;
-                    if (session != null && session[$"Booking_{bookingId}_OriginalTotal"] != null)
-                    {
-                        var raw = session[$"Booking_{bookingId}_OriginalTotal"];
-                        if (raw is decimal) originalTotal = (decimal)raw;
-                        else if (raw is double) originalTotal = Convert.ToDecimal((double)raw);
-                        else if (raw is string && decimal.TryParse((string)raw, out var parsed)) originalTotal = parsed;
-                        else
-                        {
-                            try { originalTotal = Convert.ToDecimal(raw); } catch { }
-                        }
-                        LoggingHelper.LogInfo($"✅ Read Session Booking_{bookingId}_OriginalTotal = {originalTotal}");
-                    }
-                }
-                catch (Exception sessEx)
-                {
-                    LoggingHelper.LogError(sessEx, $"Failed to read original total from session for booking {bookingId}");
-                }
-
-                decimal discountAmount = 0m;
-                string discountType = "";
-
-                // ✅ TÍNH TOÁN DISCOUNT NẾU CÓ PROMO CODE
-                if (!string.IsNullOrEmpty(promoCode))
-                {
-                    var promo = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
-                    if (promo != null)
-                    {
-                        decimal giaTri = promo.gia_tri_giam;
-                        // ✅ XÁC ĐỊNH LOẠI GIẢM (% HAY VND) - GIỐNG WEB
-                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) && 
-                            (promo.loai_giam_gia.Contains("Phần") || promo.loai_giam_gia.Contains("%"));
-                        
-                        if (isPercent)
-                        {
-                            discountAmount = (originalTotal * giaTri) / 100m;
-                            discountType = "%";
-                        }
-                        else
-                        {
-                            discountAmount = giaTri;
-                            discountType = "VND";
-                        }
-
-                        LoggingHelper.LogInfo($"✅ PromoCode {promoCode}: Original={originalTotal}, Discount={discountAmount}, Type={discountType}");
-                    }
-                }
-
-                // ✅ TÍNH TỔNG TIỀN CUỐI CÙNG
-                decimal finalTotal = originalTotal - discountAmount;
-                if (finalTotal < 0) finalTotal = 0;
-
-                // ✅ CẬP NHẬT BOOKING VỚI TỔNG TIỀN MỚI
-                booking.tong_tien = finalTotal;
-                booking.phuong_thuc_thanh_toan = promoCode ?? "";
-                db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Updated Dat_Ve: ID={bookingId}, FinalTotal={finalTotal}");
-
-                // ✅ GIẢM SỐ LƯỢNG MÃ KHUYẾN MÃI NẾU ÁP DỤNG (GIỐNG WEB UpdateQRCodeWithPromo)
-                if (!string.IsNullOrEmpty(promoCode))
-                {
-                    var promoObj = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
-                    if (promoObj != null && promoObj.so_luong_con_lai > 0)
-                    {
-                        promoObj.so_luong_con_lai--;
-                        db.SubmitChanges();
-                        LoggingHelper.LogInfo($"✅ Decrement {promoCode}: Remaining={promoObj.so_luong_con_lai}");
-                    }
-                }
-
-                // ✅ TẠO QR CODE MỚI VỚI GIÁ ĐÚNG
-                var qrService = new QRCodePaymentService();
-                string desc = qrService.GenerateTransactionDescription(bookingId);
-                string newQr = qrService.GenerateQRCodeUrl(finalTotal, desc);
+                LoggingHelper.LogInfo($"✅ API GetApplicablePromos: Tìm được {result.Count} mã phù hợp từ {applicablePromos.Count} mã hoạt động");
 
                 return Ok(new
                 {
                     success = true,
-                    new_qr_url = newQr,
-                    final_total = finalTotal,
-                    discount_amount = discountAmount,
-                    discount_type = discountType
+                    message = result.Count > 0
+                        ? $"Tìm được {result.Count} mã khuyến mãi phù hợp"
+                        : "Không có mã khuyến mãi nào phù hợp",
+                    data = result
                 });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/generate-seat-qr
-        /// Tạo ảnh QR ghế và tải lên (để mobile app có thể load)
-        /// Trả về URL của ảnh QR ghế được lưu trên server
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpPost]
-        [Route("generate-seat-qr")]
-        [Authorize]
-        public IHttpActionResult GenerateSeatQRCode([FromBody] JObject data)
-        {
-            try
-            {
-                int ticketId = data["ticket_id"]?.Value<int>() ?? 0;
-
-                if (ticketId <= 0)
-                    return BadRequest("Ticket ID không hợp lệ");
-
-                var ticket = db.Ves.FirstOrDefault(v => v.ve_id == ticketId);
-                if (ticket == null)
-                    return NotFound();
-
-                // ✅ Nếu vé chưa có mã QR, tạo mới
-                if (string.IsNullOrEmpty(ticket.ma_qr_code))
-                {
-                    ticket.ma_qr_code = Guid.NewGuid().ToString();
-                    db.SubmitChanges();
-                    LoggingHelper.LogInfo($"✅ Created new QR code for ticket {ticketId}: {ticket.ma_qr_code}");
-                }
-
-                // ✅ Tạo ảnh QR ghế từ mã QR code và lưu vào server
-                var qrService = new QRCodeTicketService();
-                string qrImagePath = qrService.GenerateAndSaveQRCode(ticket.ma_qr_code);
-
-                if (string.IsNullOrEmpty(qrImagePath))
-                {
-                    return BadRequest("Lỗi khi tạo QR code cho ghế");
-                }
-
-                LoggingHelper.LogInfo($"✅ Generated seat QR code: Ticket {ticketId}, Path: {qrImagePath}");
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Tạo ảnh QR ghế thành công",
-                    data = new
-                    {
-                        ticket_id = ticketId,
-                        qr_code = ticket.ma_qr_code,
-                        qr_image_url = qrImagePath,
-                        qr_image_full_url = HttpContext.Current?.Request.Url.GetLeftPart(UriPartial.Authority) + qrImagePath
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
+                LoggingHelper.LogError(ex, "GetApplicablePromos");
                 return InternalServerError(ex);
             }
         }
 
         /// <summary>
         /// GET: api/customer/my-tickets/{customerId}
-        /// Lấy danh sách VÉ CỦA TÔI (tất cả vé của khách hàng kèm QR code)
-        /// Khác với booking là vé là chi tiết từng chỗ ngồi
+        /// Lấy danh sách vé của khách hàng (đã thanh toán)
         /// ✅ Yêu cầu xác thực
         /// </summary>
         [HttpGet]
@@ -2196,52 +2456,58 @@ namespace WebCinema.Controllers.API
             try
             {
                 if (customerId <= 0)
+                {
                     return BadRequest("Customer ID không hợp lệ");
+                }
 
-                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
-                if (customer == null)
-                    return NotFound();
+                var customerExists = db.Khach_Hangs.Any(k => k.khach_hang_id == customerId);
+                if (!customerExists)
+                {
+                    return Ok(new { success = false, message = "Khách hàng không tồn tại" });
+                }
 
-                // ✅ Lấy tất cả vé của khách hàng từ các booking
-                var tickets = db.Ves
-                    .Where(v => v.Dat_Ve != null && v.Dat_Ve.khach_hang_id == customerId)
-                    .OrderByDescending(v => v.Dat_Ve.ngay_tao)
+                string baseUrl = Request.RequestUri.GetLeftPart(UriPartial.Authority);
+
+                // Lấy tất cả đơn đặt đã thanh toán của customer
+                var bookings = db.Dat_Ves
+                    .Where(b => b.khach_hang_id == customerId && b.trang_thai_Dat_Ve == "Đã Thanh toán")
+                    .OrderByDescending(b => b.ngay_tao)
                     .ToList();
 
-                var qrService = new QRCodeTicketService();
-
-                var ticketList = tickets.Select(v => new
+                var myTickets = bookings.Select(b =>
                 {
-                    ticket_id = v.ve_id,
-                    booking_id = v.Dat_Ve_id,
-                    movie_title = v.Suat_Chieu != null && v.Suat_Chieu.Phim != null ? v.Suat_Chieu.Phim.ten_phim : "N/A",
-                    cinema = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null 
-                        ? v.Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
-                    room = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null ? v.Suat_Chieu.Phong_Chieu.ten_phong : "N/A",
-                    seat_number = v.Ghe != null ? v.Ghe.so_ghe : "N/A",
-                    row = v.Ghe != null ? ((char)('A' + v.Ghe.hang)).ToString() : "N/A",
-                    column = v.Ghe != null ? v.Ghe.cot : 0,
-                    seat_type = v.Ghe != null && v.Ghe.Loai_Ghe != null ? v.Ghe.Loai_Ghe.ten_loai : "N/A",
-                    showtime_date = v.Suat_Chieu != null ? v.Suat_Chieu.ngay_chieu.ToString("yyyy-MM-dd") : "N/A",
-                    showtime_time = v.Suat_Chieu != null && v.Suat_Chieu.Ca_Chieu != null ? v.Suat_Chieu.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A",
-                    price = v.gia_ve,
-                    status = v.trang_thai_ve,
-                    qr_code = v.ma_qr_code,
-                    // ✅ Tạo URL QR code động từ mã vé
-                    qr_image_url = !string.IsNullOrEmpty(v.ma_qr_code) ? qrService.GetQRCodePath(v.ma_qr_code) : null,
-                    created_at = v.Dat_Ve != null && v.Dat_Ve.ngay_tao.HasValue ? v.Dat_Ve.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
-                    booking_status = v.Dat_Ve != null ? v.Dat_Ve.trang_thai_Dat_Ve : "N/A"
+                    var firstTicket = b.Ves.FirstOrDefault();
+                    var showtime = firstTicket?.Suat_Chieu;
+                    var movie = showtime?.Phim;
+                    var cinema = showtime?.Phong_Chieu?.Rap;
+                    var shift = showtime?.Ca_Chieu;
+
+                    return new
+                    {
+                        booking_id = b.Dat_Ve_id,
+                        created_at = b.ngay_tao.HasValue ? b.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                        status = b.trang_thai_Dat_Ve,
+                        total_amount = b.tong_tien,
+                        tickets_count = b.Ves.Count,
+                        movie_title = movie?.ten_phim ?? "N/A",
+                        movie_image = !string.IsNullOrEmpty(movie?.hinh_anh)
+                            ? (movie.hinh_anh.StartsWith("http") ? movie.hinh_anh : baseUrl + movie.hinh_anh)
+                            : "",
+                        showtime_date = showtime?.ngay_chieu.ToString("yyyy-MM-dd") ?? "N/A",
+                        showtime_time = shift?.gio_bat_dau.ToString(@"hh\:mm") ?? "N/A",
+                        cinema = cinema?.ten_rap ?? "N/A",
+                        room = showtime?.Phong_Chieu?.ten_phong ?? "N/A",
+                        is_showtime_passed = showtime?.ngay_chieu.Date < DateTime.Now.Date,
+                        can_cancel = showtime?.ngay_chieu.Date >= DateTime.Now.Date
+                            && !b.Ves.Any(v => v.trang_thai_ve == "Đã sử dụng")
+                    };
                 }).ToList();
 
                 return Ok(new
                 {
                     success = true,
                     message = "Lấy danh sách vé thành công",
-                    data = new
-                    {
-                        total_tickets = ticketList.Count,
-                        tickets = ticketList
-                    }
+                    data = myTickets
                 });
             }
             catch (Exception ex)
@@ -2251,474 +2517,64 @@ namespace WebCinema.Controllers.API
             }
         }
 
+
         /// <summary>
-        /// POST: api/customer/cancel-ticket
-        /// Hủy từng vé riêng lẻ (nếu booking chưa thanh toán)
-        /// ✅ Yêu cầu xác thực
+        /// Tạo vé tự động cho suất chiếu (backup - nếu vé chưa được tạo)
+        /// Copy từ BookingController để đảm bảo logic đồng nhất
         /// </summary>
-        [HttpPost]
-        [Route("cancel-ticket")]
-        [Authorize]
-        public IHttpActionResult CancelTicket([FromBody] JObject data)
+        private void GenerateTicketsForShowtime(Suat_Chieu showtime)
         {
             try
             {
-                int ticketId = data["ticket_id"]?.Value<int>() ?? 0;
+                decimal giaGoc = showtime.gia_ve;
+                var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => ln.loai_ngay_id == showtime.loai_ngay_id);
+                decimal heSoNgay = loaiNgay?.phu_phi ?? 0m;
 
-                if (ticketId <= 0)
-                    return BadRequest("Ticket ID không hợp lệ");
+                // Ensure we use non-nullable phu_phi for seat types
+                var loaiGheDict = db.Loai_Ghes.ToDictionary(lg => lg.loaighe_id, lg => lg.phu_phi ?? 0m);
 
-                var ticket = db.Ves.FirstOrDefault(v => v.ve_id == ticketId);
-                if (ticket == null)
-                    return NotFound();
+                var gheList = db.Ghes.Where(g =>
+                    g.phong_chieu_id == showtime.phong_chieu_id &&
+                    g.trang_thai != 0
+                ).ToList();
 
-                // ✅ Kiểm tra vé có liên kết booking không
-                if (ticket.Dat_Ve_id == null)
+                List<Ve> list = new List<Ve>();
+
+                foreach (var ghe in gheList)
                 {
-                    return Ok(new { success = false, message = "Vé không liên kết với đơn đặt nào" });
+                    decimal phuPhiGhe = loaiGheDict.ContainsKey(ghe.loai_ghe_id) ? loaiGheDict[ghe.loai_ghe_id] : 0m;
+                    decimal giaVe = giaGoc + giaGoc * heSoNgay / 100 + giaGoc * phuPhiGhe / 100;
+
+                    list.Add(new Ve
+                    {
+                        ghe_id = ghe.ghe_id,
+                        Dat_Ve_id = null,
+                        ma_qr_code = null,
+                        trang_thai_ve = "Chưa sử dụng",
+                        gia_ve = giaVe,
+                        Suat_Chieu = showtime
+                    });
                 }
 
-                var booking = ticket.Dat_Ve;
-
-                // ✅ Chỉ hủy được nếu booking chưa thanh toán
-                if (booking.trang_thai_Dat_Ve == "Đã Thanh toán")
+                if (list.Count > 0)
                 {
-                    return Ok(new { success = false, message = "Không thể hủy vé của đơn đã thanh toán" });
-                }
-
-                // ✅ Kiểm tra xem booking có những vé nào khác không
-                int totalTicketsInBooking = db.Ves.Count(v => v.Dat_Ve_id == booking.Dat_Ve_id);
-                int ticketsToDelete = 1; // chỉ hủy vé này
-                int remainingTickets = totalTicketsInBooking - ticketsToDelete;
-
-                // ✅ NẾU ĐÂY LÀ VÉ CUỐI CÙNG TRONG BOOKING, HỦY TOÀN BỘ BOOKING
-                if (remainingTickets <= 0)
-                {
-                    // ✅ Hủy tất cả vé trong booking
-                    var allTicketsInBooking = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
-                    foreach (var ve in allTicketsInBooking)
-                    {
-                        ve.Dat_Ve_id = null;
-                        ve.trang_thai_ve = "Chưa sử dụng";
-                        ve.ma_qr_code = null;
-                    }
-
-                    // ✅ Xóa đồ ăn liên quan
-                    var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == booking.Dat_Ve_id).ToList();
-                    foreach (var food in foodOrders)
-                    {
-                        db.DonHang_DoAns.DeleteOnSubmit(food);
-                    }
-
-                    // ✅ Cập nhật trạng thái booking
-                    booking.trang_thai_Dat_Ve = "Đã Hủy";
+                    db.Ves.InsertAllOnSubmit(list);
                     db.SubmitChanges();
-
-                    LoggingHelper.LogInfo($"✅ Hủy toàn bộ booking: Booking {booking.Dat_Ve_id} (vé cuối cùng {ticketId}), Giải phóng {allTicketsInBooking.Count} vé");
-
-                    return Ok(new
-                    {
-                        success = true,
-                        message = "Hủy vé thành công (đó là vé cuối cùng nên booking đã bị hủy)",
-                        booking_cancelled = true,
-                        booking_id = booking.Dat_Ve_id
-                    });
                 }
-
-                // ✅ NẾU KHÔNG PHẢI VÉ CUỐI CÙNG, CHỈ HỦY VÉ ĐÓ
-                ticket.Dat_Ve_id = null;
-                ticket.trang_thai_ve = "Chưa sử dụng";
-                ticket.ma_qr_code = null;
-
-                db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Hủy vé riêng: Ticket {ticketId} khỏi Booking {booking.Dat_Ve_id}, Còn lại {remainingTickets} vé");
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Hủy vé thành công",
-                    ticket_id = ticketId,
-                    booking_id = booking.Dat_Ve_id,
-                    remaining_tickets_in_booking = remainingTickets,
-                    booking_cancelled = false
-                });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
+                LoggingHelper.LogError(ex, "GenerateTicketsForShowtime");
             }
         }
 
-        /// <summary>
-        /// GET: api/customer/tickets/{bookingId}
-        /// Lấy danh sách vé của một booking cụ thể (kèm QR code)
-        /// Khác với booking detail là chỉ lấy danh sách vé chi tiết hơn
-        /// ✅ Yêu cầu xác thực
-        /// </summary>
-        [HttpGet]
-        [Route("tickets/{bookingId}")]
-        [Authorize]
-        public IHttpActionResult GetTicketsInBooking(int bookingId)
+        protected override void Dispose(bool disposing)
         {
-            try
+            if (disposing)
             {
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                var qrService = new QRCodeTicketService();
-
-                var tickets = booking.Ves
-                    .OrderBy(v => v.Ghe != null ? v.Ghe.hang : 0)
-                    .ThenBy(v => v.Ghe != null ? v.Ghe.cot : 0)
-                    .Select(v => new
-                    {
-                        ticket_id = v.ve_id,
-                        booking_id = v.Dat_Ve_id,
-                        movie_title = booking.Ves.FirstOrDefault().Suat_Chieu != null && booking.Ves.FirstOrDefault().Suat_Chieu.Phim != null 
-                            ? booking.Ves.FirstOrDefault().Suat_Chieu.Phim.ten_phim : "N/A",
-                        cinema = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null
-                            ? v.Suat_Chieu.Phong_Chieu.Rap.ten_rap : "N/A",
-                        room = v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null ? v.Suat_Chieu.Phong_Chieu.ten_phong : "N/A",
-                        seat_number = v.Ghe != null ? v.Ghe.so_ghe : "N/A",
-                        row = v.Ghe != null ? ((char)('A' + v.Ghe.hang)).ToString() : "N/A",
-                        column = v.Ghe != null ? v.Ghe.cot : 0,
-                        seat_type = v.Ghe != null && v.Ghe.Loai_Ghe != null ? v.Ghe.Loai_Ghe.ten_loai : "N/A",
-                        showtime_date = v.Suat_Chieu != null ? v.Suat_Chieu.ngay_chieu.ToString("yyyy-MM-dd") : "N/A",
-                        showtime_time = v.Suat_Chieu != null && v.Suat_Chieu.Ca_Chieu != null ? v.Suat_Chieu.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A",
-                        price = v.gia_ve,
-                        status = v.trang_thai_ve,
-                        qr_code = v.ma_qr_code,
-                        qr_image_url = !string.IsNullOrEmpty(v.ma_qr_code) ? qrService.GetQRCodePath(v.ma_qr_code) : null
-                    })
-                    .ToList();
-
-                return Ok(new
-                {
-                    success = true,
-                    message = "Lấy danh sách vé trong booking thành công",
-                    data = new
-                    {
-                        booking_id = bookingId,
-                        total_tickets = tickets.Count,
-                        booking_status = booking.trang_thai_Dat_Ve,
-                        created_at = booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm:ss") : "N/A",
-                        tickets = tickets
-                    }
-                });
+                db?.Dispose();
             }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/send-invoice-email/{bookingId}
-        /// Gửi hóa đơn qua email cho khách hàng
-        /// ✅ Yêu cầu xác thực
-        /// ✅ Chỉ gửi nếu khách hàng có email thật
-        /// </summary>
-        [HttpPost]
-        [Route("send-invoice-email/{bookingId}")]
-        [Authorize]
-        public IHttpActionResult SendInvoiceEmail(int bookingId)
-        {
-            try
-            {
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                // Kiểm tra khách hàng có email không
-                if (booking.Khach_Hang == null || string.IsNullOrWhiteSpace(booking.Khach_Hang.email))
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Khách hàng không có địa chỉ email. Vui lòng cập nhật email trong hồ sơ." 
-                    });
-                }
-
-                // Tạo hóa đơn và gửi email
-                var invoiceService = new Services.InvoiceService();
-                bool result = invoiceService.GenerateAndSendInvoiceEmail(bookingId);
-
-                if (result)
-                {
-                    LoggingHelper.LogInfo($"✅ Hóa đơn gửi email thành công: Booking {bookingId} -> {booking.Khach_Hang.email}");
-                    return Ok(new
-                    {
-                        success = true,
-                        message = $"Hóa đơn đã được gửi thành công đến: {booking.Khach_Hang.email}",
-                        booking_id = booking.Dat_Ve_id,
-                        customer_email = booking.Khach_Hang.email
-                    });
-                }
-                else
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Lỗi khi gửi hóa đơn. Vui lòng thử lại."
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return InternalServerError(ex);
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/test-send-invoice
-        /// Endpoint test gửi hóa đơn (dùng để kiểm tra cấu hình email)
-        /// </summary>
-        [HttpPost]
-        [Route("test-send-invoice/{bookingId}")]
-        [Authorize]
-        public IHttpActionResult TestSendInvoice(int bookingId)
-        {
-            try
-            {
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return NotFound();
-
-                var customer = booking.Khach_Hang;
-                if (customer == null || string.IsNullOrWhiteSpace(customer.email))
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Khách hàng không có email"
-                    });
-                }
-
-                LoggingHelper.LogInfo($"🧪 TEST: Bắt đầu gửi invoice cho booking {bookingId} -> {customer.email}");
-
-                // Tạo hóa đơn
-                var invoiceService = new Services.InvoiceService();
-                string html = invoiceService.GenerateInvoiceHtml(booking);
-
-                if (string.IsNullOrEmpty(html))
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Lỗi tạo HTML hóa đơn"
-                    });
-                }
-
-                // Lưu file hóa đơn
-                string fileName = invoiceService.SaveInvoiceToFile(booking);
-                if (string.IsNullOrEmpty(fileName))
-                {
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Lỗi lưu file hóa đơn"
-                    });
-                }
-
-                LoggingHelper.LogInfo($"✅ File hóa đơn được lưu: {fileName}");
-
-                // Gửi email
-                var emailService = new Services.EmailService();
-                bool emailSent = emailService.SendInvoiceEmail(customer.email, customer.ho_ten, fileName);
-
-                if (emailSent)
-                {
-                    LoggingHelper.LogInfo($"✅ EMAIL SENT SUCCESSFULLY to {customer.email}");
-                    return Ok(new
-                    {
-                        success = true,
-                        message = "✅ Email hóa đơn gửi thành công!",
-                        details = new
-                        {
-                            recipient = customer.email,
-                            customer_name = customer.ho_ten,
-                            invoice_file = fileName,
-                            booking_id = bookingId
-                        }
-                    });
-                }
-                else
-                {
-                    LoggingHelper.LogError(new Exception("Email send returned false"));
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "❌ Lỗi khi gửi email. Kiểm tra logs.",
-                        details = new
-                        {
-                            recipient = customer.email,
-                            invoice_file = fileName
-                        }
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return Ok(new
-                {
-                    success = false,
-                    message = $"❌ Exception: {ex.Message}",
-                    error_details = ex.ToString()
-                });
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/auto-send-invoice-on-payment/{bookingId}
-        /// Tự động gửi hóa đơn khi thanh toán thành công
-        /// Gọi này từ payment success callback
-        /// </summary>
-        [HttpPost]
-        [Route("auto-send-invoice-on-payment/{bookingId}")]
-        [AllowAnonymous]  // Cho phép gọi từ payment gateway callback
-        public IHttpActionResult AutoSendInvoiceOnPayment(int bookingId)
-        {
-            try
-            {
-                if (bookingId <= 0)
-                    return BadRequest("Booking ID không hợp lệ");
-
-                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                    return Ok(new { success = false, message = "Booking not found" });
-
-                var customer = booking.Khach_Hang;
-                if (customer == null || string.IsNullOrWhiteSpace(customer.email))
-                {
-                    LoggingHelper.LogInfo($"⚠️ Customer {booking.khach_hang_id} has no email");
-                    return Ok(new { success = false, message = "Customer has no email" });
-                }
-
-                LoggingHelper.LogInfo($"🔄 AUTO-SEND: Bắt đầu gửi hóa đơn cho booking {bookingId} -> {customer.email}");
-
-                // Tạo hóa đơn
-                var invoiceService = new Services.InvoiceService();
-                string html = invoiceService.GenerateInvoiceHtml(booking);
-
-                if (string.IsNullOrEmpty(html))
-                {
-                    return Ok(new { success = false, message = "Failed to generate invoice HTML" });
-                }
-
-                // Lưu file
-                string fileName = invoiceService.SaveInvoiceToFile(booking);
-                if (string.IsNullOrEmpty(fileName))
-                {
-                    return Ok(new { success = false, message = "Failed to save invoice file" });
-                }
-
-                // Gửi email
-                var emailService = new Services.EmailService();
-                bool emailSent = emailService.SendInvoiceEmail(customer.email, customer.ho_ten, fileName);
-
-                if (emailSent)
-                {
-                    LoggingHelper.LogInfo($"✅ AUTO-SEND SUCCESS: Invoice sent to {customer.email}");
-                    return Ok(new
-                    {
-                        success = true,
-                        message = "Invoice sent successfully",
-                        recipient = customer.email,
-                        booking_id = bookingId
-                    });
-                }
-                else
-                {
-                    LoggingHelper.LogError(new Exception("SendInvoiceEmail returned false"));
-                    return Ok(new
-                    {
-                        success = false,
-                        message = "Failed to send email"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return Ok(new
-                {
-                    success = false,
-                    message = $"Error: {ex.Message}"
-                });
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/test-pdf-generation
-        /// Test tạo PDF
-        /// </summary>
-        [HttpPost]
-        [Route("test-pdf-generation")]
-        [AllowAnonymous]
-        public IHttpActionResult TestPdfGeneration()
-        {
-            try
-            {
-                var invoiceService = new Services.InvoiceService();
-                bool success = invoiceService.TestPdfGeneration();
-
-                if (success)
-                {
-                    return Ok(new { success = true, message = "PDF generation test successful" });
-                }
-                else
-                {
-                    return Ok(new { success = false, message = "PDF generation test failed" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Ok(new { success = false, message = $"Exception: {ex.Message}" });
-            }
-        }
-
-        /// <summary>
-        /// POST: api/customer/test-smtp-connection
-        /// Test SMTP connection
-        /// </summary>
-        [HttpPost]
-        [Route("test-smtp-connection")]
-        [AllowAnonymous]
-        public IHttpActionResult TestSmtpConnection()
-        {
-            try
-            {
-                var emailService = new Services.EmailService();
-                bool success = emailService.TestSmtpConnection();
-
-                if (success)
-                {
-                    return Ok(new { success = true, message = "SMTP connection test successful" });
-                }
-                else
-                {
-                    return Ok(new { success = false, message = "SMTP connection test failed - check logs" });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Ok(new { success = false, message = $"Exception: {ex.Message}" });
-            }
+            base.Dispose(disposing);
         }
     }
 }

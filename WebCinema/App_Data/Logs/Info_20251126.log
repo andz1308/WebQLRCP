@@ -1,108 +1,573 @@
-[2025-11-26 08:15:02] ? BookingExpirationService started
-[2025-11-26 08:15:39] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
-[2025-11-26 08:15:39] Booked seat ids: 202,211,212,221,222,231,232,242
-[2025-11-26 08:15:47] ✅ Tạo Dat_Ve mới: ID=1147, Trạng thái=Chưa thanh toán
-[2025-11-26 08:15:47] ✅ Sinh QR code: DAVCINEMA-1147-769-638997417471951927 -> qr_DAVCINEMA-1147-769-638997417471951927.png
-[2025-11-26 08:15:47] ✅ Cập nhật Dat_Ve: ID=1147, Tổng tiền=97000,00, Vé=1, Đồ ăn=0
-[2025-11-26 08:15:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1147
-[2025-11-26 08:15:47] 🔍 KM004 Start: foodItemsJson=exist
-[2025-11-26 08:15:47]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
-[2025-11-26 08:15:47] ✅ KM004 Complete: hasCombo=False
-[2025-11-26 08:16:56] ✅ Đơn hàng chờ duyệt: Booking ID 1147, PromoCode: 
-[2025-11-26 08:17:05] ✅ ApproveBooking: Duyệt Dat_Ve ID=1147, khách hàng: Nguyễn Quang Hải
-[2025-11-26 08:17:07] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1147
-[2025-11-26 08:17:07] ✅ Hiển thị trang thanh toán thành công: Booking 1147
-[2025-11-26 08:17:07] 🔄 GenerateAndSendFullInvoicePdf: Starting for booking 1147
-[2025-11-26 08:17:07] ✅ Found booking 1147, customer ID: 26
-[2025-11-26 08:17:07] ✅ Customer has email: duyan9088@gmail.com
-[2025-11-26 08:17:07] 🔄 GenerateFullInvoiceHtml: Starting for booking 1147
-[2025-11-26 08:17:07] ✅ Found 1 tickets, showtime: 29
-[2025-11-26 08:17:07] ✅ Totals: tickets=82000,00, food=15000,000000, grand=97000,00, foodItems=1
-[2025-11-26 08:17:07] ✅ Generated HTML, length: 5285
-[2025-11-26 08:17:23] ✅ Generated HTML content, length: 5285
-[2025-11-26 08:17:23] ⚠️ PDF generation failed or returned empty filename for booking 1147, falling back to HTML
-[2025-11-26 08:17:23] ✅ Hóa đơn được lưu: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001147_20251126_081723.html
-[2025-11-26 08:17:23] ✅ Fallback: HTML file created: Invoice_BK001147_20251126_081723.html
-[2025-11-26 08:17:23] 📧 Starting SendInvoiceEmail: recipient=duyan9088@gmail.com, file=Invoice_BK001147_20251126_081723.html
-[2025-11-26 08:17:23] 📁 Invoice file path: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001147_20251126_081723.html
-[2025-11-26 08:17:23] 📁 Server.MapPath('~'): D:\WebQLRCP\WebCinema\
-[2025-11-26 08:17:23] 📁 _invoiceFolder: Content/hoadon
-[2025-11-26 08:17:23] ✅ File exists, size: 5398 bytes
-[2025-11-26 08:17:24] 📤 Connecting to SMTP: smtp.gmail.com:587, SSL=True
-[2025-11-26 08:17:25] ✅ SMTP connected successfully
-[2025-11-26 08:17:25] ✅ SMTP authenticated successfully
-[2025-11-26 08:17:27] ✅ Email sent successfully
-[2025-11-26 08:17:27] ✅ SMTP disconnected
-[2025-11-26 08:17:27] ✅ Email hóa đơn gửi thành công → duyan9088@gmail.com
-[2025-11-26 08:17:27] ✅ Invoice sent successfully: Booking 1147 -> duyan9088@gmail.com
-[2025-11-26 08:17:27] ✅ PaymentSuccess: PDF hóa đơn gửi tự động thành công
-[2025-11-26 08:26:47] ? BookingExpirationService started
-[2025-11-26 08:27:21] SelectSeats (Fresh DB): showtime=29, paidBookings=66, bookedCount=9
-[2025-11-26 08:27:21] Booked seat ids: 202,211,212,221,222,231,232,241,242
-[2025-11-26 08:27:30] ✅ Tạo Dat_Ve mới: ID=1148, Trạng thái=Chưa thanh toán
-[2025-11-26 08:27:30] ✅ Sinh QR code: DAVCINEMA-1148-771-638997424507242605 -> qr_DAVCINEMA-1148-771-638997424507242605.png
-[2025-11-26 08:27:30] ✅ Cập nhật Dat_Ve: ID=1148, Tổng tiền=97000,00, Vé=1, Đồ ăn=0
-[2025-11-26 08:27:30] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1148
-[2025-11-26 08:27:31] 🔍 KM004 Start: foodItemsJson=exist
-[2025-11-26 08:27:31]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
-[2025-11-26 08:27:31] ✅ KM004 Complete: hasCombo=False
-[2025-11-26 08:27:38] ✅ Đơn hàng chờ duyệt: Booking ID 1148, PromoCode: 
-[2025-11-26 08:28:11] ✅ ApproveBooking: Duyệt Dat_Ve ID=1148, khách hàng: Nguyễn Quang Hải
-[2025-11-26 08:28:13] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=97000&addInfo=DatVe1148
-[2025-11-26 08:28:13] ✅ Hiển thị trang thanh toán thành công: Booking 1148
-[2025-11-26 08:28:13] 🔄 GenerateAndSendFullInvoicePdf: Starting for booking 1148
-[2025-11-26 08:28:13] ✅ Found booking 1148, customer ID: 26
-[2025-11-26 08:28:13] ✅ Customer has email: duyan9088@gmail.com
-[2025-11-26 08:28:13] 🔄 GenerateFullInvoiceHtml: Starting for booking 1148
-[2025-11-26 08:28:13] ✅ Found 1 tickets, showtime: 29
-[2025-11-26 08:28:13] ✅ Totals: tickets=82000,00, food=15000,000000, grand=97000,00, foodItems=1
-[2025-11-26 08:28:13] ✅ Generated HTML, length: 5285
-[2025-11-26 08:28:31] ✅ Generated HTML content, length: 5238
-[2025-11-26 08:28:31] ⚠️ PDF generation failed or returned empty filename for booking 1148, falling back to HTML
-[2025-11-26 08:28:31] ✅ Hóa đơn được lưu: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001148_20251126_082831.html
-[2025-11-26 08:28:31] ✅ Fallback: HTML file created: Invoice_BK001148_20251126_082831.html
-[2025-11-26 08:28:31] 📧 Starting SendInvoiceEmail: recipient=duyan9088@gmail.com, file=Invoice_BK001148_20251126_082831.html
-[2025-11-26 08:28:31] 📁 Invoice file path: D:\WebQLRCP\WebCinema\Content/hoadon\Invoice_BK001148_20251126_082831.html
-[2025-11-26 08:28:31] 📁 Server.MapPath('~'): D:\WebQLRCP\WebCinema\
-[2025-11-26 08:28:31] 📁 _invoiceFolder: Content/hoadon
-[2025-11-26 08:28:31] ✅ File exists, size: 5398 bytes
-[2025-11-26 08:28:31] 📤 Connecting to SMTP: smtp.gmail.com:587, SSL=True
-[2025-11-26 08:28:33] ✅ SMTP connected successfully
-[2025-11-26 08:28:33] ✅ SMTP authenticated successfully
-[2025-11-26 08:28:34] ✅ Email sent successfully
-[2025-11-26 08:28:35] ✅ SMTP disconnected
-[2025-11-26 08:28:35] ✅ Email hóa đơn gửi thành công → duyan9088@gmail.com
-[2025-11-26 08:28:35] ✅ Invoice sent successfully: Booking 1148 -> duyan9088@gmail.com
-[2025-11-26 08:28:35] ✅ PaymentSuccess: PDF hóa đơn gửi tự động thành công
-[2025-11-26 08:42:58] ? BookingExpirationService started
-[2025-11-26 08:44:19] ✅ Email HTML gửi thành công → duyan9088@gmail.com
-[2025-11-26 08:44:19] ✅ Hủy vé liền: Booking 1148, Customer 26, Ngân hàng: VCB, STK: 1234567888, Hoàn: 67900,000
-[2025-11-26 08:47:08] ✅ Email HTML gửi thành công → duyan9088@gmail.com
-[2025-11-26 08:47:08] ✅ Hủy vé liền: Booking 1147, Customer 26, Ngân hàng: VCB, STK: 1234567888, Hoàn: 67900,000
-[2025-11-26 08:58:34] ? BookingExpirationService started
-[2025-11-26 08:58:56] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
-[2025-11-26 08:58:56] Booked seat ids: 202,211,212,221,222,231,232,242
-[2025-11-26 08:59:56] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
-[2025-11-26 08:59:56] Booked seat ids: 202,211,212,221,222,231,232,242
-[2025-11-26 09:03:42] ? BookingExpirationService started
-[2025-11-26 09:03:53] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
-[2025-11-26 09:03:53] Booked seat ids: 202,211,212,221,222,231,232,242
-[2025-11-26 09:04:00] ✅ Chuẩn bị thanh toán (chưa lưu DB): 1 ghế, tổng: 122000,00
-[2025-11-26 09:04:29] ✅ Chuẩn bị thanh toán (chưa lưu DB): 1 ghế, tổng: 122000,00
-[2025-11-26 09:29:21] ? BookingExpirationService started
-[2025-11-26 09:30:06] SelectSeats (Fresh DB): showtime=29, paidBookings=65, bookedCount=8
-[2025-11-26 09:30:06] Booked seat ids: 202,211,212,221,222,231,232,242
-[2025-11-26 09:50:59] ? BookingExpirationService started
-[2025-11-26 10:07:03] ? BookingExpirationService started
-[2025-11-26 10:08:09] ✅ Delete: Xóa Dat_Ve ID=1, đã xóa 0 vé và 1 đồ ăn
-[2025-11-26 10:08:26] ✅ Delete: Xóa Dat_Ve ID=3, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:08:32] ✅ Delete: Xóa Dat_Ve ID=2, đã xóa 0 vé và 1 đồ ăn
-[2025-11-26 10:10:00] ✅ Delete: Xóa Dat_Ve ID=4, đã xóa 0 vé và 1 đồ ăn
-[2025-11-26 10:10:04] ✅ Delete: Xóa Dat_Ve ID=5, đã xóa 2 vé và 0 đồ ăn
-[2025-11-26 10:10:07] ✅ Delete: Xóa Dat_Ve ID=6, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:10:10] ✅ Delete: Xóa Dat_Ve ID=7, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:10:14] ✅ Delete: Xóa Dat_Ve ID=8, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:10:17] ✅ Delete: Xóa Dat_Ve ID=9, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:10:21] ✅ Delete: Xóa Dat_Ve ID=10, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:10:24] ✅ Delete: Xóa Dat_Ve ID=11, đã xóa 0 vé và 0 đồ ăn
-[2025-11-26 10:24:51] ? Staff Cancel: H?y Dat_Ve ID=150, gi?i phóng 1 vé
+[2025-11-26 08:08:19] ? BookingExpirationService started
+[2025-11-26 08:08:33] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:08:33] Booked seat ids: 266,267
+[2025-11-26 08:08:48] ✅ Tạo Dat_Ve mới: ID=132, Trạng thái=Chưa thanh toán
+[2025-11-26 08:08:48] ✅ Sinh QR code: DAVCINEMA-132-761-638997413281608729 -> qr_DAVCINEMA-132-761-638997413281608729.png
+[2025-11-26 08:08:48] ✅ Sinh QR code: DAVCINEMA-132-762-638997413282666562 -> qr_DAVCINEMA-132-762-638997413282666562.png
+[2025-11-26 08:08:48] ✅ Cập nhật Dat_Ve: ID=132, Tổng tiền=224000,00, Vé=2, Đồ ăn=0
+[2025-11-26 08:08:48] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=224000&addInfo=DatVe132
+[2025-11-26 08:08:48] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:08:48]   → Checking FoodType='Snack', FoodName='Mỳ trẻ em'
+[2025-11-26 08:08:48] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:15:26] ? BookingExpirationService started
+[2025-11-26 08:15:45] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:15:45] Booked seat ids: 266,267
+[2025-11-26 08:18:09] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:18:09] Booked seat ids: 266,267
+[2025-11-26 08:18:54] ✅ Tạo Dat_Ve mới: ID=133, Trạng thái=Chưa thanh toán
+[2025-11-26 08:18:54] ✅ Sinh QR code: DAVCINEMA-133-766-638997419347905142 -> qr_DAVCINEMA-133-766-638997419347905142.png
+[2025-11-26 08:18:54] ✅ Sinh QR code: DAVCINEMA-133-767-638997419348465595 -> qr_DAVCINEMA-133-767-638997419348465595.png
+[2025-11-26 08:18:54] ✅ Cập nhật Dat_Ve: ID=133, Tổng tiền=1019000,00, Vé=2, Đồ ăn=0
+[2025-11-26 08:18:54] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=1019000&addInfo=DatVe133
+[2025-11-26 08:18:54] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:18:55]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:18:55] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:19:27] ? Found 1 expired bookings to cancel
+[2025-11-26 08:19:27] ? Cancelled expired booking ID=132, Customer=1, Released 2 seats
+[2025-11-26 08:19:27] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 08:21:18] ? BookingExpirationService started
+[2025-11-26 08:21:32] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:21:32] Booked seat ids: 266,267
+[2025-11-26 08:22:20] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:22:20] Booked seat ids: 266,267
+[2025-11-26 08:22:38] ? BookingExpirationService started
+[2025-11-26 08:23:12] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:23:12] Booked seat ids: 266,267
+[2025-11-26 08:24:04] ✅ Tạo Dat_Ve mới: ID=134, Trạng thái=Chưa thanh toán
+[2025-11-26 08:24:04] ✅ Sinh QR code: DAVCINEMA-134-753-638997422448743193 -> qr_DAVCINEMA-134-753-638997422448743193.png
+[2025-11-26 08:24:04] ✅ Sinh QR code: DAVCINEMA-134-754-638997422449273472 -> qr_DAVCINEMA-134-754-638997422449273472.png
+[2025-11-26 08:24:04] ✅ Cập nhật Dat_Ve: ID=134, Tổng tiền=494000,00, Vé=2, Đồ ăn=0
+[2025-11-26 08:24:05] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=494000&addInfo=DatVe134
+[2025-11-26 08:24:05] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:24:05]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:24:05] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:24:09] ✅ Đơn hàng chờ duyệt: Booking ID 134, PromoCode: 
+[2025-11-26 08:29:38] ? Found 1 expired bookings to cancel
+[2025-11-26 08:29:38] ? Cancelled expired booking ID=133, Customer=1, Released 2 seats
+[2025-11-26 08:29:38] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 08:36:07] ? BookingExpirationService started
+[2025-11-26 08:36:18] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:36:18] Booked seat ids: 266,267
+[2025-11-26 08:37:12] ? BookingExpirationService started
+[2025-11-26 08:37:20] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:37:20] Booked seat ids: 266,267
+[2025-11-26 08:38:06] ? BookingExpirationService started
+[2025-11-26 08:38:28] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:38:28] Booked seat ids: 266,267
+[2025-11-26 08:40:26] ? BookingExpirationService started
+[2025-11-26 08:40:35] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:40:35] Booked seat ids: 266,267
+[2025-11-26 08:42:05] ? BookingExpirationService started
+[2025-11-26 08:42:23] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:42:23] Booked seat ids: 266,267
+[2025-11-26 08:46:45] ? BookingExpirationService started
+[2025-11-26 08:47:13] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:47:13] Booked seat ids: 266,267
+[2025-11-26 08:48:14] ? BookingExpirationService started
+[2025-11-26 08:48:26] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:48:26] Booked seat ids: 266,267
+[2025-11-26 08:52:05] ✅ Tạo Dat_Ve mới: ID=135, Trạng thái=Chưa thanh toán
+[2025-11-26 08:52:05] ✅ Sinh QR code: DAVCINEMA-135-760-638997439253014125 -> qr_DAVCINEMA-135-760-638997439253014125.png
+[2025-11-26 08:52:05] ✅ Cập nhật Dat_Ve: ID=135, Tổng tiền=487000,00, Vé=1, Đồ ăn=0
+[2025-11-26 08:52:05] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=487000&addInfo=DatVe135
+[2025-11-26 08:52:05] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:52:05]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:52:05]   → Checking FoodType='Combo', FoodName='Combo Bắp Rang và Pepsi'
+[2025-11-26 08:52:05] ✅ KM004: Found Combo!
+[2025-11-26 08:52:05] ✅ KM004 Complete: hasCombo=True
+[2025-11-26 08:52:14] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=73050,0000
+[2025-11-26 08:52:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=413950&addInfo=DatVe135
+[2025-11-26 08:52:14] ✅ UpdateQRCode: BookingId=135, Original=487000,00, Discount=73050,0000, Final=413950,0000, PromoCode=KM003
+[2025-11-26 08:52:18] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=487000&addInfo=DatVe135
+[2025-11-26 08:52:18] ✅ UpdateQRCode: BookingId=135, Original=487000,00, Discount=0, Final=487000,00, PromoCode=
+[2025-11-26 08:52:19] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=73050,0000
+[2025-11-26 08:52:19] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=413950&addInfo=DatVe135
+[2025-11-26 08:52:19] ✅ UpdateQRCode: BookingId=135, Original=487000,00, Discount=73050,0000, Final=413950,0000, PromoCode=KM003
+[2025-11-26 08:52:25] ✅ Giảm mã khuyến mãi: KM003, Còn lại: 999986
+[2025-11-26 08:52:25] ✅ Đơn hàng chờ duyệt: Booking ID 135, PromoCode: KM003
+[2025-11-26 08:52:42] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:52:42] Booked seat ids: 266,267
+[2025-11-26 08:59:25] ? BookingExpirationService started
+[2025-11-26 08:59:37] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 08:59:37] Booked seat ids: 266,267
+[2025-11-26 08:59:48] ✅ Tạo Dat_Ve mới: ID=136, Trạng thái=Chưa thanh toán
+[2025-11-26 08:59:48] ✅ Sinh QR code: DAVCINEMA-136-753-638997443884786472 -> qr_DAVCINEMA-136-753-638997443884786472.png
+[2025-11-26 08:59:48] ✅ Sinh QR code: DAVCINEMA-136-754-638997443885429173 -> qr_DAVCINEMA-136-754-638997443885429173.png
+[2025-11-26 08:59:48] ✅ Cập nhật Dat_Ve: ID=136, Tổng tiền=224000,00, Vé=2, Đồ ăn=0
+[2025-11-26 08:59:48] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=224000&addInfo=DatVe136
+[2025-11-26 08:59:48] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 08:59:48]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 08:59:48] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 08:59:53] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=33600,0000
+[2025-11-26 08:59:53] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=190400&addInfo=DatVe136
+[2025-11-26 08:59:53] ✅ UpdateQRCode: BookingId=136, Original=224000,00, Discount=33600,0000, Final=190400,0000, PromoCode=KM003
+[2025-11-26 08:59:54] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=224000&addInfo=DatVe136
+[2025-11-26 08:59:54] ✅ UpdateQRCode: BookingId=136, Original=224000,00, Discount=0, Final=224000,00, PromoCode=
+[2025-11-26 08:59:56] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=33600,0000
+[2025-11-26 08:59:56] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=190400&addInfo=DatVe136
+[2025-11-26 08:59:56] ✅ UpdateQRCode: BookingId=136, Original=224000,00, Discount=33600,0000, Final=190400,0000, PromoCode=KM003
+[2025-11-26 09:00:01] ✅ Giảm mã khuyến mãi: KM003, Còn lại: 999985
+[2025-11-26 09:00:01] ✅ Đơn hàng chờ duyệt: Booking ID 136, PromoCode: KM003
+[2025-11-26 09:00:15] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 09:00:15] Booked seat ids: 266,267
+[2025-11-26 09:00:54] ? BookingExpirationService started
+[2025-11-26 09:01:02] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 09:01:02] Booked seat ids: 266,267
+[2025-11-26 09:01:12] ✅ Tạo Dat_Ve mới: ID=137, Trạng thái=Chưa thanh toán
+[2025-11-26 09:01:12] ✅ Sinh QR code: DAVCINEMA-137-760-638997444722780031 -> qr_DAVCINEMA-137-760-638997444722780031.png
+[2025-11-26 09:01:12] ✅ Cập nhật Dat_Ve: ID=137, Tổng tiền=112000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:01:12] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=112000&addInfo=DatVe137
+[2025-11-26 09:01:12] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:01:12]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 09:01:12] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:01:19] ✅ Đơn hàng chờ duyệt: Booking ID 137, PromoCode: 
+[2025-11-26 09:01:29] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 09:01:29] Booked seat ids: 266,267
+[2025-11-26 09:02:00] ? BookingExpirationService started
+[2025-11-26 09:02:42] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 09:02:42] Booked seat ids: 266,267
+[2025-11-26 09:02:49] ✅ Tạo Dat_Ve mới: ID=138, Trạng thái=Chưa thanh toán
+[2025-11-26 09:02:50] ✅ Sinh QR code: DAVCINEMA-138-749-638997445699403227 -> qr_DAVCINEMA-138-749-638997445699403227.png
+[2025-11-26 09:02:50] ✅ Cập nhật Dat_Ve: ID=138, Tổng tiền=112000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:02:50] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=112000&addInfo=DatVe138
+[2025-11-26 09:02:50] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:02:50]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 09:02:50] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:02:57] ✅ Đơn hàng chờ duyệt: Booking ID 138, PromoCode: 
+[2025-11-26 09:03:07] SelectSeats (Fresh DB): showtime=29, paidBookings=45, bookedCount=2
+[2025-11-26 09:03:07] Booked seat ids: 266,267
+[2025-11-26 09:04:07] ✅ ApproveBooking: Duyệt Dat_Ve ID=138, khách hàng: Lê Minh Khách
+[2025-11-26 09:04:22] SelectSeats (Fresh DB): showtime=29, paidBookings=46, bookedCount=3
+[2025-11-26 09:04:22] Booked seat ids: 207,266,267
+[2025-11-26 09:04:31] ✅ Tạo Dat_Ve mới: ID=139, Trạng thái=Chưa thanh toán
+[2025-11-26 09:04:31] ✅ Sinh QR code: DAVCINEMA-139-753-638997446714096147 -> qr_DAVCINEMA-139-753-638997446714096147.png
+[2025-11-26 09:04:31] ✅ Cập nhật Dat_Ve: ID=139, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:04:31] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe139
+[2025-11-26 09:04:31] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:04:31] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:04:36] ✅ Đơn hàng chờ duyệt: Booking ID 139, PromoCode: 
+[2025-11-26 09:04:45] SelectSeats (Fresh DB): showtime=29, paidBookings=46, bookedCount=3
+[2025-11-26 09:04:45] Booked seat ids: 207,266,267
+[2025-11-26 09:06:05] ✅ Tạo Dat_Ve mới: ID=140, Trạng thái=Chưa thanh toán
+[2025-11-26 09:06:05] ✅ Sinh QR code: DAVCINEMA-140-760-638997447655934104 -> qr_DAVCINEMA-140-760-638997447655934104.png
+[2025-11-26 09:06:05] ✅ Cập nhật Dat_Ve: ID=140, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:06:05] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe140
+[2025-11-26 09:06:05] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:06:05] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:14:07] ? BookingExpirationService started
+[2025-11-26 09:14:18] SelectSeats (Fresh DB): showtime=29, paidBookings=46, bookedCount=3
+[2025-11-26 09:14:18] Booked seat ids: 207,266,267
+[2025-11-26 09:14:27] ✅ Tạo Dat_Ve mới: ID=141, Trạng thái=Chưa thanh toán
+[2025-11-26 09:14:27] ✅ Sinh QR code: DAVCINEMA-141-766-638997452677644729 -> qr_DAVCINEMA-141-766-638997452677644729.png
+[2025-11-26 09:14:27] ✅ Cập nhật Dat_Ve: ID=141, Tổng tiền=112000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:14:27] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=112000&addInfo=DatVe141
+[2025-11-26 09:14:27] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:14:27]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 09:14:28] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:14:32] ✅ Đơn hàng chờ duyệt: Booking ID 141, PromoCode: 
+[2025-11-26 09:15:44] ? BookingExpirationService started
+[2025-11-26 09:15:55] SelectSeats (Fresh DB): showtime=29, paidBookings=46, bookedCount=3
+[2025-11-26 09:15:55] Booked seat ids: 207,266,267
+[2025-11-26 09:16:04] ✅ Tạo Dat_Ve mới: ID=142, Trạng thái=Chưa thanh toán
+[2025-11-26 09:16:04] ✅ Sinh QR code: DAVCINEMA-142-746-638997453647568170 -> qr_DAVCINEMA-142-746-638997453647568170.png
+[2025-11-26 09:16:04] ✅ Cập nhật Dat_Ve: ID=142, Tổng tiền=192000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:16:04] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=192000&addInfo=DatVe142
+[2025-11-26 09:16:05] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:16:05]   → Checking FoodType='Combo', FoodName='Combo Bắp Rang và Pepsi'
+[2025-11-26 09:16:05] ✅ KM004: Found Combo!
+[2025-11-26 09:16:05] ✅ KM004 Complete: hasCombo=True
+[2025-11-26 09:16:09] ✅ Đơn hàng chờ duyệt: Booking ID 142, PromoCode: 
+[2025-11-26 09:17:14] ? BookingExpirationService started
+[2025-11-26 09:17:26] SelectSeats (Fresh DB): showtime=29, paidBookings=46, bookedCount=3
+[2025-11-26 09:17:26] Booked seat ids: 207,266,267
+[2025-11-26 09:17:34] ✅ Tạo Dat_Ve mới: ID=143, Trạng thái=Chưa thanh toán
+[2025-11-26 09:17:34] ✅ Sinh QR code: DAVCINEMA-143-747-638997454544528847 -> qr_DAVCINEMA-143-747-638997454544528847.png
+[2025-11-26 09:17:34] ✅ Cập nhật Dat_Ve: ID=143, Tổng tiền=202000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:17:34] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=202000&addInfo=DatVe143
+[2025-11-26 09:17:34] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:17:34]   → Checking FoodType='Đồ ăn', FoodName='Bắp rang bơ'
+[2025-11-26 09:17:34] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:17:41] ✅ Đơn hàng chờ duyệt: Booking ID 143, PromoCode: 
+[2025-11-26 09:18:14] ? Found 1 expired bookings to cancel
+[2025-11-26 09:18:14] ? Cancelled expired booking ID=140, Customer=1, Released 1 seats
+[2025-11-26 09:18:14] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:22:41] ? BookingExpirationService started
+[2025-11-26 09:23:03] ✅ ApproveBooking: Duyệt Dat_Ve ID=143, khách hàng: Lê Minh Khách
+[2025-11-26 09:23:58] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=202000&addInfo=DatVe143
+[2025-11-26 09:23:58] ✅ Hiển thị trang thanh toán thành công: Booking 143
+[2025-11-26 09:24:57] ? BookingExpirationService started
+[2025-11-26 09:25:11] SelectSeats (Fresh DB): showtime=29, paidBookings=47, bookedCount=4
+[2025-11-26 09:25:11] Booked seat ids: 205,207,266,267
+[2025-11-26 09:25:18] ✅ Tạo Dat_Ve mới: ID=144, Trạng thái=Chưa thanh toán
+[2025-11-26 09:25:19] ✅ Sinh QR code: DAVCINEMA-144-746-638997459189574934 -> qr_DAVCINEMA-144-746-638997459189574934.png
+[2025-11-26 09:25:19] ✅ Cập nhật Dat_Ve: ID=144, Tổng tiền=202000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:25:19] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=202000&addInfo=DatVe144
+[2025-11-26 09:25:19] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:25:19]   → Checking FoodType='Đồ ăn', FoodName='Bắp rang bơ'
+[2025-11-26 09:25:19] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:25:23] ✅ Đơn hàng chờ duyệt: Booking ID 144, PromoCode: 
+[2025-11-26 09:25:46] ✅ ApproveBooking: Duyệt Dat_Ve ID=144, khách hàng: Lê Minh Khách
+[2025-11-26 09:26:44] ? BookingExpirationService started
+[2025-11-26 09:27:36] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:27:36] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:27:42] ✅ Tạo Dat_Ve mới: ID=145, Trạng thái=Chưa thanh toán
+[2025-11-26 09:27:42] ✅ Sinh QR code: DAVCINEMA-145-754-638997460625271800 -> qr_DAVCINEMA-145-754-638997460625271800.png
+[2025-11-26 09:27:42] ✅ Cập nhật Dat_Ve: ID=145, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:27:42] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe145
+[2025-11-26 09:27:42] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:27:42] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:36:13] ? BookingExpirationService started
+[2025-11-26 09:37:44] ? BookingExpirationService started
+[2025-11-26 09:38:01] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:38:01] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:38:08] ✅ Tạo Dat_Ve mới: ID=146, Trạng thái=Chưa thanh toán
+[2025-11-26 09:38:08] ✅ Sinh QR code: DAVCINEMA-146-754-638997466882874293 -> qr_DAVCINEMA-146-754-638997466882874293.png
+[2025-11-26 09:38:08] ✅ Cập nhật Dat_Ve: ID=146, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:38:08] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe146
+[2025-11-26 09:38:08] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:38:08] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:38:50] ? BookingExpirationService started
+[2025-11-26 09:38:57] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:38:57] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:39:05] ✅ Tạo Dat_Ve mới: ID=147, Trạng thái=Chưa thanh toán
+[2025-11-26 09:39:05] ✅ Sinh QR code: DAVCINEMA-147-760-638997467451294340 -> qr_DAVCINEMA-147-760-638997467451294340.png
+[2025-11-26 09:39:05] ✅ Cập nhật Dat_Ve: ID=147, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:39:05] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe147
+[2025-11-26 09:39:05] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:39:05] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:39:50] ? Found 1 expired bookings to cancel
+[2025-11-26 09:39:50] ? Cancelled expired booking ID=145, Customer=1, Released 0 seats
+[2025-11-26 09:39:50] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:42:22] ? BookingExpirationService started
+[2025-11-26 09:42:36] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:42:36] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:42:46] ✅ Tạo Dat_Ve mới: ID=148, Trạng thái=Chưa thanh toán
+[2025-11-26 09:42:46] ✅ Sinh QR code: DAVCINEMA-148-751-638997469667141960 -> qr_DAVCINEMA-148-751-638997469667141960.png
+[2025-11-26 09:42:46] ✅ Cập nhật Dat_Ve: ID=148, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:42:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe148
+[2025-11-26 09:42:47] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:42:47] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:42:49] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126094249&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+148&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=ADB45678&vnp_TxnRef=148&vnp_Version=2.1.0&vnp_SecureHash=0439bf41f755e94bdad191f39a7751e975229a0caa26bc381d64f5acee76254711941d9b8113c996a106386d89df2442e75cceb814a3be38f0c1bc4a18c19d39
+[2025-11-26 09:45:54] ? BookingExpirationService started
+[2025-11-26 09:46:41] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:46:41] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:46:48] ✅ Tạo Dat_Ve mới: ID=149, Trạng thái=Chưa thanh toán
+[2025-11-26 09:46:48] ✅ Sinh QR code: DAVCINEMA-149-762-638997472088002502 -> qr_DAVCINEMA-149-762-638997472088002502.png
+[2025-11-26 09:46:48] ✅ Cập nhật Dat_Ve: ID=149, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:46:48] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe149
+[2025-11-26 09:46:49] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:46:49] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:46:51] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126094651&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+149&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=24JRS5CX&vnp_TxnRef=149&vnp_Version=2.1.0&vnp_SecureHash=33dbe882c0908f47be47a3dfdc25cd66cda2604539fe221485c068cc1a9bf1806be299af1db2515e7587ea9045f04d2cdb122305a388be42bb9dc70f7c9759e2
+[2025-11-26 09:48:54] ? Found 1 expired bookings to cancel
+[2025-11-26 09:48:54] ? Cancelled expired booking ID=146, Customer=1, Released 1 seats
+[2025-11-26 09:48:54] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:49:55] ? BookingExpirationService started
+[2025-11-26 09:50:08] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:50:08] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:50:14] ✅ Tạo Dat_Ve mới: ID=150, Trạng thái=Chưa thanh toán
+[2025-11-26 09:50:14] ✅ Sinh QR code: DAVCINEMA-150-783-638997474147134841 -> qr_DAVCINEMA-150-783-638997474147134841.png
+[2025-11-26 09:50:14] ✅ Cập nhật Dat_Ve: ID=150, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:50:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe150
+[2025-11-26 09:50:14] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:50:14] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:50:17] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095017&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+150&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44350%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=150&vnp_Version=2.1.0&vnp_SecureHash=9f308ac425964a686fa99d61c48930b2d7d6d255ceedb5f650a0a4a5d6bc8b7302732eb8e1f0a016f108ca02f74e8f4943d2bba0fe21643c40321f447e414aa4
+[2025-11-26 09:51:06] ? BookingExpirationService started
+[2025-11-26 09:51:17] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:51:17] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:51:23] ✅ Tạo Dat_Ve mới: ID=151, Trạng thái=Chưa thanh toán
+[2025-11-26 09:51:23] ✅ Sinh QR code: DAVCINEMA-151-756-638997474831114875 -> qr_DAVCINEMA-151-756-638997474831114875.png
+[2025-11-26 09:51:23] ✅ Cập nhật Dat_Ve: ID=151, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:51:23] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe151
+[2025-11-26 09:51:23] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:51:23] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:51:25] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095125&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+151&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44350%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=151&vnp_Version=2.1.0&vnp_SecureHash=5ff5840f6b81ada5b75dfcab7389f2370385db927ac21519e20c3f42ea5663a5c61441b014acb3370f10b814c0bfc68e4ae3d9458fa16041d33267af37a15bcd
+[2025-11-26 09:52:06] ? Found 1 expired bookings to cancel
+[2025-11-26 09:52:06] ? Cancelled expired booking ID=147, Customer=1, Released 1 seats
+[2025-11-26 09:52:06] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:53:06] ? Found 1 expired bookings to cancel
+[2025-11-26 09:53:06] ? Cancelled expired booking ID=148, Customer=1, Released 1 seats
+[2025-11-26 09:53:06] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:53:28] ? BookingExpirationService started
+[2025-11-26 09:53:40] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:53:40] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:53:50] ✅ Tạo Dat_Ve mới: ID=152, Trạng thái=Chưa thanh toán
+[2025-11-26 09:53:50] ✅ Sinh QR code: DAVCINEMA-152-762-638997476301932178 -> qr_DAVCINEMA-152-762-638997476301932178.png
+[2025-11-26 09:53:50] ✅ Cập nhật Dat_Ve: ID=152, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:53:50] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe152
+[2025-11-26 09:53:50] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:53:50] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:53:52] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095352&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+152&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=152&vnp_Version=2.1.0&vnp_SecureHash=7d1929463a0bc6f38ec1a352538d4bddaf675f47c549d1771e8af0c3b7640e499cf1f8cb9fba13cc724fc79c0d2c99d76b041bc95270415f5132e0a4dc0b2ac9
+[2025-11-26 09:54:17] ? BookingExpirationService started
+[2025-11-26 09:54:27] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:54:27] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:54:34] ✅ Tạo Dat_Ve mới: ID=153, Trạng thái=Chưa thanh toán
+[2025-11-26 09:54:34] ✅ Sinh QR code: DAVCINEMA-153-751-638997476742515609 -> qr_DAVCINEMA-153-751-638997476742515609.png
+[2025-11-26 09:54:34] ✅ Cập nhật Dat_Ve: ID=153, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:54:34] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe153
+[2025-11-26 09:54:34] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:54:34] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:54:35] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095435&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+153&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=153&vnp_Version=2.1.0&vnp_SecureHash=6d24729687db8a0bad8a623e952db8b0cb018303de517d9c28f8af28faff9b9c2b7c94f0354171154681362059ece2dd0295c6b97692c8bf0a945360bc081685
+[2025-11-26 09:55:13] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:55:13] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:55:19] ✅ Tạo Dat_Ve mới: ID=154, Trạng thái=Chưa thanh toán
+[2025-11-26 09:55:19] ✅ Sinh QR code: DAVCINEMA-154-768-638997477191581472 -> qr_DAVCINEMA-154-768-638997477191581472.png
+[2025-11-26 09:55:19] ✅ Cập nhật Dat_Ve: ID=154, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:55:19] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe154
+[2025-11-26 09:55:19] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:55:19] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:55:26] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095526&vnp_CurrCode=VND&vnp_IpAddr=%3a%3a1&vnp_Locale=vn&vnp_OrderInfo=Thanh+toan+don+hang+154&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=154&vnp_Version=2.1.0&vnp_SecureHash=5fb4bb1e6be9d11a918449af48cede1fa5052f0f19c8b37dcdd2d42db4837f81f42733329763d32953c324476a74af1be4734a1c2499985a62505367b0f18908
+[2025-11-26 09:56:07] ? BookingExpirationService started
+[2025-11-26 09:57:19] ? BookingExpirationService started
+[2025-11-26 09:57:52] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:57:52] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:57:59] ✅ Tạo Dat_Ve mới: ID=155, Trạng thái=Chưa thanh toán
+[2025-11-26 09:57:59] ✅ Sinh QR code: DAVCINEMA-155-761-638997478797528388 -> qr_DAVCINEMA-155-761-638997478797528388.png
+[2025-11-26 09:57:59] ✅ Cập nhật Dat_Ve: ID=155, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:57:59] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe155
+[2025-11-26 09:57:59] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:57:59] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:58:01] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095801&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=ThanhToanVeXemPhim155&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=155&vnp_Version=2.1.0&vnp_SecureHash=868457c98d2c7bf52caab63d4b1a8b8fe4a9416c24b590a2faedd0859ae9684cef6ae945f36082e3541fbdae78d25b737c402abdd324f47cdd72df02c047dc30
+[2025-11-26 09:58:19] ? Found 1 expired bookings to cancel
+[2025-11-26 09:58:19] ? Cancelled expired booking ID=149, Customer=1, Released 0 seats
+[2025-11-26 09:58:19] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 09:59:13] ? BookingExpirationService started
+[2025-11-26 09:59:25] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 09:59:25] Booked seat ids: 202,205,207,266,267
+[2025-11-26 09:59:32] ✅ Tạo Dat_Ve mới: ID=156, Trạng thái=Chưa thanh toán
+[2025-11-26 09:59:32] ✅ Sinh QR code: DAVCINEMA-156-756-638997479723631678 -> qr_DAVCINEMA-156-756-638997479723631678.png
+[2025-11-26 09:59:32] ✅ Cập nhật Dat_Ve: ID=156, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 09:59:32] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe156
+[2025-11-26 09:59:32] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 09:59:32] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 09:59:34] ✅ VNPay URL Created: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=8200000&vnp_Command=pay&vnp_CreateDate=20251126095934&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1&vnp_Locale=vn&vnp_OrderInfo=ThanhToanVeXemPhim156&vnp_OrderType=other&vnp_ReturnUrl=http%3a%2f%2flocalhost%3a44300%2fBooking%2fPaymentCallback&vnp_TmnCode=JCMWETHR&vnp_TxnRef=156&vnp_Version=2.1.0&vnp_SecureHash=37bb9bbf9ecaa126b4c794cec99f936ff9b413ce3a5fecdc6c50f0eac2c6225334935ce6343378f2f3039cb568aa84080385ae550b9a8dceadc87c5b4266ec9b
+[2025-11-26 10:01:13] ? Found 1 expired bookings to cancel
+[2025-11-26 10:01:13] ? Cancelled expired booking ID=150, Customer=1, Released 1 seats
+[2025-11-26 10:01:13] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 10:03:46] ? BookingExpirationService started
+[2025-11-26 10:03:55] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:03:55] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:04:02] ✅ Tạo Dat_Ve mới: ID=157, Trạng thái=Chưa thanh toán
+[2025-11-26 10:04:02] ✅ Sinh QR code: DAVCINEMA-157-760-638997482424860670 -> qr_DAVCINEMA-157-760-638997482424860670.png
+[2025-11-26 10:04:02] ✅ Cập nhật Dat_Ve: ID=157, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:04:02] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe157
+[2025-11-26 10:04:02] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:04:02] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:12:55] ? BookingExpirationService started
+[2025-11-26 10:13:05] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:13:05] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:13:11] ✅ Tạo Dat_Ve mới: ID=158, Trạng thái=Chưa thanh toán
+[2025-11-26 10:13:11] ✅ Sinh QR code: DAVCINEMA-158-752-638997487919186035 -> qr_DAVCINEMA-158-752-638997487919186035.png
+[2025-11-26 10:13:11] ✅ Cập nhật Dat_Ve: ID=158, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:13:12] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe158
+[2025-11-26 10:13:12] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:13:12] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:14:39] ? BookingExpirationService started
+[2025-11-26 10:15:39] ? Found 7 expired bookings to cancel
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=151, Customer=1, Released 0 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=152, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=153, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=154, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=155, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=156, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Cancelled expired booking ID=157, Customer=1, Released 1 seats
+[2025-11-26 10:15:39] ? Successfully cancelled 7 expired bookings and released seats
+[2025-11-26 10:17:07] ? BookingExpirationService started
+[2025-11-26 10:17:29] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:17:29] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:17:35] ✅ Tạo Dat_Ve mới: ID=159, Trạng thái=Chưa thanh toán
+[2025-11-26 10:17:35] ✅ Sinh QR code: DAVCINEMA-159-757-638997490553463066 -> qr_DAVCINEMA-159-757-638997490553463066.png
+[2025-11-26 10:17:35] ✅ Cập nhật Dat_Ve: ID=159, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:17:35] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe159
+[2025-11-26 10:17:35] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:17:35] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:27:40] ? BookingExpirationService started
+[2025-11-26 10:27:53] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:27:53] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:28:00] ✅ Tạo Dat_Ve mới: ID=160, Trạng thái=Chưa thanh toán
+[2025-11-26 10:28:00] ✅ Sinh QR code: DAVCINEMA-160-751-638997496806170635 -> qr_DAVCINEMA-160-751-638997496806170635.png
+[2025-11-26 10:28:00] ✅ Cập nhật Dat_Ve: ID=160, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:28:00] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe160
+[2025-11-26 10:28:00] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:28:00] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:28:40] ? Found 2 expired bookings to cancel
+[2025-11-26 10:28:40] ? Cancelled expired booking ID=158, Customer=1, Released 1 seats
+[2025-11-26 10:28:40] ? Cancelled expired booking ID=159, Customer=1, Released 1 seats
+[2025-11-26 10:28:40] ? Successfully cancelled 2 expired bookings and released seats
+[2025-11-26 10:40:01] ? BookingExpirationService started
+[2025-11-26 10:40:23] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:40:23] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:40:29] ✅ Tạo Dat_Ve mới: ID=161, Trạng thái=Chưa thanh toán
+[2025-11-26 10:40:29] ✅ Sinh QR code: DAVCINEMA-161-751-638997504292653916 -> qr_DAVCINEMA-161-751-638997504292653916.png
+[2025-11-26 10:40:29] ✅ Cập nhật Dat_Ve: ID=161, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:40:29] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe161
+[2025-11-26 10:40:29] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:40:29] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:41:01] ? Found 1 expired bookings to cancel
+[2025-11-26 10:41:02] ? Cancelled expired booking ID=160, Customer=1, Released 0 seats
+[2025-11-26 10:41:02] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 10:46:10] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:46:10] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:46:21] ✅ Tạo Dat_Ve mới: ID=162, Trạng thái=Chưa thanh toán
+[2025-11-26 10:46:21] ✅ Sinh QR code: DAVCINEMA-162-753-638997507812978433 -> qr_DAVCINEMA-162-753-638997507812978433.png
+[2025-11-26 10:46:21] ✅ Sinh QR code: DAVCINEMA-162-754-638997507813033370 -> qr_DAVCINEMA-162-754-638997507813033370.png
+[2025-11-26 10:46:21] ✅ Cập nhật Dat_Ve: ID=162, Tổng tiền=204000,00, Vé=2, Đồ ăn=0
+[2025-11-26 10:46:21] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=204000&addInfo=DatVe162
+[2025-11-26 10:46:21] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:46:21]   → Checking FoodType='Đồ ăn', FoodName='Bắp rang bơ'
+[2025-11-26 10:46:21] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:51:20] ? BookingExpirationService started
+[2025-11-26 10:51:29] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 10:51:29] Booked seat ids: 202,205,207,266,267
+[2025-11-26 10:51:44] ✅ Tạo Dat_Ve mới: ID=163, Trạng thái=Chưa thanh toán
+[2025-11-26 10:51:44] ✅ Sinh QR code: DAVCINEMA-163-762-638997511042058322 -> qr_DAVCINEMA-163-762-638997511042058322.png
+[2025-11-26 10:51:44] ✅ Cập nhật Dat_Ve: ID=163, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 10:51:44] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe163
+[2025-11-26 10:51:44] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 10:51:44] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 10:52:20] ? Found 1 expired bookings to cancel
+[2025-11-26 10:52:20] ? Cancelled expired booking ID=161, Customer=1, Released 1 seats
+[2025-11-26 10:52:20] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 10:57:20] ? Found 1 expired bookings to cancel
+[2025-11-26 10:57:20] ? Cancelled expired booking ID=162, Customer=1, Released 2 seats
+[2025-11-26 10:57:20] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 13:43:03] ? BookingExpirationService started
+[2025-11-26 13:43:21] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 13:43:21] Booked seat ids: 202,205,207,266,267
+[2025-11-26 13:43:28] ✅ Tạo Dat_Ve mới: ID=164, Trạng thái=Chưa thanh toán
+[2025-11-26 13:43:28] ✅ Sinh QR code: DAVCINEMA-164-754-638997614086118779 -> qr_DAVCINEMA-164-754-638997614086118779.png
+[2025-11-26 13:43:28] ✅ Cập nhật Dat_Ve: ID=164, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 13:43:28] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe164
+[2025-11-26 13:43:28] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 13:43:28] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 13:43:35] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=12300,0000
+[2025-11-26 13:43:35] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=69700&addInfo=DatVe164
+[2025-11-26 13:43:35] ✅ UpdateQRCode: BookingId=164, Original=82000,00, Discount=12300,0000, Final=69700,0000, PromoCode=KM003
+[2025-11-26 13:44:03] ? Found 1 expired bookings to cancel
+[2025-11-26 13:44:03] ? Cancelled expired booking ID=163, Customer=1, Released 1 seats
+[2025-11-26 13:44:03] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 13:59:50] ? BookingExpirationService started
+[2025-11-26 14:00:25] SelectSeats (Fresh DB): showtime=29, paidBookings=48, bookedCount=5
+[2025-11-26 14:00:25] Booked seat ids: 202,205,207,266,267
+[2025-11-26 14:00:32] ✅ Tạo Dat_Ve mới: ID=165, Trạng thái=Chưa thanh toán
+[2025-11-26 14:00:32] ✅ Sinh QR code: DAVCINEMA-165-773-638997624323963843 -> qr_DAVCINEMA-165-773-638997624323963843.png
+[2025-11-26 14:00:32] ✅ Cập nhật Dat_Ve: ID=165, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 14:00:32] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe165
+[2025-11-26 14:00:32] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 14:00:32] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 14:00:50] ? Found 1 expired bookings to cancel
+[2025-11-26 14:00:50] ? Cancelled expired booking ID=164, Customer=1, Released 1 seats
+[2025-11-26 14:00:50] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 14:01:22] ✅ Cộng điểm: Customer 1, Số vé đã thanh toán: 1, Tổng điểm hiện tại: 26
+[2025-11-26 14:01:22] ✅ PaymentCallback success: Cập nhật Dat_Ve ID=165 thành 'Đã Thanh toán'
+[2025-11-26 14:04:12] ? BookingExpirationService started
+[2025-11-26 14:04:36] SelectSeats (Fresh DB): showtime=29, paidBookings=49, bookedCount=6
+[2025-11-26 14:04:36] Booked seat ids: 202,205,207,255,266,267
+[2025-11-26 14:04:43] ✅ Tạo Dat_Ve mới: ID=166, Trạng thái=Chưa thanh toán
+[2025-11-26 14:04:43] ✅ Sinh QR code: DAVCINEMA-166-774-638997626835015582 -> qr_DAVCINEMA-166-774-638997626835015582.png
+[2025-11-26 14:04:43] ✅ Cập nhật Dat_Ve: ID=166, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-26 14:04:43] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe166
+[2025-11-26 14:04:43] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 14:04:43] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 14:15:12] ? Found 1 expired bookings to cancel
+[2025-11-26 14:15:12] ? Cancelled expired booking ID=166, Customer=1, Released 1 seats
+[2025-11-26 14:15:12] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 14:16:10] ? BookingExpirationService started
+[2025-11-26 14:16:20] SelectSeats (Fresh DB): showtime=29, paidBookings=49, bookedCount=6
+[2025-11-26 14:16:20] Booked seat ids: 202,205,207,255,266,267
+[2025-11-26 14:16:29] ✅ Tạo Dat_Ve mới: ID=167, Trạng thái=Chưa thanh toán
+[2025-11-26 14:16:29] ✅ Sinh QR code: DAVCINEMA-167-755-638997633899169840 -> qr_DAVCINEMA-167-755-638997633899169840.png
+[2025-11-26 14:16:30] ✅ Cập nhật Dat_Ve: ID=167, Tổng tiền=287000,00, Vé=1, Đồ ăn=0
+[2025-11-26 14:16:30] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=287000&addInfo=DatVe167
+[2025-11-26 14:16:30] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 14:16:30]   → Checking FoodType='Đồ ăn', FoodName='Bắp rang bơ'
+[2025-11-26 14:16:30]   → Checking FoodType='Combo', FoodName='Combo Bắp Rang và Pepsi'
+[2025-11-26 14:16:30] ✅ KM004: Found Combo!
+[2025-11-26 14:16:30] ✅ KM004 Complete: hasCombo=True
+[2025-11-26 14:19:14] SelectSeats (Fresh DB): showtime=29, paidBookings=50, bookedCount=7
+[2025-11-26 14:19:14] Booked seat ids: 202,205,207,217,255,266,267
+[2025-11-26 14:19:46] ✅ Tạo Dat_Ve mới: ID=168, Trạng thái=Chưa thanh toán
+[2025-11-26 14:19:46] ✅ Sinh QR code: DAVCINEMA-168-753-638997635868916238 -> qr_DAVCINEMA-168-753-638997635868916238.png
+[2025-11-26 14:19:46] ✅ Sinh QR code: DAVCINEMA-168-754-638997635868957797 -> qr_DAVCINEMA-168-754-638997635868957797.png
+[2025-11-26 14:19:46] ✅ Cập nhật Dat_Ve: ID=168, Tổng tiền=224000,00, Vé=2, Đồ ăn=0
+[2025-11-26 14:19:46] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=224000&addInfo=DatVe168
+[2025-11-26 14:19:47] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 14:19:47]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 14:19:47] ✅ KM004 Complete: hasCombo=False
+[2025-11-26 14:19:50] ✅ PromoCode KM003: giaTriGiam=15,00, loai=%, discount=33600,0000
+[2025-11-26 14:19:50] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=190400&addInfo=DatVe168
+[2025-11-26 14:19:50] ✅ UpdateQRCode: BookingId=168, Original=224000,00, Discount=33600,0000, Final=190400,0000, PromoCode=KM003
+[2025-11-26 14:29:28] ? BookingExpirationService started
+[2025-11-26 14:30:03] SelectSeats (Fresh DB): showtime=29, paidBookings=51, bookedCount=9
+[2025-11-26 14:30:03] Booked seat ids: 202,205,207,215,216,217,255,266,267
+[2025-11-26 14:30:15] ✅ Tạo Dat_Ve mới: ID=169, Trạng thái=Chưa thanh toán
+[2025-11-26 14:30:15] ✅ Sinh QR code: DAVCINEMA-169-748-638997642157954940 -> qr_DAVCINEMA-169-748-638997642157954940.png
+[2025-11-26 14:30:15] ✅ Cập nhật Dat_Ve: ID=169, Tổng tiền=262000,00, Vé=1, Đồ ăn=0
+[2025-11-26 14:30:15] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=262000&addInfo=DatVe169
+[2025-11-26 14:30:16] 🔍 KM004 Start: foodItemsJson=exist
+[2025-11-26 14:30:16]   → Checking FoodType='Đồ uống', FoodName='Pepsi'
+[2025-11-26 14:30:16]   → Checking FoodType='Combo', FoodName='Combo Bắp Rang và Pepsi'
+[2025-11-26 14:30:16] ✅ KM004: Found Combo!
+[2025-11-26 14:30:16] ✅ KM004 Complete: hasCombo=True
+[2025-11-26 14:30:20] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=222700&addInfo=DatVe169
+[2025-11-26 16:38:28] ? BookingExpirationService started
+[2025-11-26 16:39:41] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 16:39:56] ✅ Updated loyalty points for Customer 24: +2 => 2
+[2025-11-26 16:39:59] ✅ Admin ViewInvoice: Booking ID 170
+[2025-11-26 16:39:59] ✅ Sinh QR code: 3902d289-3ab1-4bd6-9b9f-734fc2364700 -> qr_3902d289-3ab1-4bd6-9b9f-734fc2364700.png
+[2025-11-26 16:39:59] ✅ Sinh QR code: 0b6218d6-92a3-4c11-a645-03b31f62dce3 -> qr_0b6218d6-92a3-4c11-a645-03b31f62dce3.png
+[2025-11-26 16:40:07] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 16:45:40] ? BookingExpirationService started
+[2025-11-26 16:45:53] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 17:04:32] ? BookingExpirationService started
+[2025-11-26 17:04:55] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 17:08:40] ? BookingExpirationService started
+[2025-11-26 17:09:03] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 17:09:52] ✅ Admin ViewInvoice: Booking ID 172
+[2025-11-26 17:09:54] ✅ Sinh QR code: aa9347c0-4509-49df-9e9d-9bc0ca3e09cf -> qr_aa9347c0-4509-49df-9e9d-9bc0ca3e09cf.png
+[2025-11-26 17:11:59] ? BookingExpirationService started
+[2025-11-26 17:12:23] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 17:13:52] ✅ Admin ViewInvoice: Booking ID 173
+[2025-11-26 17:13:53] ✅ Sinh QR code: 9ab712b6-527c-44ea-a484-067636dbb241 -> qr_9ab712b6-527c-44ea-a484-067636dbb241.png
+[2025-11-26 17:13:53] ✅ Sinh QR code: 02c213b7-172a-4ed3-9a82-ae21bbf94965 -> qr_02c213b7-172a-4ed3-9a82-ae21bbf94965.png
+[2025-11-26 18:16:47] ? BookingExpirationService started
+[2025-11-26 18:17:47] ? Found 1 expired bookings to cancel
+[2025-11-26 18:17:47] ? Cancelled expired booking ID=171, Customer=25, Released 1 seats
+[2025-11-26 18:17:47] ? Successfully cancelled 1 expired bookings and released seats
+[2025-11-26 18:18:57] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:26:08] ? BookingExpirationService started
+[2025-11-26 18:26:17] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:29:42] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:29:53] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:30:21] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:30:27] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:32:27] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:35:00] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:35:10] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:36:41] ? BookingExpirationService started
+[2025-11-26 18:37:38] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:39:12] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:43:44] ? BookingExpirationService started
+[2025-11-26 18:44:31] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:49:41] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:51:11] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:52:41] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:56:21] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:59:33] ? BookingExpirationService started
+[2025-11-26 18:59:35] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 18:59:50] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:00:26] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:03:05] ? BookingExpirationService started
+[2025-11-26 19:03:07] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:10:44] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:13:24] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:14:51] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:20:20] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:21:38] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:29:26] ? BookingExpirationService started
+[2025-11-26 19:29:29] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:32:07] ✅ Admin ViewInvoice: Booking ID 174
+[2025-11-26 19:32:07] ✅ Sinh QR code: 862dcff8-b31c-4616-8790-6fa7e5915447 -> qr_862dcff8-b31c-4616-8790-6fa7e5915447.png
+[2025-11-26 19:37:52] ? BookingExpirationService started
+[2025-11-26 19:38:25] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeSaving%20Pri
+[2025-11-26 19:38:46] ✅ Admin ViewInvoice: Booking ID 175
+[2025-11-26 19:38:47] ✅ Sinh QR code: 51c9d8f4-0440-418f-87f4-e21e0655abf4 -> qr_51c9d8f4-0440-418f-87f4-e21e0655abf4.png

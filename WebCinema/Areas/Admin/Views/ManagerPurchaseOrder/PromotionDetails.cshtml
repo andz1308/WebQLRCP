@@ -1,0 +1,116 @@
+﻿@model WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai
+@using WebCinema.Areas.Admin.Controllers
+
+@{
+    ViewBag.Title = "Chi Tiết Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    var details = ViewBag.Details as IEnumerable<PromotionDetailViewModel>;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-file-contract"></i> Chi Tiết Phiếu Đề Xuất #DX-@Model.de_xuat_id</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">Quay lại</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="content-card mb-3">
+            <div class="card-header"><h3>Thông Tin Chung</h3></div>
+            <div class="p-3">
+                <p><strong>Ngày tạo:</strong> @Model.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><strong>Người tạo:</strong> @(Model.Nhan_Vien != null ? Model.Nhan_Vien.ho_ten : "N/A")</p>
+                <p><strong>Lý do:</strong> @Model.ly_do</p>
+                <p>
+                    <strong>Trạng thái:</strong>
+                    @if (Model.trang_thai == "Chờ duyệt")
+                    {<span class="badge badge-warning">Chờ duyệt</span> }
+                    else if (Model.trang_thai == "Đã duyệt")
+                    { <span class="badge badge-success">Đã duyệt</span> }
+                    else
+                    { <span class="badge badge-danger">Từ chối</span>}
+                </p>
+
+                @if (Model.trang_thai == "Chờ duyệt")
+                {
+                    <hr />
+                    <button onclick="approvePromo(@Model.de_xuat_id)" class="btn btn-success btn-block mb-2">Duyệt Ngay</button>
+                    <button onclick="rejectPromo(@Model.de_xuat_id)" class="btn btn-danger btn-block">Từ Chối</button>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="content-card">
+            <div class="card-header"><h3>Danh Sách Món Đề Xuất Giảm Giá</h3></div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Món Ăn</th>
+                        <th>Loại</th>
+                        <th class="text-center">Tồn Kho</th>
+                        <th class="text-center">Mức Giảm (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (details != null)
+                    {
+                        foreach (var item in details)
+                        {
+                            <tr>
+                                <td><strong>@item.da.ten_san_pham</strong></td>
+                                <td>@item.da.loai</td>
+                                <td class="text-center">@item.ct.so_luong_ton</td>
+                                <td class="text-center">
+                                    <span class="badge badge-danger" style="font-size: 1rem">-@item.ct.muc_giam_gia%</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function approvePromo(id) {
+        if (confirm('Duyệt đề xuất này?')) {
+            $.post('@Url.Action("ApprovePromotion")', { id: id }, function (res) {
+                if (res.success) { alert(res.message); location.href='@Url.Action("Promotions")'; }
+                else alert(res.message);
+            });
+        }
+    }
+    function rejectPromo(id) {
+        var r = prompt("Lý do từ chối:");
+        if (r) {
+            $.post('@Url.Action("RejectPromotion")', { id: id, reason: r }, function (res) {
+                if (res.success) { alert(res.message); location.href='@Url.Action("Promotions")'; }
+                else alert(res.message);
+            });
+        }
+    }
+</script>
+<style>
+    /* CSS Badge giữ nguyên như các trang khác */
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+</style>

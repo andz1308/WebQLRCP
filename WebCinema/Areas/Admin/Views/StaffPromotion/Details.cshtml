@@ -1,0 +1,331 @@
+﻿@{
+    ViewBag.Title = "Tạo Phiếu Đề Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    var slowItems = ViewBag.SlowItems as List<WebCinema.Services.SlowItemViewModel>;
+    var allFoods = ViewBag.AllFoods as List<WebCinema.Models.Do_An>;
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-bullhorn"></i> Tạo Đề Xuất Khuyến Mãi</h1>
+</div>
+<br />
+@if (slowItems != null && slowItems.Any())
+{
+    <div class="content-card" style="background: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 2rem;">
+        <div class="card-header" style="background: transparent; border-bottom: none; padding-bottom: 0;">
+            <h2 class="card-title" style="color: #856404;">
+                <i class="fas fa-exclamation-triangle"></i> Gợi ý: Các Món Bán Chậm Cần Giải Cứu
+            </h2>
+        </div>
+        <div style="padding: 1.5rem;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên Món</th>
+                        <th style="text-align: center;">Tồn Kho</th>
+                        <th style="text-align: center;">Bán (30 ngày)</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in slowItems)
+                    {
+                        <tr>
+                            <td><strong>@item.DoAn.ten_san_pham</strong></td>
+                            <td style="text-align: center;">
+                                <span class="badge badge-danger" style="font-size: 0.9rem; padding: 8px 12px;">@item.SoLuongTon</span>
+                            </td>
+                            <td style="text-align: center;">@item.DaBan30Ngay</td>
+                            <td>
+                                <button class="btn btn-sm btn-success" onclick="addToList(@item.DoAn.Do_An_id, '@Html.Raw(item.DoAn.ten_san_pham.Replace("'", "\\'"))', 20)">
+                                    <i class="fas fa-plus"></i> Thêm (Giảm 20%)
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-cogs"></i> Thêm Sản Phẩm</h2>
+    </div>
+
+    <div style="padding: 1.5rem; background: #f9f9fa; border-radius: 8px; margin-bottom: 2rem;">
+        <div class="row" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <div class="form-group">
+                <label class="form-label">Chọn Món Ăn:</label>
+                <select id="ddlFood" class="form-control">
+                    @foreach (var item in allFoods)
+                    {
+                        <option value="@item.Do_An_id" data-name="@Html.Raw(item.ten_san_pham.Replace("'", "\\'"))">@item.ten_san_pham</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Giảm Giá (%):</label>
+                <input type="number" id="numPercent" class="form-control" value="10" min="1" max="100" />
+            </div>
+            <div></div>
+            <button class="btn btn-success" onclick="addManual()">
+                <i class="fas fa-plus"></i> Thêm vào phiếu
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Sản Phẩm Trong Phiếu</h2>
+    </div>
+
+    <div style="padding: 1.5rem;">
+        <table class="data-table" id="tblProposal">
+            <thead>
+                <tr>
+                    <th>Tên Món Ăn</th>
+                    <th style="text-align: center;">Mức Giảm Giá (%)</th>
+                    <th style="width: 100px; text-align: center;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-pen"></i> Lý Do Đề Xuất</h2>
+    </div>
+
+    <div style="padding: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label">Nhập lý do chung cho đợt đề xuất này:</label>
+            <textarea id="txtReason" class="form-control" rows="4" placeholder="Ví dụ: Các sản phẩm này có tồn kho cao nhưng bán chậm, cần giảm giá để giải cứu kho..."></textarea>
+        </div>
+
+        <div style="text-align: right; margin-top: 2rem;">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Hủy
+            </a>
+            <button class="btn btn-primary" onclick="submitProposal()">
+                <i class="fas fa-paper-plane"></i> Gửi Đề Xuất
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var list = [];
+
+    function addToList(id, name, pct) {
+        // Kiểm tra xem món đã tồn tại
+        if (list.find(x => x.Id == id)) {
+            alert("Món này đã có trong phiếu!");
+            return;
+        }
+        list.push({ Id: id, Name: name, Percent: pct });
+        render();
+    }
+
+    function addManual() {
+        var foodId = $('#ddlFood').val();
+        var foodName = $('#ddlFood option:selected').data('name');
+        var percent = $('#numPercent').val();
+        addToList(foodId, foodName, percent);
+    }
+
+    function removeItem(i) {
+        list.splice(i, 1);
+        render();
+    }
+
+    function render() {
+        var html = '';
+        if (list.length === 0) {
+            html = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #999;">Chưa có sản phẩm nào. Vui lòng thêm sản phẩm cần giảm giá.</td></tr>';
+        } else {
+            list.forEach((item, i) => {
+                html += `<tr>
+                            <td><strong>${item.Name}</strong></td>
+                            <td style="text-align: center;">
+                                <span style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">-${item.Percent}%</span>
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                         </tr>`;
+            });
+        }
+        $('#tblProposal tbody').html(html);
+    }
+
+    function submitProposal() {
+        if (list.length === 0) {
+            alert("Vui lòng thêm ít nhất 1 sản phẩm vào phiếu.");
+            return;
+        }
+        if (!$('#txtReason').val().trim()) {
+            alert("Vui lòng nhập lý do đề xuất.");
+            return;
+        }
+        if (!confirm("Xác nhận gửi đề xuất khuyến mãi này?")) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Create")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                items: list,
+                reason: $('#txtReason').val()
+            }),
+            success: function (res) {
+                if (res.success) {
+                    alert("Gửi đề xuất thành công!");
+                    window.location.href = '@Url.Action("Index")';
+                } else {
+                    alert("Lỗi: " + (res.message || "Không rõ nguyên nhân"));
+                }
+            },
+            error: function (xhr) {
+                alert("Lỗi gửi yêu cầu!");
+                console.error(xhr);
+            }
+        });
+    }
+
+    // Init
+    render();
+</script>
+
+<style>
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #666;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table thead {
+            background: #f5f5f5;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+    .row {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    @@media (max-width: 768px) {
+        .row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>

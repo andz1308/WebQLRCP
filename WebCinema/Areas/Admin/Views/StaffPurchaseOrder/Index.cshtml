@@ -1,0 +1,201 @@
+﻿@model IEnumerable<WebCinema.Models.Phieu_Nhap>
+
+@{
+    ViewBag.Title = "Lịch Sử Nhập Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-history"></i> Lịch Sử Nhập Hàng</h1>
+    <br />
+    <div class="header-actions">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tạo Phiếu Mới
+        </a>
+    </div>
+    <br>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Phiếu Nhập Hàng</h2>
+        <span class="badge badge-info">Tổng: @Model.Count() phiếu</span>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã Phiếu</th>
+                    <th>Ngày Tạo</th>
+                    <th>Ghi Chú</th>
+                    <th>Trạng Thái</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>PN-@item.phieu_nhap_id</strong></td>
+                        <td>@item.ngay_nhap.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(string.IsNullOrEmpty(item.ghi_chu) ? "-" : item.ghi_chu)</td>
+                        <td>
+                            @if (item.trang_thai == "Chờ duyệt")
+                            {
+                                <span class="badge badge-warning">Chờ duyệt</span>
+                            }
+                            else if (item.trang_thai == "Đã duyệt")
+                            {
+                                <span class="badge badge-info">Đã duyệt (Chờ nhập kho)</span>
+                            }
+                            else if (item.trang_thai == "Đã nhập")
+                            {
+                                <span class="badge badge-success">Hoàn thành</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">@item.trang_thai</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.trang_thai == "Đã duyệt")
+                            {
+                                <button class="btn btn-success btn-sm" onclick="confirmReceipt(@item.phieu_nhap_id)">
+                                    <i class="fas fa-box-open"></i> Nhập Kho
+                                </button>
+                            }
+                            else if (item.trang_thai == "Chờ duyệt")
+                            {
+                                <small class="text-muted">Đang chờ quản lý...</small>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; color: #999;">
+            <i class="fas fa-inbox" style="font-size: 4rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+            <p style="font-size: 1.2rem;">Không có phiếu nhập hàng nào.</p>
+        </div>
+    }
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function confirmReceipt(id) {
+        if (confirm("Hàng đã về kho thực tế? Xác nhận nhập kho ngay?")) {
+            $.post('@Url.Action("ConfirmReceipt")', { id: id }, function(res) {
+                if (res.success) {
+                    alert("Đã cập nhật kho thành công!");
+                    location.reload();
+                } else {
+                    alert("Lỗi: " + res.message);
+                }
+            });
+        }
+    }
+</script>
+
+<style>
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+
+    .badge {
+        font-weight: 600;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-info {
+        background: #3498db;
+        color: white;
+    }
+
+        .btn-info:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+        .data-table thead {
+            background: #f5f5f5;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+</style>

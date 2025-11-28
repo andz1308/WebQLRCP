@@ -12,8 +12,8 @@ namespace WebCinema.Models
 
         private static string GetConnectionString()
         {
-            string conn = ConfigurationManager.ConnectionStrings["CSDLConnectionString3"]?.ConnectionString
-                ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString3"]?.ConnectionString;
+            string conn = ConfigurationManager.ConnectionStrings["CSDLConnectionString5"]?.ConnectionString
+                ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString5"]?.ConnectionString;
 
             if (string.IsNullOrWhiteSpace(conn))
             {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using WebCinema.Models;
 using WebCinema.Infrastructure;
 using WebCinema.Services;
+using System.Configuration;
 
 namespace WebCinema.Areas.Admin.Controllers
 {
@@ -172,7 +173,19 @@ namespace WebCinema.Areas.Admin.Controllers
                 .Where(v => v.Dat_Ve_id != null && v.Dat_Ve != null && v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán")
                 .Select(v => v.ghe_id)
                 .ToList();
-            var foods = db.Do_Ans.ToList();
+
+            int currentRapId = showtime.Phong_Chieu.rap_id;
+
+            var foods = (from d in db.Do_Ans
+                         join k in db.Kho_Do_Ans on d.Do_An_id equals k.Do_An_id
+                         where k.rap_id == currentRapId
+                            && d.trang_thai == "Đang kinh doanh" // Kiểm tra kỹ string này trong DB
+                            && k.so_luong_ton > 0
+                         select new WebCinema.Models.FoodBookingViewModel
+                         {
+                             Food = d,
+                             MaxStock = k.so_luong_ton ?? 0
+                         }).ToList();
 
             ViewBag.ShowtimeId = id;
             ViewBag.MovieName = showtime.Phim.ten_phim;
@@ -199,14 +212,110 @@ namespace WebCinema.Areas.Admin.Controllers
 
             return View(room);
         }
+        // [POST] Lấy danh sách khuyến mãi phù hợp với giỏ hàng hiện tại
+        // [POST] Lấy danh sách khuyến mãi (ĐÃ LỌC THEO ĐIỀU KIỆN)
+        [HttpPost]
+        public ActionResult GetApplicablePromos(string foodItemsJson)
+        {
+            try
+            {
+                // 1. Lấy danh sách ID món ăn khách đang chọn
+                var cartFoodIds = new List<int>();
+                if (!string.IsNullOrEmpty(foodItemsJson))
+                {
+                    try
+                    {
+                        var jsonArray = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson);
+                        foreach (var item in jsonArray)
+                        {
+                            // Hỗ trợ cả key 'id' (từ modal) và 'FoodId' (từ checkout cũ)
+                            string idStr = item["id"]?.ToString() ?? item["FoodId"]?.ToString();
+                            if (int.TryParse(idStr, out int fid))
+                            {
+                                cartFoodIds.Add(fid);
+                            }
+                        }
+                    }
+                    catch (Exception ex) { LoggingHelper.LogError(ex); }
+                }
 
+                var now = DateTime.Now;
+
+                // 2. Lấy tất cả mã đang hoạt động từ DB
+                var allPromos = db.Khuyen_Mais
+                    .Where(k => (k.trang_thai == "Hoạt động" || k.trang_thai == "Đang hoạt động")
+                             && (k.so_luong_con_lai ?? 0) > 0
+                             && now >= k.ngay_bat_dau && now <= k.ngay_ket_thuc)
+                    .OrderByDescending(k => k.ma_giam_gia_id)
+                    .ToList();
+
+                var result = new List<dynamic>();
+
+                foreach (var p in allPromos)
+                {
+                    bool isApplicable = true;
+                    string reason = "";
+                    List<int> allowedIds = new List<int>();
+
+                    // 3. KIỂM TRA PHẠM VI ÁP DỤNG (QUAN TRỌNG)
+                    if (p.pham_vi_ap_dung == 1) // Nếu là mã theo món
+                    {
+                        // Lấy danh sách món được phép áp dụng
+                        allowedIds = db.Khuyen_Mai_Do_Ans
+                            .Where(k => k.ma_giam_gia_id == p.ma_giam_gia_id)
+                            .Select(k => k.do_an_id)
+                            .ToList();
+
+                        // Kiểm tra giao thoa: Có món nào trong giỏ nằm trong danh sách cho phép không?
+                        bool hasMatch = cartFoodIds.Intersect(allowedIds).Any();
+
+                        if (!hasMatch)
+                        {
+                            // 🔴 SỬA ĐỔI: Nếu không có món phù hợp -> BỎ QUA LUÔN (Không hiện ra)
+                            continue;
+                        }
+                    }
+                    // Nếu p.pham_vi_ap_dung == 0 (Toàn đơn) -> Luôn hiện ra
+
+                    // 4. Xác định loại giảm (Display)
+                    string loaiGiam = "%";
+                    if (!string.IsNullOrEmpty(p.loai_giam_gia) && !p.loai_giam_gia.Contains("%") && !p.loai_giam_gia.Contains("Phần"))
+                    {
+                        loaiGiam = "VND";
+                    }
+
+                    // 5. Thêm vào danh sách kết quả
+                    result.Add(new
+                    {
+                        maKhuyen = p.ma_khuyen_mai,
+                        moTa = p.mo_ta ?? "",
+                        giaTriGiam = p.gia_tri_giam,
+                        loaiGiam = loaiGiam,
+                        soLuongConLai = p.so_luong_con_lai,
+                        isApplicable = isApplicable,
+                        reason = reason,
+                        isProductScope = (p.pham_vi_ap_dung == 1),
+                        AllowedFoods = allowedIds
+                    });
+                }
+
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
         // POST: Admin/StaffOfflineBooking/CreateOfflineBooking
         [HttpPost]
-        [ValidateInput(false)] // allow XML/HTML in foodOrders
+        [ValidateInput(false)]
         public ActionResult CreateOfflineBooking(int showtimeId, string selectedSeats, string customerPhone, string customerName, string foodOrders, string paymentMethod = "cash", string promoCode = "")
         {
             try
             {
+                // ========================================================================
+                // PHẦN 1: VALIDATE & TÍNH TOÁN (GIỮ NGUYÊN CODE CŨ CỦA BẠN)
+                // ========================================================================
                 if (string.IsNullOrEmpty(selectedSeats))
                     return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 ghế" });
 
@@ -216,7 +325,7 @@ namespace WebCinema.Areas.Admin.Controllers
 
                 var seatIds = selectedSeats.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
 
-                // Kiểm tra ghế còn trống => only consider seats as taken when booking is paid
+                // Kiểm tra ghế trống
                 var bookedSeats = db.Ves
                     .Where(v => v.suat_chieu_id == showtimeId && v.Dat_Ve_id != null && v.Dat_Ve != null && v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán")
                     .Select(v => v.ghe_id)
@@ -226,33 +335,23 @@ namespace WebCinema.Areas.Admin.Controllers
                 if (conflictSeats.Any())
                     return Json(new { success = false, message = $"Ghế {string.Join(", ", conflictSeats)} đã được đặt" });
 
-                // Tính tổng tiền vé (use existing ticket price if available)
+                // Tính tiền vé
                 decimal ticketTotal = 0m;
                 foreach (var seatId in seatIds)
                 {
                     var existingTicket = db.Ves.FirstOrDefault(v => v.suat_chieu_id == showtimeId && v.ghe_id == seatId);
-                    if (existingTicket != null)
-                    {
-                        ticketTotal += existingTicket.gia_ve;
-                    }
-                    else
-                    {
-                        ticketTotal += showtime.gia_ve;
-                    }
+                    ticketTotal += existingTicket != null ? existingTicket.gia_ve : showtime.gia_ve;
                 }
 
-                //decimal foodTotal = 0m;
+                // Tính tiền đồ ăn & Parse XML
                 decimal foodTotal = 0m;
-                List<(int foodId, int quantity)> parsedFoodItems = new List<(int, int)>();
+                var parsedFoodItems = new List<WebCinema.Services.StockModel>(); // Dùng model để lát nữa trừ kho
 
                 if (!string.IsNullOrEmpty(foodOrders))
                 {
                     try
                     {
-                        var foodItems = System.Xml.Linq.XDocument.Parse(foodOrders)
-                            .Descendants("item")
-                            .ToList();
-
+                        var foodItems = System.Xml.Linq.XDocument.Parse(foodOrders).Descendants("item").ToList();
                         foreach (var foodItem in foodItems)
                         {
                             int foodId = int.Parse(foodItem.Element("id")?.Value ?? "0");
@@ -260,11 +359,12 @@ namespace WebCinema.Areas.Admin.Controllers
 
                             if (foodId > 0 && quantity > 0)
                             {
-                                parsedFoodItems.Add((foodId, quantity));
                                 var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
                                 if (food != null)
                                 {
                                     foodTotal += (food.gia ?? 0m) * quantity;
+                                    // Lưu vào list để lát dùng
+                                    parsedFoodItems.Add(new WebCinema.Services.StockModel { DoAnId = foodId, SoLuong = quantity });
                                 }
                             }
                         }
@@ -272,7 +372,7 @@ namespace WebCinema.Areas.Admin.Controllers
                     catch { }
                 }
 
-                // --- Ensure customer exists or create new one to satisfy FK ---
+                // Xử lý Khách hàng
                 int khachHangId;
                 var existingCustomer = !string.IsNullOrWhiteSpace(customerPhone) ? db.Khach_Hangs.FirstOrDefault(k => k.so_dien_thoai == customerPhone) : null;
                 if (existingCustomer != null)
@@ -292,58 +392,126 @@ namespace WebCinema.Areas.Admin.Controllers
                     khachHangId = newCustomer.khach_hang_id;
                 }
 
-                // ✅ KIỂM TRA VÀ ÁP DỤNG MÃ KHUYẾN MÃI KM004
+                // Xử lý Mã khuyến mãi KM004
                 decimal discountAmount = 0m;
                 string appliedPromoCode = "";
+                int? appliedPromoId = null;
 
-                if (!string.IsNullOrEmpty(promoCode) && promoCode == "KM004")
+                if (!string.IsNullOrEmpty(promoCode))
                 {
-                    var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == "KM004");
-                    if (promo != null && promo.trang_thai == "Hoạt động" && promo.so_luong_con_lai > 0)
+                    // 1. Tìm mã trong CSDL (Dùng promoCode gửi lên từ Client)
+                    var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == promoCode);
+                    var now = DateTime.Now;
+
+                    // 2. Kiểm tra điều kiện: Tồn tại, Hoạt động, Số lượng > 0, Ngày hợp lệ
+                    if (promo != null
+                        && (promo.trang_thai == "Hoạt động" || promo.trang_thai == "Đang hoạt động") // Check đúng string trong DB của bạn
+                        && (promo.so_luong_con_lai ?? 0) > 0
+                        && now >= promo.ngay_bat_dau
+                        && now <= promo.ngay_ket_thuc)
                     {
                         decimal baseTotal = ticketTotal + foodTotal;
-                        // Robust detection: support "%" or words like "Phần" (phần trăm)
-                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) && (promo.loai_giam_gia.Contains("%") || promo.loai_giam_gia.IndexOf("Phần", StringComparison.OrdinalIgnoreCase) >= 0);
-                        if (isPercent)
+                        decimal val = promo.gia_tri_giam;
+
+                        // Check loại giảm (% hay tiền mặt)
+                        bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
+                                         (promo.loai_giam_gia.Contains("%") || promo.loai_giam_gia.Contains("Phần"));
+
+                        // --- TRƯỜNG HỢP A: GIẢM TOÀN ĐƠN (Scope = 0) ---
+                        if (promo.pham_vi_ap_dung == 0)
                         {
-                            // Clamp percentage to 0-100 to avoid absurd discounts
-                            var pct = promo.gia_tri_giam;
-                            if (pct < 0) pct = 0;
-                            if (pct > 100) pct = 100;
-                            discountAmount = (baseTotal * pct) / 100m;
+                            if (isPercent)
+                            {
+                                // Giới hạn % từ 0-100
+                                if (val > 100) val = 100; if (val < 0) val = 0;
+                                discountAmount = (baseTotal * val) / 100m;
+                            }
+                            else
+                            {
+                                discountAmount = val;
+                            }
                         }
-                        else
+                        // --- TRƯỜNG HỢP B: GIẢM THEO MÓN (Scope = 1) ---
+                        else if (promo.pham_vi_ap_dung == 1)
                         {
-                            discountAmount = promo.gia_tri_giam;
+                            // Lấy danh sách món được phép giảm từ bảng trung gian
+                            var allowedFoodIds = db.Khuyen_Mai_Do_Ans
+                                .Where(k => k.ma_giam_gia_id == promo.ma_giam_gia_id)
+                                .Select(k => k.do_an_id)
+                                .ToList();
+
+                            // Duyệt qua các món nhân viên đã chọn (parsedFoodItems đã được tạo ở đoạn Parse XML phía trên)
+                            foreach (var item in parsedFoodItems)
+                            {
+                                // Nếu món này nằm trong danh sách được giảm
+                                if (allowedFoodIds.Contains(item.DoAnId))
+                                {
+                                    // Lấy giá món ăn để tính (cần query lại để chắc chắn giá đúng)
+                                    var foodInfo = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == item.DoAnId);
+                                    if (foodInfo != null)
+                                    {
+                                        decimal itemPrice = foodInfo.gia ?? 0;
+                                        decimal itemSubTotal = itemPrice * item.SoLuong;
+
+                                        if (isPercent)
+                                        {
+                                            discountAmount += (itemSubTotal * val) / 100m;
+                                        }
+                                        else
+                                        {
+                                            // Giảm tiền mặt trên từng đơn vị sản phẩm (VD: Giảm 10k cho mỗi bắp)
+                                            discountAmount += (val * item.SoLuong);
+                                        }
+                                    }
+                                }
+                            }
                         }
 
-                        // Ensure discount doesn't exceed base total
-                        if (discountAmount < 0) discountAmount = 0;
+                        // 3. Chốt giá trị giảm
+                        // Đảm bảo không giảm quá tổng tiền (không âm tiền)
                         if (discountAmount > baseTotal) discountAmount = baseTotal;
 
-                        appliedPromoCode = "KM004";
-                        LoggingHelper.LogInfo($"✅ Staff Applied KM004: Discount {discountAmount}");
+                        // Làm tròn
+                        discountAmount = Math.Floor(discountAmount);
+
+                        // Nếu có giảm giá thực sự hoặc mã hợp lệ (dù giảm 0đ do không mua đúng món)
+                        // Thì vẫn ghi nhận mã (tùy nghiệp vụ, ở đây ta chỉ ghi nhận nếu discount > 0 hoặc scope=0)
+                        if (discountAmount >= 0)
+                        {
+                            appliedPromoCode = promo.ma_khuyen_mai;
+                            appliedPromoId = promo.ma_giam_gia_id;
+
+                            LoggingHelper.LogInfo($"✅ Staff Applied Promo {appliedPromoCode}: Discount {discountAmount}");
+                        }
                     }
                 }
 
-                // Tạo đơn đặt vé (Thanh toán ngay)
                 decimal totalBeforeDiscount = ticketTotal + foodTotal;
                 decimal totalAfterDiscount = totalBeforeDiscount - discountAmount;
                 if (totalAfterDiscount < 0) totalAfterDiscount = 0;
 
+                // ========================================================================
+                // PHẦN 2: TẠO ĐƠN HÀNG VÀ XỬ LÝ THANH TOÁN
+                // ========================================================================
+
+                // 1. Tạo Booking (Trạng thái tùy thuộc phương thức)
                 var booking = new Dat_Ve
                 {
                     ngay_tao = DateTime.Now,
-                    trang_thai_Dat_Ve = "Đã Thanh toán",
-                    tong_tien = totalAfterDiscount, // Sau khi trừ discount
+                    tong_tien = totalAfterDiscount,
                     khach_hang_id = khachHangId,
-                    phuong_thuc_thanh_toan = paymentMethod // Lưu phương thức thanh toán
+                    phuong_thuc_thanh_toan = paymentMethod,
+                    nhan_vien_id = (int?)Session["EmployeeId"],
+
+                    // QUAN TRỌNG: Nếu là VNPay thì chưa thanh toán, còn lại là thanh toán luôn
+                    trang_thai_Dat_Ve = (paymentMethod == "vnpay") ? "Chưa thanh toán" : "Đã Thanh toán",
+                    ma_giam_gia_id = appliedPromoId
                 };
 
                 db.Dat_Ves.InsertOnSubmit(booking);
                 db.SubmitChanges();
 
-                // Tạo / cập nhật vé
+                // 2. Lưu Vé
                 foreach (var seatId in seatIds)
                 {
                     var existingTicket = db.Ves.FirstOrDefault(v => v.suat_chieu_id == showtimeId && v.ghe_id == seatId);
@@ -353,7 +521,6 @@ namespace WebCinema.Areas.Admin.Controllers
                     {
                         existingTicket.Dat_Ve_id = booking.Dat_Ve_id;
                         existingTicket.trang_thai_ve = "Chưa sử dụng";
-                        try { existingTicket.GetType().GetProperty("trang_thai_thanh_toan")?.SetValue(existingTicket, "Đã thanh toán"); } catch { }
                         existingTicket.ma_qr_code = qrCode;
                     }
                     else
@@ -367,99 +534,236 @@ namespace WebCinema.Areas.Admin.Controllers
                             trang_thai_ve = "Chưa sử dụng",
                             ma_qr_code = qrCode
                         };
-
                         db.Ves.InsertOnSubmit(ticket);
                     }
                 }
 
-                // Xử lý đồ ăn nếu có
-                if (!string.IsNullOrEmpty(foodOrders))
+                // 3. Lưu Chi Tiết Đồ Ăn
+                foreach (var item in parsedFoodItems)
                 {
-                    var foodItems = System.Xml.Linq.XDocument.Parse(foodOrders)
-                        .Descendants("item")
-                        .ToList();
-
-                    foreach (var foodItem in foodItems)
+                    var donHangFood = new DonHang_DoAn
                     {
-                        int foodId = int.Parse(foodItem.Element("id")?.Value ?? "0");
-                        int quantity = int.Parse(foodItem.Element("quantity")?.Value ?? "0");
-
-                        if (foodId > 0 && quantity > 0)
-                        {
-                            var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                            if (food != null)
-                            {
-                                var donHangFood = new DonHang_DoAn
-                                {
-                                    Dat_Ve_id = booking.Dat_Ve_id,
-                                    Do_An_id = foodId,
-                                    so_luong = quantity
-                                };
-
-                                db.DonHang_DoAns.InsertOnSubmit(donHangFood);
-                                // NOTE: foodTotal was already calculated earlier when parsing the foodOrders.
-                                // Do NOT add again here to avoid double-counting.
-                                // foodTotal += (food.gia ?? 0m) * quantity;
-                            }
-                        }
-                    }
+                        Dat_Ve_id = booking.Dat_Ve_id,
+                        Do_An_id = item.DoAnId,
+                        so_luong = item.SoLuong
+                    };
+                    db.DonHang_DoAns.InsertOnSubmit(donHangFood);
                 }
 
                 db.SubmitChanges();
 
-                // ✅ Giảm số lượng mã khuyến mãi nếu đã áp dụng
-                if (!string.IsNullOrEmpty(appliedPromoCode))
+                // ========================================================================
+                // PHẦN 3: PHÂN NHÁNH XỬ LÝ (VNPay vs Tiền mặt)
+                // ========================================================================
+
+                // --- NHÁNH A: THANH TOÁN VNPAY (Chưa xong, cần redirect) ---
+                if (paymentMethod == "vnpay")
                 {
-                    var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == appliedPromoCode);
-                    if (promo != null && promo.so_luong_con_lai > 0)
+                    // Cấu hình VNPay
+                    string vnp_Url = ConfigurationManager.AppSettings["vnp_Url"];
+                    string vnp_TmnCode = ConfigurationManager.AppSettings["vnp_TmnCode"];
+                    string vnp_HashSecret = ConfigurationManager.AppSettings["vnp_HashSecret"].Trim();
+
+                    // URL trả về cho STAFF (Khác với BookingController của khách)
+                    string vnp_Returnurl = "https://localhost:44300/Admin/StaffOfflineBooking/StaffPaymentCallback";
+
+                    VnPayLibrary vnpay = new VnPayLibrary();
+                    vnpay.AddRequestData("vnp_Version", "2.1.0");
+                    vnpay.AddRequestData("vnp_Command", "pay");
+                    vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+                    vnpay.AddRequestData("vnp_Amount", ((long)(booking.tong_tien * 100)).ToString());
+                    vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                    vnpay.AddRequestData("vnp_CurrCode", "VND");
+                    vnpay.AddRequestData("vnp_IpAddr", "127.0.0.1");
+                    vnpay.AddRequestData("vnp_Locale", "vn");
+                    vnpay.AddRequestData("vnp_OrderInfo", "StaffBook" + booking.Dat_Ve_id);
+                    vnpay.AddRequestData("vnp_OrderType", "other");
+                    vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+                    vnpay.AddRequestData("vnp_TxnRef", booking.Dat_Ve_id.ToString() + "_" + DateTime.Now.Ticks);
+
+                    string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+
+                    // Trả về URL để JS mở tab mới hoặc redirect
+                    return Json(new { success = true, isRedirect = true, redirectUrl = paymentUrl });
+                }
+
+                // --- NHÁNH B: THANH TOÁN NGAY (Tiền mặt/QR tĩnh) - HOÀN TẤT LUÔN ---
+                else
+                {
+                    // 1. TRỪ KHO ĐỒ ĂN
+                    if (parsedFoodItems.Any())
                     {
-                        promo.so_luong_con_lai--;
-                        db.SubmitChanges();
-                        LoggingHelper.LogInfo($"✅ Decrement KM004: Remaining {promo.so_luong_con_lai}");
+                        var foodService = new WebCinema.Services.FoodService(db);
+                        int currentRapId = showtime.Phong_Chieu.rap_id;
+                        foodService.UpdateStock(currentRapId, parsedFoodItems, false); // false = trừ kho
                     }
-                }
 
-                // ✅ CẬP NHẬT ĐIỂM TÍCH LŨY: 1 điểm cho mỗi vé đã thanh toán trong đơn này
-                try
-                {
-                    var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == khachHangId);
-                    if (customer != null)
+                    // 2. GIẢM MÃ KHUYẾN MÃI
+                    if (!string.IsNullOrEmpty(appliedPromoCode))
                     {
-                        int pointsEarned = seatIds.Count; // 1 point per ticket
-                        int currentPoints = customer.diem_tich_luy ?? 0;
-                        customer.diem_tich_luy = currentPoints + pointsEarned;
-                        db.SubmitChanges();
-                        LoggingHelper.LogInfo($"✅ Updated loyalty points for Customer {khachHangId}: +{pointsEarned} => {customer.diem_tich_luy}");
+                        var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_khuyen_mai == appliedPromoCode);
+                        if (promo != null && promo.so_luong_con_lai > 0)
+                        {
+                            promo.so_luong_con_lai--;
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    // Log but do not fail the booking
-                    LoggingHelper.LogError(ex);
-                }
 
-                // Build invoice URL so staff can view/print in Admin area (StaffInvoice controller)
-                // Include promo code and discount in query string so invoice can display them
-                var invoiceUrl = Url.Action("ViewInvoice", "StaffInvoice", new { area = "Admin", bookingId = booking.Dat_Ve_id, promo = appliedPromoCode, discount = discountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+                    // 3. CỘNG ĐIỂM TÍCH LŨY
+                    try
+                    {
+                        var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == khachHangId);
+                        if (customer != null)
+                        {
+                            int pointsEarned = seatIds.Count;
+                            customer.diem_tich_luy = (customer.diem_tich_luy ?? 0) + pointsEarned;
+                        }
+                    }
+                    catch { }
 
-                return Json(new
-                {
-                    success = true,
-                    message = "Đặt vé thành công",
-                    bookingId = booking.Dat_Ve_id,
-                    totalSeats = seatIds.Count,
-                    ticketPrice = ticketTotal,
-                    foodPrice = foodTotal,
-                    discountAmount = discountAmount,
-                    appliedPromoCode = appliedPromoCode,
-                    totalPrice = booking.tong_tien,
-                    redirectUrl = invoiceUrl
-                });
+                    db.SubmitChanges();
+
+                    // Redirect to invoice
+                    var invoiceUrl = Url.Action("ViewInvoice", "StaffInvoice", new { area = "Admin", bookingId = booking.Dat_Ve_id, promo = appliedPromoCode, discount = discountAmount.ToString(System.Globalization.CultureInfo.InvariantCulture) });
+
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Đặt vé thành công",
+                        bookingId = booking.Dat_Ve_id,
+                        redirectUrl = invoiceUrl
+                    });
+                }
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // 2. HÀM CALLBACK XỬ LÝ KẾT QUẢ TỪ VNPAY (Dành riêng cho Staff)
+        [HttpGet]
+        public ActionResult StaffPaymentCallback()
+        {
+            try
+            {
+                if (Request.QueryString.Count > 0)
+                {
+                    string vnp_HashSecret = ConfigurationManager.AppSettings["vnp_HashSecret"].Trim();
+                    var vnpayData = Request.QueryString;
+                    VnPayLibrary vnpay = new VnPayLibrary();
+
+                    foreach (string s in vnpayData)
+                    {
+                        if (!string.IsNullOrEmpty(s) && s.StartsWith("vnp_"))
+                        {
+                            vnpay.AddResponseData(s, vnpayData[s]);
+                        }
+                    }
+
+                    string orderIdRaw = vnpay.GetResponseData("vnp_TxnRef");
+                    long bookingId = 0;
+                    if (!string.IsNullOrEmpty(orderIdRaw))
+                    {
+                        var parts = orderIdRaw.Split('_');
+                        long.TryParse(parts[0], out bookingId);
+                    }
+
+                    string vnp_ResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
+                    string vnp_SecureHash = Request.QueryString["vnp_SecureHash"];
+
+                    if (vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret))
+                    {
+                        if (vnp_ResponseCode == "00")
+                        {
+                            // --- THANH TOÁN THÀNH CÔNG ---
+                            var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                            if (booking != null && booking.trang_thai_Dat_Ve != "Đã Thanh toán")
+                            {
+                                booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+
+                                // Lấy thông tin rạp để trừ kho
+                                var firstTicket = booking.Ves.FirstOrDefault();
+                                if (firstTicket != null)
+                                {
+                                    int rapId = firstTicket.Suat_Chieu.Phong_Chieu.rap_id;
+                                    // GỌI HÀM TRỪ KHO
+                                    DeductStock((int)bookingId, rapId);
+                                }
+
+                                // Cộng điểm tích lũy (nếu cần)
+                                db.SubmitChanges();
+                            }
+
+                            // Chuyển hướng về trang In hóa đơn
+                            return RedirectToAction("ViewInvoice", "StaffInvoice", new { area = "Admin", bookingId = bookingId });
+                        }
+                        else
+                        {
+                            // Thất bại -> Hủy đơn
+                            // (Viết logic hủy giống BookingController)
+                            return Content("Thanh toán thất bại. Mã lỗi: " + vnp_ResponseCode);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return Content("Lỗi: " + ex.Message);
+            }
+            return RedirectToAction("Index");
+        }
+
+        // --- CÁC HÀM PHỤ (Helper Methods) ĐỂ TÁI SỬ DỤNG CODE ---
+
+        private void SaveBookingDetails(int bookingId, int showtimeId, List<int> seatIds, string foodOrders)
+        {
+            // Lưu vé
+            foreach (var seatId in seatIds)
+            {
+                var existingTicket = db.Ves.FirstOrDefault(v => v.suat_chieu_id == showtimeId && v.ghe_id == seatId);
+                var qrCode = Guid.NewGuid().ToString();
+                if (existingTicket != null)
+                {
+                    existingTicket.Dat_Ve_id = bookingId;
+                    existingTicket.trang_thai_ve = "Chưa sử dụng";
+                    existingTicket.ma_qr_code = qrCode;
+                }
+                else
+                {
+                    // Logic tạo vé mới nếu chưa có
+                }
+            }
+
+            // Lưu đồ ăn (Parse XML)
+            if (!string.IsNullOrEmpty(foodOrders))
+            {
+                try
+                {
+                    var foodItems = System.Xml.Linq.XDocument.Parse(foodOrders).Descendants("item").ToList();
+                    foreach (var item in foodItems)
+                    {
+                        int fid = int.Parse(item.Element("id")?.Value ?? "0");
+                        int qty = int.Parse(item.Element("quantity")?.Value ?? "0");
+                        if (fid > 0 && qty > 0)
+                        {
+                            db.DonHang_DoAns.InsertOnSubmit(new DonHang_DoAn { Dat_Ve_id = bookingId, Do_An_id = fid, so_luong = qty });
+                        }
+                    }
+                }
+                catch { }
+            }
+            db.SubmitChanges();
+        }
+
+        private void DeductStock(int bookingId, int rapId)
+        {
+            // Gọi Service UpdateStock
+            var foodOrders = db.DonHang_DoAns.Where(d => d.Dat_Ve_id == bookingId).ToList();
+            if (foodOrders.Any())
+            {
+                var stockItems = foodOrders.Select(x => new WebCinema.Services.StockModel { DoAnId = x.Do_An_id, SoLuong = x.so_luong }).ToList();
+                var service = new WebCinema.Services.FoodService(db);
+                service.UpdateStock(rapId, stockItems, false); // False = Trừ
             }
         }
 

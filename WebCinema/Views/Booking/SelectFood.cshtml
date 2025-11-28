@@ -4,7 +4,7 @@
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
 
-    var foods = ViewBag.Foods as List<WebCinema.Models.Do_An>;
+    var foods = ViewBag.Foods as List<WebCinema.Models.FoodBookingViewModel>;
     var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
 }
 
@@ -335,8 +335,10 @@
             </h3>
 
             <div class="food-grid">
-                @foreach (var food in foods)
+                @foreach (var item in foods)
                 {
+                    var food = item.Food;
+                    var maxQty = item.MaxStock;
                     <div class="food-card">
                         <div class="food-image">
                             <span>🍔</span>
@@ -344,13 +346,14 @@
                         <div class="food-info">
                             <div class="food-name">@food.ten_san_pham</div>
                             <div class="food-description">@(food.mo_ta ?? "Combo đồ ăn ngon tuyệt vời")</div>
+                            <small class="text-muted">Còn lại: @maxQty</small>
                             <div class="food-price">@((food.gia ?? 0).ToString("N0")) ₫</div>
                             <div class="quantity-control">
                                 <button class="qty-btn" onclick="decreaseQty(@food.Do_An_id)">
                                     <i class="fas fa-minus">-</i>
                                 </button>
                                 <span class="qty-display" id="qty-@food.Do_An_id">0</span>
-                                <button class="qty-btn" onclick="increaseQty(@food.Do_An_id, @food.gia)">
+                                <button class="qty-btn" onclick="increaseQty(@food.Do_An_id, @((int)(food.gia ?? 0)), @maxQty)">
                                     <i class="fas fa-plus">+</i>
                                 </button>
                             </div>
@@ -406,10 +409,19 @@
     <script>
         var selectedFoods = {};
 
-        function increaseQty(foodId, price) {
+        function increaseQty(foodId, price, maxStock) {
+            console.log("FoodID:", foodId, "Price:", price, "MaxStock:", maxStock);
+            maxStock = parseInt(maxStock);
             if (!selectedFoods[foodId]) {
                 selectedFoods[foodId] = { quantity: 0, price: price };
             }
+
+            // CHẶN NẾU VƯỢT QUÁ TỒN KHO
+            if (selectedFoods[foodId].quantity >= maxStock) {
+                alert("Xin lỗi, món này chỉ còn lại " + maxStock + " phần.");
+                return;
+            }
+
             selectedFoods[foodId].quantity++;
             updateDisplay(foodId);
             updateSummary();

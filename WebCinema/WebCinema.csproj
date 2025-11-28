@@ -275,10 +275,10 @@
     <Compile Include="Areas\Admin\Controllers\Home_adminController.cs" />
     <Compile Include="Areas\Admin\Controllers\InventoryManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\InvoiceController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ManagerPurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\MovieManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProducerManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\PromoController.cs" />
-    <Compile Include="Areas\Admin\Controllers\PurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\ReviewManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShiftManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
@@ -287,6 +287,7 @@
     <Compile Include="Areas\Admin\Controllers\StaffDashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffInventoryManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffOfflineBookingController.cs" />
+    <Compile Include="Areas\Admin\Controllers\StaffPromotionController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffPurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffShowtimeTicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
@@ -321,13 +322,16 @@
     </Compile>
     <Compile Include="Models\CSDLDataContextExtensions.cs" />
     <Compile Include="Models\CustomerBookingViewModel.cs" />
+    <Compile Include="Models\FoodBookingViewModel.cs" />
     <Compile Include="Models\FoodItemViewModel.cs" />
-    <Compile Include="Models\InvoiceViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
+    <Compile Include="Models\ManagerInventoryViewModel.cs" />
     <Compile Include="Models\MovieDetailViewModel.cs" />
     <Compile Include="Models\MovieViewModel.cs" />
     <Compile Include="Models\PurchaseOrderPendingViewModel.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
+    <Compile Include="Models\StaffInventoryViewModel.cs" />
+    <Compile Include="Models\VnPayLibrary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\BookingRepository.cs" />
     <Compile Include="Repositories\FoodRepository.cs" />
@@ -339,6 +343,8 @@
     <Compile Include="Services\BookingExpirationService.cs" />
     <Compile Include="Services\BookingService.cs" />
     <Compile Include="Services\EmailService.cs" />
+    <Compile Include="Services\EmailServiceMailKit.cs" />
+    <Compile Include="Services\InvoicePdfService.cs" />
     <Compile Include="Services\MovieService.cs" />
     <Compile Include="Services\FoodService.cs" />
     <Compile Include="Services\InvoiceService.cs" />
@@ -419,9 +425,6 @@
     <Content Include="Areas\Admin\Views\InventoryManagement\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\Report.cshtml" />
-    <Content Include="Areas\Admin\Views\PurchaseOrder\Index.cshtml" />
-    <Content Include="Areas\Admin\Views\PurchaseOrder\Create.cshtml" />
-    <Content Include="Areas\Admin\Views\PurchaseOrder\Details.cshtml" />
     <Content Include="Areas\Admin\Views\InventoryManagement\StockWarnings.cshtml" />
     <Content Include="Areas\Admin\Views\BookingManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\ShowtimeTicketManagement\Index.cshtml" />
@@ -438,8 +441,6 @@
     <Content Include="Areas\Admin\Views\StaffBookingManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\StaffInventoryManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\StaffInventoryManagement\Details.cshtml" />
-    <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Create.cshtml" />
-    <Content Include="Areas\Admin\Views\StaffPurchaseOrder\ConfirmOrder.cshtml" />
     <Content Include="Controllers\API\WebCinema_API_Collection.postman_collection.json" />
     <Content Include="Areas\Admin\Views\Promo\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Promo\Create.cshtml" />
@@ -447,6 +448,15 @@
     <Content Include="Areas\Admin\Views\TicketRefundManagement\Index.cshtml" />
     <Content Include="Areas\Admin\Views\TicketRefundManagement\Details.cshtml" />
     <Content Include="Areas\Admin\Views\TicketManagement\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPromotion\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPromotion\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPromotion\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\Promotions.cshtml" />
+    <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\PromotionDetails.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

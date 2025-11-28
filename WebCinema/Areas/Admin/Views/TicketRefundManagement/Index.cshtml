@@ -3,7 +3,7 @@
     Response.Charset = "utf-8";
 }
 
-@model IEnumerable<WebCinema.Models.Yeu_Cau_Huy_Ve>
+@model IEnumerable<WebCinema.Models.HuyVe>
 
 @{
     ViewBag.Title = "Quản Lý Hủy Vé";
@@ -26,19 +26,21 @@
         </h2>
     </div>
 
+    <!-- Info Box -->
+    @*<div style="padding: 1rem; background: #d1ecf1; color: #0c5460; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #17a2b8;">
+        <i class="fas fa-info-circle"></i> <strong>Thông tin:</strong> Vé được hủy ngay khi khách hàng yêu cầu. Admin chỉ cần xác nhận đã chuyển khoản hoàn lại.
+    </div>*@
+
     <!-- Filter Section -->
     <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <a href="@Url.Action("Index", new { status = "" })" class="btn @(string.IsNullOrEmpty(ViewBag.Status) ? "btn-primary" : "btn-secondary")">
             📋 Tất Cả
         </a>
-        <a href="@Url.Action("Index", new { status = "Chờ duyệt" })" class="btn @(ViewBag.Status == "Chờ duyệt" ? "btn-primary" : "btn-secondary")">
-            ⏳ Chờ Duyệt
+        <a href="@Url.Action("Index", new { status = "Chờ xác nhận" })" class="btn @(ViewBag.Status == "Chờ xác nhận" ? "btn-primary" : "btn-secondary")">
+            ⏳ Chờ Xác Nhận
         </a>
-        <a href="@Url.Action("Index", new { status = "Đã Hủy" })" class="btn @(ViewBag.Status == "Đã Hủy" ? "btn-primary" : "btn-secondary")">
-            ✅ Đã Duyệt
-        </a>
-        <a href="@Url.Action("Index", new { status = "Từ chối" })" class="btn @(ViewBag.Status == "Từ chối" ? "btn-primary" : "btn-secondary")">
-            ❌ Từ Chối
+        <a href="@Url.Action("Index", new { status = "Đã xác nhận" })" class="btn @(ViewBag.Status == "Đã xác nhận" ? "btn-primary" : "btn-secondary")">
+            ✅ Đã Xác Nhận
         </a>
         <span style="color: #999; margin-left: auto;">Tổng: <strong>@ViewBag.TotalItems</strong> yêu cầu</span>
     </div>
@@ -63,41 +65,41 @@
                     @foreach (var request in Model)
                     {
                         var booking = request != null ? request.Dat_Ve : null;
-                        var customer = request != null ? request.Khach_Hang : null;
+                        var customer = booking != null ? booking.Khach_Hang : null;
                         var firstTicket = (booking != null && booking.Ves != null && booking.Ves.Count > 0) ? booking.Ves.FirstOrDefault() : null;
                         var showtime = firstTicket != null ? firstTicket.Suat_Chieu : null;
 
                         <tr>
                             <td>
-                                <strong>@(customer != null ? (customer.ho_ten ?? "N/A") : "N/A")</strong><br />
-                                <small style="color: #999;">@(customer != null ? (customer.so_dien_thoai ?? "N/A") : "N/A")</small>
+                                <strong>@(customer != null ? (customer.ho_ten ?? "") : "")</strong><br />
+                                <small style="color: #999;">@(customer != null ? (customer.so_dien_thoai ?? "") : "")</small>
                             </td>
                             <td>
-                                @((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "N/A")
+                                @((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "")
                             </td>
                             <td>
-                                @((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "N/A")
+                                @((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "")
                             </td>
                             <td>
                                 <strong style="color: #27ae60; font-size: 1.05rem;">@((request.so_tien_hoan_lai ?? 0).ToString("N0")) ₫</strong>
                             </td>
                             <td>
-                                @if (request.trang_thai == "Chờ duyệt")
+                                @if (request.trang_thai == "Chờ xác nhận")
                                 {
-                                    <span style="padding: 0.3rem 0.8rem; background: #fff3cd; color: #856404; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">⏳ Chờ duyệt</span>
+                                    <span style="padding: 0.3rem 0.8rem; background: #fff3cd; color: #856404; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">⏳ Chờ xác nhận</span>
                                 }
-                                else if (request.trang_thai == "Đã Hủy")
+                                else if (request.trang_thai == "Đã xác nhận")
                                 {
-                                    <span style="padding: 0.3rem 0.8rem; background: #d4edda; color: #155724; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">✅ Đã duyệt</span>
+                                    <span style="padding: 0.3rem 0.8rem; background: #d4edda; color: #155724; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">✅ Đã xác nhận</span>
                                 }
                                 else
                                 {
-                                    <span style="padding: 0.3rem 0.8rem; background: #f8d7da; color: #721c24; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">❌ Từ chối</span>
+                                    <span style="padding: 0.3rem 0.8rem; background: #e2e3e5; color: #383d41; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">❓ @request.trang_thai</span>
                                 }
                             </td>
                             <td>
                                 @{
-                                    string formattedDate = "-"; // fallback
+                                    string formattedDate = "-";
                                     DateTime temp;
                                     if (request != null && request.ngay_tao != null && DateTime.TryParse(request.ngay_tao.ToString(), out temp))
                                     {
@@ -106,7 +108,6 @@
                                 }
                                 @formattedDate
                             </td>
-
 
                             <td>
                                 <a href="@Url.Action("Details", new { id = request.yeu_cau_id })" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
@@ -156,7 +157,7 @@
         <div style="text-align: center; padding: 3rem; color: #999;">
             <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 1rem;"></i>
             <h3>Không có yêu cầu hủy vé</h3>
-            <p>@(ViewBag.Status == "Chờ duyệt" ? "Hiện không có yêu cầu chờ duyệt" : "Danh sách trống")</p>
+            <p>@(ViewBag.Status == "Chờ xác nhận" ? "Hiện không có yêu cầu chờ xác nhận chuyển tiền" : "Danh sách trống")</p>
         </div>
     }
 </div>
@@ -164,7 +165,7 @@
 @section scripts {
     <script>
         function approveCancel(requestId) {
-            if (!confirm("Bạn chắc muốn duyệt hủy vé này?\n\nNhắc nhở: Kiểm tra số tài khoản trước khi duyệt")) {
+            if (!confirm("Bạn chắc muốn xác nhận đã chuyển khoản hoàn lại cho khách hàng?\n\nNhắc nhở: Kiểm tra số tiền trước khi xác nhận")) {
                 return;
             }
 
@@ -174,7 +175,7 @@
                 data: {
                     __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
                     id: requestId,
-                    note: "Đã chuyển khoản"
+                    note: "Đã xác nhận chuyển khoản"
                 },
                 success: function(response) {
                     if (response.success) {

@@ -31,16 +31,26 @@
         box-shadow: 0 8px 30px rgba(39, 174, 96, 0.3);
     }
 
-    .success-header i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        animation: checkmark 0.6s ease-in-out;
-    }
+        .success-header i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: checkmark 0.6s ease-in-out;
+        }
 
     @@keyframes checkmark {
-        0% { transform: scale(0); opacity: 0; }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); opacity: 1; }
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        50% {
+            transform: scale(1.2);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
     .success-header h1 {
@@ -100,10 +110,10 @@
         align-items: flex-start;
     }
 
-    .detail-item i {
-        color: #ff6b35;
-        margin-top: 0.2rem;
-    }
+        .detail-item i {
+            color: #ff6b35;
+            margin-top: 0.2rem;
+        }
 
     .booking-total {
         text-align: right;
@@ -141,19 +151,19 @@
         color: white;
     }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
-    }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
 
     .btn-secondary {
         background: #ecf0f1;
         color: #333;
     }
 
-    .btn-secondary:hover {
-        background: #bdc3c7;
-    }
+        .btn-secondary:hover {
+            background: #bdc3c7;
+        }
 
     .info-notice {
         background: #fff3cd;
@@ -190,7 +200,7 @@
 
     <div class="bookings-section">
         <h3><i class="fas fa-receipt"></i> Thông Tin Đơn Hàng</h3>
-        
+        <br />
         @if (Model != null)
         {
             var showtime = firstTicket.Suat_Chieu;
@@ -260,7 +270,7 @@
                                 {
                                     var qrService = new WebCinema.Infrastructure.QRCodeTicketService();
                                     var qrImagePath = qrService.GetQRCodePath(ticket.ma_qr_code);
-                                    
+
                                     <div style="text-align: center; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
                                         @if (!string.IsNullOrEmpty(qrImagePath))
                                         {
@@ -290,16 +300,16 @@
                     }
 
                     <!-- ✅ THÊM: Hiển thị Mã Khuyến Mãi Áp Dụng -->
-                    if (!string.IsNullOrEmpty(Model.phuong_thuc_thanh_toan))
-                    {
-                        <div style="margin-top: 1rem; padding: 1.5rem; background: #f0f8ff; border: 2px solid #3498db; border-radius: 8px;">
-                            <strong style="color: #2c3e50;"><i class="fas fa-tag"></i> Mã Khuyến Mãi Áp Dụng:</strong>
-                            <span style="color: #27ae60; font-weight: 700; font-size: 1.1rem; margin-left: 0.5rem;">@Model.phuong_thuc_thanh_toan</span>
-                        </div>
-                    }
+                    @*if (!string.IsNullOrEmpty(Model.phuong_thuc_thanh_toan))
+                        {
+                            <div style="margin-top: 1rem; padding: 1.5rem; background: #f0f8ff; border: 2px solid #3498db; border-radius: 8px;">
+                                <strong style="color: #2c3e50;"><i class="fas fa-tag"></i> Mã Khuyến Mãi Áp Dụng:</strong>
+                                <span style="color: #27ae60; font-weight: 700; font-size: 1.1rem; margin-left: 0.5rem;">@Model.phuong_thuc_thanh_toan</span>
+                            </div>
+                        }*@
 
                     <!-- ✅ CHI TIẾT GIÁ TRỊ THANH TOÁN -->
-                  
+
                     <div style="margin-top: 1.5rem; padding: 1.5rem; background: #f9f9f9; border: 2px solid #e0e0e0; border-radius: 8px;">
                         <strong style="color: #333;"><i class="fas fa-receipt"></i> Chi Tiết Thanh Toán</strong>
                         <table style="width: 100%; margin-top: 1rem; color: #666;">

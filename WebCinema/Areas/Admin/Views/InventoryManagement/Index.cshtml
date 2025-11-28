@@ -1,19 +1,16 @@
-﻿@model IEnumerable<WebCinema.Models.Do_An>
+﻿@using WebCinema.Models
+@model IEnumerable<ManagerInventoryViewModel>
 
 @{
     ViewBag.Title = "Quản Lý Sản Phẩm";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
-
 }
 
 <div class="content-header">
     <h1><i class="fas fa-warehouse"></i> Quản Lý Sản Phẩm</h1>
     <div class="header-actions">
-        @*<a href="@Url.Action("Report")" class="btn btn-info">
-            <i class="fas fa-chart-bar"></i> Báo Cáo
-        </a>*@
         <a href="@Url.Action("Create")" class="btn btn-primary">
             <i class="fas fa-plus"></i> Thêm Sản Phẩm
         </a>
@@ -34,7 +31,6 @@
     </div>
 }
 
-<!-- Filter Section -->
 <div class="content-card" style="margin-bottom: 2rem;">
     <div class="card-header">
         <h2 class="card-title"><i class="fas fa-filter"></i> Bộ Lọc</h2>
@@ -68,11 +64,10 @@
     </div>
 </div>
 
-<!-- Inventory Table -->
 <div class="content-card">
     <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Sản Phẩm</h2>
-        <span class="badge badge-primary">Tổng: @Model.Count() sản phẩm</span>
+        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Menu</h2>
+        <span class="badge badge-primary">Tổng: @Model.Count() món</span>
     </div>
 
     @if (Model != null && Model.Any())
@@ -80,56 +75,63 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th style="width: 50px;">ID</th>
                     <th>Tên Sản Phẩm</th>
                     <th>Loại</th>
-                    <th>Mô Tả</th>
-                    <th>Giá</th>
-                    <th>Thao Tác</th>
+                    <th>Giá Bán</th>
+                    <th>Trạng Thái</th>
+                    <th style="width: 150px;">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td><strong>@item.Do_An_id</strong></td>
+                        <td><strong>@item.DoAn.Do_An_id</strong></td>
                         <td>
-                            <strong style="color: #333;">@item.ten_san_pham</strong>
-                        </td>
-                        <td>
-                            <span class="badge badge-category">@(item.loai ?? "N/A")</span>
-                        </td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.mo_ta))
+                            <strong style="color: #333;">@item.DoAn.ten_san_pham</strong>
+                            @if (!string.IsNullOrEmpty(item.DoAn.mo_ta))
                             {
-                                <span style="color: #666; font-size: 0.9rem;">
-                                    @(item.mo_ta.Length > 50 ? item.mo_ta.Substring(0, 50) + "..." : item.mo_ta)
-                                </span>
-                            }
-                            else
-                            {
-                                <span style="color: #999;">Không có mô tả</span>
+                                <div style="color: #666; font-size: 0.85rem; margin-top: 4px;">
+                                    @(item.DoAn.mo_ta.Length > 40 ? item.DoAn.mo_ta.Substring(0, 40) + "..." : item.DoAn.mo_ta)
+                                </div>
                             }
                         </td>
                         <td>
-                            @if (item.gia.HasValue)
+                            <span class="badge badge-category">@(item.DoAn.loai ?? "N/A")</span>
+                        </td>
+
+                        <td>
+                            @if (item.DoAn.gia.HasValue)
                             {
-                                <strong style="color: #27ae60; font-size: 1.05rem;">@item.gia.Value.ToString("N0") VNĐ</strong>
+                                <strong style="color: #27ae60;">@item.DoAn.gia.Value.ToString("N0") đ</strong>
                             }
                             else
                             {
                                 <span style="color: #999;">Chưa định giá</span>
                             }
                         </td>
+
+                        <td>
+                            @if (item.DoAn.trang_thai == "Ngừng kinh doanh")
+                            {
+                                <span style="color: red; font-size: 0.9rem;"><i class="fas fa-ban"></i> Ngừng bán</span>
+                            }
+                            else
+                            {
+                                <span style="color: green; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> Đang bán</span>
+                            }
+                        </td>
+
                         <td>
                             <div class="action-buttons">
-                                <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-sm btn-info" title="Chi tiết">
+                                <a href="@Url.Action("Details", new { id = item.DoAn.Do_An_id })" class="btn btn-sm btn-info" title="Chi tiết">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="@Url.Action("Edit", new { id = item.Do_An_id })" class="btn btn-sm btn-warning" title="Sửa">
+                                <a href="@Url.Action("Edit", new { id = item.DoAn.Do_An_id })" class="btn btn-sm btn-warning" title="Sửa">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <button onclick="deleteItem(@item.Do_An_id)" class="btn btn-sm btn-danger" title="Xóa">
+                                <button onclick="deleteItem(@item.DoAn.Do_An_id)" class="btn btn-sm btn-danger" title="Xóa">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -152,6 +154,7 @@
 </div>
 
 <style>
+    /* ... Giữ nguyên các style cũ ... */
     .content-header {
         display: flex;
         justify-content: space-between;
@@ -159,13 +162,13 @@
         margin-bottom: 2rem;
     }
 
-    .content-header h1 {
-        font-size: 2rem;
-        color: #333;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+        .content-header h1 {
+            font-size: 2rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
     .header-actions {
         display: flex;
@@ -218,12 +221,34 @@
         border-radius: 20px;
         font-weight: 600;
     }
+
+    /* Style mới thêm cho Tồn kho */
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
 </style>
 
 @section scripts {
     <script>
         function deleteItem(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này? Việc xóa sẽ ảnh hưởng đến lịch sử nhập xuất!')) {
                 $.ajax({
                     url: '@Url.Action("Delete")',
                     type: 'POST',

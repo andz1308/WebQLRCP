@@ -1,0 +1,664 @@
+﻿@{
+    ViewBag.Title = "Tạo Phiếu Đề Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    var slowItems = ViewBag.SlowItems as List<WebCinema.Services.SlowItemViewModel>;
+    var allFoods = ViewBag.AllFoods as List<WebCinema.Models.Do_An>;
+}
+
+<style>
+    /* Container */
+    .proposal-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .back-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: white;
+        color: #667eea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(-3px);
+        }
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .header-title i {
+            font-size: 2rem;
+            color: #ff6b35;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+    /* Alert Box */
+    .alert-slow-items {
+        background: linear-gradient(135deg, #fff8e1 0%, #ffe082 100%);
+        border: 2px solid #ffd54f;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        animation: slideInDown 0.3s ease;
+    }
+
+    @@keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-slow-items h5 {
+        color: #f39c12;
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 700;
+    }
+
+        .alert-slow-items h5 i {
+            font-size: 1.3rem;
+        }
+
+    .alert-table-wrapper {
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 8px;
+        background: white;
+    }
+
+        .alert-table-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .alert-table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .alert-table-wrapper::-webkit-scrollbar-thumb {
+            background: #ffd54f;
+            border-radius: 10px;
+        }
+
+    .alert-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .alert-table thead {
+            background: linear-gradient(135deg, #fff9e6 0%, #fffaed 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .alert-table th {
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #f39c12;
+            border-bottom: 2px solid #ffd54f;
+            font-size: 0.9rem;
+        }
+
+        .alert-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 0.9rem;
+        }
+
+        .alert-table tbody tr:hover {
+            background: #fffaed;
+        }
+
+    .stock-count {
+        color: #e74c3c;
+        font-weight: 700;
+    }
+
+    .btn-suggest {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+        .btn-suggest:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+    /* Content Card */
+    .content-wrapper {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    /* Input Section */
+    .input-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .input-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+        .input-header i {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+    .input-row {
+        display: grid;
+        grid-template-columns: 1fr 200px auto;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .input-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    .btn-add {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+    /* Table Section */
+    .table-section {
+        padding: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .section-title i {
+            color: #667eea;
+        }
+
+    .proposal-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2rem;
+    }
+
+        .proposal-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .proposal-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .proposal-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .proposal-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .proposal-table tbody tr:last-child td {
+            border-bottom: 2px solid #e9ecef;
+        }
+
+    .btn-remove {
+        padding: 0.4rem 0.8rem;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+
+        .btn-remove:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+    /* Textarea */
+    .reason-section {
+        padding: 2rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .reason-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+        .reason-label i {
+            color: #667eea;
+        }
+
+    .reason-textarea {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.3s ease;
+    }
+
+        .reason-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        justify-content: flex-end;
+    }
+
+    .btn-primary-action {
+        padding: 0.9rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+        .btn-primary-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+    .btn-cancel-action {
+        padding: 0.9rem 2rem;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .btn-cancel-action:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+    /* Empty State */
+    .empty-table {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+    }
+
+        .empty-table i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+            display: block;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .proposal-container {
+            padding: 1rem;
+        }
+
+        .input-row {
+            grid-template-columns: 1fr;
+        }
+
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-primary-action,
+        .btn-cancel-action {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .header-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .alert-table-wrapper {
+            max-height: 250px;
+        }
+    }
+</style>
+
+<div class="proposal-container">
+    <div class="page-header">
+        <div class="header-content">
+            <a href="@Url.Action("Index")" class="back-btn" title="Quay lại">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <i class="fas fa-bullhorn"></i>
+                <h1>Tạo Phiếu Đề Xuất Khuyến Mãi</h1>
+            </div>
+        </div>
+    </div>
+
+    @if (slowItems != null && slowItems.Any())
+    {
+        <div class="alert-slow-items">
+            <h5><i class="fas fa-exclamation-triangle"></i> Gợi ý: Các món bán chậm cần giải cứu</h5>
+            <div class="alert-table-wrapper">
+                <table class="alert-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-utensils"></i> Món</th>
+                            <th><i class="fas fa-box"></i> Tồn</th>
+                            <th><i class="fas fa-chart-line"></i> Bán (30d)</th>
+                            <th style="width: 180px;"><i class="fas fa-cogs"></i> Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in slowItems)
+                        {
+                            <tr>
+                                <td>@item.DoAn.ten_san_pham</td>
+                                <td><span class="stock-count">@item.SoLuongTon</span></td>
+                                <td>@item.DaBan30Ngay</td>
+                                <td>
+                                    <button class="btn-suggest" onclick="addToList(@item.DoAn.Do_An_id, '@item.DoAn.ten_san_pham', 20)">
+                                        <i class="fas fa-plus"></i> Giảm 20%
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="content-wrapper">
+        <div class="input-section">
+            <div class="input-header">
+                <i class="fas fa-plus-circle"></i>
+                <span>Thêm món vào phiếu</span>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="ddlFood"><i class="fas fa-utensils"></i> Chọn Món</label>
+                    <select id="ddlFood" class="form-control">
+                        @foreach (var item in allFoods)
+                        {
+                            <option value="@item.Do_An_id" data-name="@item.ten_san_pham">@item.ten_san_pham</option>
+                        }
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="numPercent"><i class="fas fa-percentage"></i> Giảm (%)</label>
+                    <input type="number" id="numPercent" class="form-control" value="10" min="1" max="100" />
+                </div>
+                <button class="btn-add" onclick="addManual()">
+                    <i class="fas fa-plus"></i> Thêm
+                </button>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="section-title">
+                <i class="fas fa-list"></i>
+                Danh sách trong phiếu
+            </div>
+            <table class="proposal-table" id="tblProposal">
+                <thead>
+                    <tr>
+                        <th>Tên Món Ăn</th>
+                        <th style="width: 150px;">Giảm Giá (%)</th>
+                        <th style="width: 80px;">Xóa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="empty-table">
+                        <td colspan="3">
+                            <i class="fas fa-inbox"></i>
+                            <div>Chưa có món nào. Hãy thêm những món muốn đề xuất khuyến mãi.</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="reason-section">
+            <label class="reason-label">
+                <i class="fas fa-align-left"></i>
+                Lý do đề xuất
+            </label>
+            <textarea id="txtReason" class="reason-textarea" placeholder="Mô tả chi tiết lý do đề xuất khuyến mãi cho những món này..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <a href="@Url.Action("Index")" class="btn-cancel-action">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+            <button class="btn-primary-action" onclick="submitProposal()">
+                <i class="fas fa-check"></i> Gửi Phiếu Đề Xuất
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var list = [];
+
+    function addToList(id, name, pct) {
+        if (list.find(x => x.Id == id)) {
+            alert("Món này đã có trong phiếu!");
+            return;
+        }
+        list.push({ Id: id, Name: name, Percent: pct });
+        render();
+    }
+
+    function addManual() {
+        addToList($('#ddlFood').val(), $('#ddlFood option:selected').data('name'), parseInt($('#numPercent').val()) || 10);
+    }
+
+    function remove(i) {
+        list.splice(i, 1);
+        render();
+    }
+
+    function render() {
+        var tbody = $('#tblProposal tbody');
+        var html = '';
+
+        if (list.length === 0) {
+            html = `<tr class="empty-table">
+                        <td colspan="3">
+                            <i class="fas fa-inbox"></i>
+                            <div>Chưa có món nào. Hãy thêm những món muốn đề xuất khuyến mãi.</div>
+                        </td>
+                    </tr>`;
+        } else {
+            list.forEach((item, i) => {
+                html += `<tr>
+                            <td><strong>${item.Name}</strong></td>
+                            <td><span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.3rem 0.6rem; border-radius: 4px; font-weight: 600;">${item.Percent}%</span></td>
+                            <td><button class="btn-remove" onclick="remove(${i})"><i class="fas fa-trash"></i> Xóa</button></td>
+                        </tr>`;
+            });
+        }
+        tbody.html(html);
+    }
+
+    function submitProposal() {
+        if (list.length === 0) {
+            alert("Vui lòng thêm ít nhất một món vào phiếu!");
+            return;
+        }
+        if (!$('#txtReason').val().trim()) {
+            alert("Vui lòng nhập lý do đề xuất!");
+            $('#txtReason').focus();
+            return;
+        }
+
+        if (confirm("Bạn có chắc muốn gửi phiếu đề xuất này?")) {
+            $.ajax({
+                url: '@Url.Action("Create")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    items: list,
+                    reason: $('#txtReason').val()
+                }),
+                success: function (res) {
+                    if (res.success) {
+                        alert("✅ Phiếu đề xuất đã được gửi thành công!");
+                        location.href = '@Url.Action("Index")';
+                    } else {
+                        alert("❌ Lỗi: " + (res.message || "Gửi phiếu thất bại"));
+                    }
+                },
+                error: function () {
+                    alert("❌ Lỗi kết nối máy chủ!");
+                }
+            });
+        }
+    }
+
+    // Initialize
+    $(function () {
+        render();
+    });
+</script>

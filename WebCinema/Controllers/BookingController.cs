@@ -5,6 +5,9 @@ using System.Web;
 using System.Web.Mvc;
 using WebCinema.Models;
 using WebCinema.Infrastructure;
+using System.Configuration;
+using System.IO;
+using WebCinema.Services;
 
 namespace WebCinema.Controllers
 {
@@ -73,7 +76,7 @@ namespace WebCinema.Controllers
                     .ToList();
 
                 var bookedSeats = freshDb.Ves
-                    .Where(v => v.Suat_Chieu.suat_chieu_id == id
+                    .Where(v => v.Suat_Chieu.suat_chieu_id == id 
                         && v.Dat_Ve_id != null
                         && paidBookingIds.Contains(v.Dat_Ve_id.Value))
                     .Select(v => v.ghe_id)
@@ -172,34 +175,50 @@ namespace WebCinema.Controllers
                 return Json(new { success = false, message = "Vui lòng chọn ghế!" });
             }
 
-            // Store selected seats in session
             Session["SelectedSeats"] = selectedSeats;
             Session["ShowtimeId"] = showtimeId;
 
             return Json(new { success = true, redirectUrl = Url.Action("SelectFood", "Booking") });
         }
 
+        // **BƯỚC 2: CHỌN ĐỒ ĂN (Hiển thị form)**
         [HttpGet]
         public ActionResult SelectFood()
         {
-            if (Session["SelectedSeats"] == null)
+            if (Session["SelectedSeats"] == null || Session["ShowtimeId"] == null)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            // Get food items
-            var foods = db.Do_Ans.ToList();
-
-            var showtimeId = (int)Session["ShowtimeId"];
+            // Lấy thông tin suất chiếu
+            int showtimeId = (int)Session["ShowtimeId"];
             var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
 
-            ViewBag.Foods = foods;
+            if (showtime == null) return HttpNotFound();
+
+            // 1. Xác định ID Rạp từ Suất chiếu (Quan trọng)
+            int currentRapId = showtime.Phong_Chieu.rap_id;
+
+            // 2. Lấy danh sách đồ ăn KHẢ DỤNG tại Rạp đó
+            // Logic: Phải có trong bảng Do_An (Đang bán) VÀ có trong Kho_Do_An của rạp đó (số lượng > 0)
+            var availableFoods = (from d in db.Do_Ans
+                                  join k in db.Kho_Do_Ans on d.Do_An_id equals k.Do_An_id
+                                  where k.rap_id == currentRapId
+                                     && d.trang_thai == "Đang kinh doanh" // Kiểm tra lại DB xem là "Đang bán" hay "Đang kinh doanh" nhé
+                                     && k.so_luong_ton > 0
+                                  select new FoodBookingViewModel
+                                  {
+                                      Food = d,
+                                      MaxStock = k.so_luong_ton ?? 0 // Lấy tồn kho thực tế
+                                  }).ToList();
+
+            ViewBag.Foods = availableFoods;
             ViewBag.Showtime = showtime;
 
             return View();
         }
 
-        // **BƯỚC 3: ĐI THẲNG ĐẾN CHECKOUT - LƯU ĐẶT VÉ VÀO DB**
+        // **BƯỚC 3: ĐI THẲNG ĐẾN CHECKOUT - LƯUL ĐẶTK VÉ VÀO DB**
         [HttpPost]
         public ActionResult Payment(string selectedFoods)
         {
@@ -215,7 +234,7 @@ namespace WebCinema.Controllers
                 selectedFoods = selectedFoods ?? "";
 
                 var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
-
+                
                 var tickets = db.Ves
                     .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
                     .ToList();
@@ -228,7 +247,7 @@ namespace WebCinema.Controllers
                     .ToList();
 
                 var unavailableSeats = tickets
-                    .Where(t => t.Dat_Ve_id != null
+                    .Where(t => t.Dat_Ve_id != null 
                         && paidBookingIds.Contains(t.Dat_Ve_id.Value))
                     .ToList();
 
@@ -241,8 +260,8 @@ namespace WebCinema.Controllers
                 decimal foodTotal = 0;
 
                 var khachHangId = Session["CustomerId"] as int? ?? 1;
-
-                // ✅ TẠO ĐƠN VỚI TRẠNG THÁI "CHƯA THANH TOÁN" NGAY KHI CHỌN XONG GHẾ & ĐỒ ĂN
+                
+                // ✅ TẠO ĐƠN VỚI TRẠNG THÁI "CHƯA THANH TOÁN" NGAY KHI CHỌN XONGs GHẾ & ĐỒ ĂN
                 var booking = new Dat_Ve
                 {
                     khach_hang_id = khachHangId,
@@ -263,7 +282,7 @@ namespace WebCinema.Controllers
                     ticket.Dat_Ve_id = booking.Dat_Ve_id;
                     ticket.trang_thai_ve = "Chưa sử dụng";
                     ticket.ma_qr_code = GenerateQRCode(booking.Dat_Ve_id, ticket.ve_id);
-
+                    
                     // ✅ Sinh QR code ảnh
                     var qrTicketService = new QRCodeTicketService();
                     qrTicketService.GenerateAndSaveQRCode(ticket.ma_qr_code);
@@ -276,11 +295,11 @@ namespace WebCinema.Controllers
                     foreach (var item in foodData)
                     {
                         if (string.IsNullOrEmpty(item)) continue;
-
+                        
                         var parts = item.Split(':');
                         if (!int.TryParse(parts[0], out int foodId) || !int.TryParse(parts[1], out int quantity))
                             continue;
-
+                        
                         var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
                         if (food != null)
                         {
@@ -311,9 +330,8 @@ namespace WebCinema.Controllers
                 Session.Remove("SelectedFoods");
 
                 // Chuyển đến Checkout
-                return Json(new
-                {
-                    success = true,
+                return Json(new { 
+                    success = true, 
                     redirectUrl = Url.Action("Checkout", "Booking")
                 });
             }
@@ -342,7 +360,7 @@ namespace WebCinema.Controllers
 
             int bookingId = (int)Session["BookingId"];
             var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-
+            
             if (booking == null)
             {
                 return RedirectToAction("Index", "Home");
@@ -354,17 +372,17 @@ namespace WebCinema.Controllers
             // Calculate food price
             decimal foodTotal = 0;
             List<dynamic> foodItems = new List<dynamic>();
-
+            
             foreach (var foodOrder in booking.DonHang_DoAns)
             {
                 var food = foodOrder.Do_An;
                 decimal unitPrice = food.gia ?? 0m;
                 decimal itemTotal = unitPrice * foodOrder.so_luong;
                 foodTotal += itemTotal;
-
+                
                 // ✅ Thêm thông tin loai vào foodItems để KM004 có thể check Combo
-                foodItems.Add(new
-                {
+                foodItems.Add(new 
+                { 
                     FoodId = food.Do_An_id,
                     FoodName = food.ten_san_pham,
                     Price = unitPrice,
@@ -400,196 +418,88 @@ namespace WebCinema.Controllers
             try
             {
                 var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
-                if (customer == null)
+                if (customer == null) return Json(new List<object>());
+
+                // Parse giỏ hàng từ JSON
+                var cartItems = new List<int>(); // Danh sách ID món ăn trong giỏ
+                try
                 {
-                    return Json(new List<object>());
+                    var jsonArray = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson ?? "[]");
+                    foreach (var item in jsonArray)
+                    {
+                        if (int.TryParse(item["FoodId"]?.ToString(), out int fid)) cartItems.Add(fid);
+                    }
                 }
+                catch { }
 
-                // ✅ Filter active promo codes
-                var promoCodes = db.Khuyen_Mais.ToList();
-
+                var promoCodes = db.Khuyen_Mais.Where(k => k.trang_thai == "Hoạt động").ToList();
                 var result = new List<dynamic>();
 
                 foreach (var km in promoCodes)
                 {
-                    try
+                    bool isApplicable = true;
+                    string reason = "";
+
+                    // 1. Kiểm tra hạn sử dụng & số lượng
+                    if (DateTime.Now < km.ngay_bat_dau) { isApplicable = false; reason = "Chưa đến ngày áp dụng"; }
+                    else if (DateTime.Now > km.ngay_ket_thuc) { isApplicable = false; reason = "Đã hết hạn"; }
+                    else if (km.so_luong_con_lai <= 0) { isApplicable = false; reason = "Đã hết số lượng"; }
+
+                    // 2. Kiểm tra điều kiện điểm tích lũy (Nếu có)
+                    // Ví dụ: Mã bắt đầu bằng VIP thì cần 100 điểm
+                    if (isApplicable && km.ma_khuyen_mai.StartsWith("VIP") && (customer.diem_tich_luy ?? 0) < 100)
                     {
-                        bool isApplicable = true;
-                        string reason = "";
-                        string maKhuyenValue = km.ma_khuyen_mai;
-
-                        // ✅ KM001: Áp dụng tháng 12
-                        if (maKhuyenValue == "KM001")
-                        {
-                            if (DateTime.Now.Month != 12)
-                            {
-                                isApplicable = false;
-                                reason = "Chỉ áp dụng tháng 12";
-                            }
-                        }
-                        // ✅ KM003: Áp dụng nếu điểm ⭐ >= 20
-                        else if (maKhuyenValue == "KM003")
-                        {
-                            int customerPoints = customer.diem_tich_luy ?? 0;
-                            if (customerPoints < 20)
-                            {
-                                isApplicable = false;
-                                reason = $"Cần 20+ điểm (hiện có {customerPoints})";
-                            }
-                        }
-                        // ✅ KM004: Áp dụng nếu có "Combo" trong đồ ăn
-                        else if (maKhuyenValue == "KM004")
-                        {
-                            bool hasCombo = false;
-                            try
-                            {
-                                LoggingHelper.LogInfo($"🔍 KM004 Start: foodItemsJson={(!string.IsNullOrEmpty(foodItemsJson) ? "exist" : "null")}");
-
-                             
-                                var foodItems = Newtonsoft.Json.Linq.JArray.Parse(foodItemsJson ?? "[]");
-
-                                foreach (var item in foodItems)
-                                {
-                                    string foodTypeStr = item["FoodType"]?.ToString() ?? "";
-                                    string foodNameStr = item["FoodName"]?.ToString() ?? "";
-
-                                    LoggingHelper.LogInfo($"  → Checking FoodType='{foodTypeStr}', FoodName='{foodNameStr}'");
-
-                                    if (foodTypeStr.Contains("Combo") || foodNameStr.Contains("Combo"))
-                                    {
-                                        hasCombo = true;
-                                        LoggingHelper.LogInfo("✅ KM004: Found Combo!");
-                                        break;
-                                    }
-
-                                    // Kiểm tra database theo FoodId
-                                    if (int.TryParse(item["FoodId"]?.ToString(), out int foodId))
-                                    {
-                                        var foodObj = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                                        if (foodObj != null &&
-                                            ((foodObj.ten_san_pham ?? "").Contains("Combo") || (foodObj.loai ?? "").Contains("Combo")))
-                                        {
-                                            hasCombo = true;
-                                            LoggingHelper.LogInfo("✅ KM004: Found Combo in DB!");
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                LoggingHelper.LogInfo($"✅ KM004 Complete: hasCombo={hasCombo}");
-                            }
-                            catch (Exception ex)
-                            {
-                                LoggingHelper.LogError(new Exception($"KM004 JSON parse error: {ex.Message}", ex));
-                            }
-
-                            if (!hasCombo)
-                            {
-                                isApplicable = false;
-                                reason = "Cần mua Combo";
-                            }
-                        }
-
-                        // Kiểm tra ngày áp dụng
-                        // Use reflection to safely read possible DateTime properties
-                        DateTime? kmStart = null;
-                        DateTime? kmEnd = null;
-                        try
-                        {
-                            var startProp = km.GetType().GetProperty("ngay_bat_dau");
-                            if (startProp != null)
-                            {
-                                var val = startProp.GetValue(km, null);
-                                if (val is DateTime dt && dt != DateTime.MinValue) kmStart = dt;
-                            }
-
-                            var endProp = km.GetType().GetProperty("ngay_ket_thuc");
-                            if (endProp != null)
-                            {
-                                var val = endProp.GetValue(km, null);
-                                if (val is DateTime dt2 && dt2 != DateTime.MinValue) kmEnd = dt2;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LoggingHelper.LogError(ex);
-                        }
-
-                        if (isApplicable && kmStart.HasValue && DateTime.Now < kmStart.Value)
-                        {
-                            isApplicable = false;
-                            reason = "Chưa đến ngày áp dụng";
-                        }
-
-                        if (isApplicable && kmEnd.HasValue && DateTime.Now > kmEnd.Value)
-                        {
-                            isApplicable = false;
-                            reason = "Đã hết hạn áp dụng";
-                        }
-
-                        // ✅ Get promo properties safely
-                        decimal giaTriGiam = 0m;
-                        int soLuongConLai = 0;
-                        string loaiGiam = "%"; // Default
-
-                        try
-                        {
-                            // ✅ Get gia_tri_giam
-                            var giaProp = km.GetType().GetProperty("gia_tri_giam");
-                            if (giaProp != null)
-                            {
-                                object val = giaProp.GetValue(km, null);
-                                giaTriGiam = val != null ? Convert.ToDecimal(val) : 0m;
-                            }
-
-                            // ✅ Get so_luong_con_lai
-                            var luongProp = km.GetType().GetProperty("so_luong_con_lai");
-                            if (luongProp != null)
-                            {
-                                object val = luongProp.GetValue(km, null);
-                                soLuongConLai = val != null ? Convert.ToInt32(val) : 0;
-                            }
-
-                            // ✅ Get loai_giam_gia
-                            var loaiGiamProp = km.GetType().GetProperty("loai_giam_gia");
-                            if (loaiGiamProp != null)
-                            {
-                                object val = loaiGiamProp.GetValue(km, null);
-                                if (val != null)
-                                {
-                                    string typeValue = val.ToString();
-                                    loaiGiam = (typeValue.Contains("Phần") || typeValue.Contains("%")) ? "%" : "VND";
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LoggingHelper.LogError(new Exception($"Promo property read error: {ex.Message}"));
-                        }
-
-                        // ✅ Add to result
-                        result.Add(new
-                        {
-                            maKhuyen = km.ma_khuyen_mai,
-                            moTa = km.mo_ta ?? "",
-                            giaTriGiam = giaTriGiam,
-                            loaiGiam = loaiGiam,
-                            soLuongConLai = soLuongConLai,
-                            isApplicable = isApplicable && soLuongConLai > 0,
-                            reason = reason
-                        });
+                        isApplicable = false; reason = "Dành cho khách hàng VIP (100+ điểm)";
                     }
-                    catch (Exception itemEx)
+
+                    // 3. KIỂM TRA PHẠM VI ÁP DỤNG (LOGIC MỚI)
+                    if (isApplicable)
                     {
-                        LoggingHelper.LogError(itemEx);
+                        // Nếu là khuyến mãi theo món (pham_vi_ap_dung = 1)
+                        if (km.pham_vi_ap_dung == 1)
+                        {
+                            // Lấy danh sách món được phép giảm
+                            var allowedFoods = db.Khuyen_Mai_Do_Ans
+                                .Where(k => k.ma_giam_gia_id == km.ma_giam_gia_id)
+                                .Select(k => k.do_an_id)
+                                .ToList();
+
+                            // Kiểm tra xem trong giỏ có món nào khớp không
+                            bool hasMatch = cartItems.Any(id => allowedFoods.Contains(id));
+
+                            if (!hasMatch)
+                            {
+                                isApplicable = false;
+                                reason = "Không áp dụng cho các món trong giỏ";
+                            }
+                        }
                     }
+
+                    // Format dữ liệu trả về
+                    string loaiGiam = "%";
+                    if (!string.IsNullOrEmpty(km.loai_giam_gia) && !km.loai_giam_gia.Contains("%") && !km.loai_giam_gia.Contains("Phần"))
+                    {
+                        loaiGiam = "VND";
+                    }
+
+                    result.Add(new
+                    {
+                        maKhuyen = km.ma_khuyen_mai,
+                        moTa = km.mo_ta,
+                        giaTriGiam = km.gia_tri_giam,
+                        loaiGiam = loaiGiam,
+                        soLuongConLai = km.so_luong_con_lai,
+                        isApplicable = isApplicable,
+                        reason = reason,
+                        // Trả thêm cờ này để FE biết mà hiển thị
+                        isProductSpecific = (km.pham_vi_ap_dung == 1)
+                    });
                 }
 
                 return Json(result);
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
                 return Json(new List<object>());
             }
         }
@@ -600,84 +510,195 @@ namespace WebCinema.Controllers
         {
             try
             {
-                if (Session["SelectedSeats"] == null)
+                // 1. Check Session
+                if (Session["BookingId"] == null) return Json(new { success = false, message = "Hết phiên làm việc." });
+                int bookingId = (int)Session["BookingId"];
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null) return Json(new { success = false, message = "Đơn hàng lỗi." });
+
+                // 2. Lấy Config
+                string vnp_Url = ConfigurationManager.AppSettings["vnp_Url"];
+                string vnp_Returnurl = ConfigurationManager.AppSettings["vnp_Returnurl"];
+                string vnp_TmnCode = ConfigurationManager.AppSettings["vnp_TmnCode"];
+                string vnp_HashSecret = ConfigurationManager.AppSettings["vnp_HashSecret"];
+
+                // 3. Build URL (Theo đúng code Demo)
+                VnPayLibrary vnpay = new VnPayLibrary();
+
+                vnpay.AddRequestData("vnp_Version", VnPayLibrary.VERSION);
+                vnpay.AddRequestData("vnp_Command", "pay");
+                vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+
+                // Số tiền * 100
+                vnpay.AddRequestData("vnp_Amount", ((long)(booking.tong_tien * 100)).ToString());
+
+                vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+                vnpay.AddRequestData("vnp_CurrCode", "VND");
+                vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress()); 
+                vnpay.AddRequestData("vnp_Locale", "vn");
+
+                vnpay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang:" + bookingId);
+                vnpay.AddRequestData("vnp_OrderType", "other"); // Default
+                vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+
+                // Mã tham chiếu (Thêm ticks để tránh trùng lặp khi test nhiều lần)
+                vnpay.AddRequestData("vnp_TxnRef", bookingId.ToString() + "_" + DateTime.Now.Ticks);
+
+                string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret);
+
+                return Json(new { success = true, redirectUrl = paymentUrl });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // [GET] XỬ LÝ KẾT QUẢ TRẢ VỀ TỪ VNPAY
+        [HttpGet]
+        public ActionResult PaymentCallback()
+        {
+            try
+            {
+                if (Request.QueryString.Count > 0)
                 {
-                    return Json(new { success = false, message = "Vui lòng chọn ghế trước!" });
-                }
+                    string vnp_HashSecret = "2X8S1D0NFBRXWEOT7E803PVJOOHUDHYJ".Trim(); // Key Sandbox của bạn
+                    var vnpayData = Request.QueryString;
+                    VnPayLibrary vnpay = new VnPayLibrary();
 
-                var selectedSeats = Session["SelectedSeats"].ToString();
-                var showtimeId = (int)Session["ShowtimeId"];
-                var selectedFoods = Session["SelectedFoods"]?.ToString() ?? "";
-
-                var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
-
-                var tickets = db.Ves
-                    .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
-                    .ToList();
-
-                // ✅ CHECK: Load paid booking IDs FIRST
-                var paidBookingIds = db.Dat_Ves
-                    .Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán")
-                    .Select(b => b.Dat_Ve_id)
-                    .ToList();
-
-                var unavailableSeats = tickets
-                    .Where(t => t.Dat_Ve_id != null
-                        && paidBookingIds.Contains(t.Dat_Ve_id.Value))
-                    .ToList();
-
-                if (unavailableSeats.Any())
-                {
-                    return Json(new { success = false, message = "Một số ghế đã được đặt. Vui lòng chọn ghế khác!" });
-                }
-
-                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
-                decimal foodTotal = 0;
-
-                // Tính tiền đồ ăn
-                if (!string.IsNullOrEmpty(selectedFoods))
-                {
-                    var foodData = selectedFoods.Split(';');
-                    foreach (var item in foodData)
+                    foreach (string s in vnpayData)
                     {
-                        if (string.IsNullOrEmpty(item)) continue;
-                        var parts = item.Split(':');
-                        if (!int.TryParse(parts[0], out int foodId) || !int.TryParse(parts[1], out int quantity))
-                            continue;
-                        var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
-                        if (food != null)
+                        if (!string.IsNullOrEmpty(s) && s.StartsWith("vnp_"))
                         {
-                            foodTotal += (food.gia ?? 0m) * quantity;
+                            vnpay.AddResponseData(s, vnpayData[s]);
                         }
                     }
+
+                    // Lấy thông tin
+                    string orderIdRaw = vnpay.GetResponseData("vnp_TxnRef");
+                    long bookingId = 0;
+
+                    if (!string.IsNullOrEmpty(orderIdRaw))
+                    {
+                        // Nếu mã đơn hàng có chứa dấu gạch dưới (ví dụ: 156_6383...)
+                        if (orderIdRaw.Contains("_"))
+                        {
+                            var parts = orderIdRaw.Split('_');
+                            long.TryParse(parts[0], out bookingId); // Chỉ lấy phần số 156
+                        }
+                        else
+                        {
+                            // Nếu chỉ là số bình thường (ví dụ: 156)
+                            long.TryParse(orderIdRaw, out bookingId);
+                        }
+                    }
+
+                    string vnp_ResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
+                    string vnp_SecureHash = Request.QueryString["vnp_SecureHash"];
+
+                    // Kiểm tra chữ ký
+                    bool checkSignature = vnpay.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
+
+                    if (checkSignature)
+                    {
+                        if (vnp_ResponseCode == "00")
+                        {
+                            // --- THANH TOÁN THÀNH CÔNG ---
+                            var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+
+                            if (booking != null && booking.trang_thai_Dat_Ve != "Đã Thanh toán")
+                            {
+                                booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+                                booking.phuong_thuc_thanh_toan = "VNPay";
+
+                                // 1. TRỪ KHO (Gọi Service)
+                                var firstTicket = booking.Ves.FirstOrDefault();
+                                if (firstTicket != null)
+                                {
+                                    int rapId = firstTicket.Suat_Chieu.Phong_Chieu.rap_id;
+
+                                    // Chuyển đổi sang Model cập nhật kho
+                                    var stockItems = booking.DonHang_DoAns.Select(x => new WebCinema.Services.StockModel
+                                    {
+                                        DoAnId = x.Do_An_id,
+                                        SoLuong = x.so_luong
+                                    }).ToList();
+
+                                    var foodService = new WebCinema.Services.FoodService(db);
+                                    foodService.UpdateStock(rapId, stockItems, false); // False = Trừ kho
+                                }
+
+                                // 2. CỘNG ĐIỂM
+                                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == booking.khach_hang_id);
+                                if (customer != null)
+                                {
+                                    customer.diem_tich_luy = (customer.diem_tich_luy ?? 0) + booking.Ves.Count;
+                                }
+
+                                db.SubmitChanges();
+                            }
+
+                            // Xóa Session
+                            Session.Remove("BookingId");
+
+                            // ✅ QUAN TRỌNG: Chuyển hướng về trang Success (Không trả về JSON nữa)
+                            return RedirectToAction("Success", "Booking", new { id = bookingId });
+                        }
+                        else
+                        {
+                            // --- THANH TOÁN THẤT BẠI ---
+                            // Hủy đơn hàng
+                            var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                            if (booking != null)
+                            {
+                                booking.trang_thai_Dat_Ve = "Đã Hủy";
+
+                                // Giải phóng vé
+                                foreach (var t in booking.Ves) { t.Dat_Ve_id = null; t.trang_thai_ve = "Chưa sử dụng"; }
+
+                                // Xóa đồ ăn
+                                db.DonHang_DoAns.DeleteAllOnSubmit(booking.DonHang_DoAns);
+
+                                db.SubmitChanges();
+                            }
+
+                            // Quay về trang chủ hoặc thông báo lỗi
+                            return RedirectToAction("Index", "Home"); // Hoặc trang thông báo lỗi riêng
+                        }
+                    }
+                    else
+                    {
+                        return Content("Lỗi: Sai chữ ký bảo mật từ VNPay");
+                    }
                 }
-
-                decimal grandTotal = ticketTotal + foodTotal;
-
-                // Lưu thông tin vào Session để dùng sau khi thanh toán thành công
-                Session["PendingBookingData"] = new
-                {
-                    SelectedSeats = selectedSeats,
-                    ShowtimeId = showtimeId,
-                    SelectedFoods = selectedFoods,
-                    TicketTotal = ticketTotal,
-                    FoodTotal = foodTotal,
-                    GrandTotal = grandTotal
-                };
-
-                // Chuyển đến trang Payment Gateway
-                return Json(new
-                {
-                    success = true,
-                    redirectUrl = Url.Action("PaymentGateway", "Booking")
-                });
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+                return Content("Lỗi hệ thống: " + ex.Message);
+            }
+            return RedirectToAction("Index", "Home");
+        }
+
+        // Hàm phụ: Hủy đơn hàng nếu VNPay thất bại
+        private void CancelBooking(long bookingId)
+        {
+            var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+            if (booking != null)
+            {
+                booking.trang_thai_Dat_Ve = "Đã Hủy";
+                // Giải phóng vé và xóa đồ ăn (Copy logic từ bài trước vào đây nếu cần chi tiết)
+                var tickets = db.Ves.Where(v => v.Dat_Ve_id == bookingId).ToList();
+                foreach (var t in tickets) { t.Dat_Ve_id = null; t.trang_thai_ve = "Chưa sử dụng"; t.ma_qr_code = null; }
+
+                var foods = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == bookingId).ToList();
+                db.DonHang_DoAns.DeleteAllOnSubmit(foods);
+
+                db.SubmitChanges();
             }
         }
+
+       
 
         // **BƯỚC 6: TRANG THANH TOÁN ONLINE**
         [HttpGet]
@@ -751,6 +772,27 @@ namespace WebCinema.Controllers
                 if (paidBooking != null)
                 {
                     paidBooking.trang_thai_Dat_Ve = "Đã Thanh toán";
+                    // 1. Xác định Rạp
+                    var firstTicket = paidBooking.Ves.FirstOrDefault();
+                    if (firstTicket != null)
+                    {
+                        int rapId = firstTicket.Suat_Chieu.Phong_Chieu.rap_id;
+
+                        // 2. Chuẩn bị dữ liệu để gọi Service
+                        // Chuyển đổi từ DonHang_DoAn sang StockModel
+                        var itemsToUpdate = paidBooking.DonHang_DoAns
+                            .Select(d => new WebCinema.Services.StockModel
+                            {
+                                DoAnId = d.Do_An_id,
+                                SoLuong = d.so_luong
+                            })
+                            .ToList();
+
+                        // 3. GỌI HÀM CẬP NHẬT KHO (Trừ kho -> isAdding = false)
+                        // Khởi tạo service (hoặc dùng DI nếu có)
+                        var foodService = new WebCinema.Services.FoodService(db);
+                        foodService.UpdateStock(rapId, itemsToUpdate, false);
+                    }
                     db.SubmitChanges();
 
                     // ✅ CỘNG ĐIỂM TÍCH LŨY: Dựa trên số lượng vé trong đơn + trạng thái từng vé
@@ -799,6 +841,48 @@ namespace WebCinema.Controllers
             ViewBag.Tickets = booking.Ves.ToList();
             ViewBag.Foods = booking.DonHang_DoAns.ToList();
 
+            // ✅ GỬI EMAIL KHI VÀO TRANG SUCCESS
+            try
+            {
+                var customer = booking.Khach_Hang;
+                if (customer != null && !string.IsNullOrEmpty(customer.email))
+                {
+                    // 1. Tạo PDF hóa đơn
+                    var pdfService = new InvoicePdfService();
+                    string pdfFileName = pdfService.GenerateInvoicePdf(id);
+                    
+                    // 2. Lấy đường dẫn file PDF
+                    string invoiceDir = Server.MapPath("~/Content/hoadon");
+                    string pdfFilePath = Path.Combine(invoiceDir, pdfFileName);
+
+                    // 3. Gửi email
+                    var emailService = new EmailServiceMailKit();
+                    string customMessage = $"Đơn hàng của bạn đã được thanh toán thành công. Mã đơn: #{id}. Vui lòng kiểm tra file PDF đính kèm để xem chi tiết.";
+                    
+                    bool emailSent = emailService.SendInvoiceEmail(
+                        customer.email,
+                        customer.ho_ten,
+                        pdfFileName,
+                        pdfFilePath,
+                        customMessage
+                    );
+
+                    if (emailSent)
+                    {
+                        LoggingHelper.LogInfo($"✅ Gửi email hóa đơn thành công cho khách {customer.khach_hang_id} ({customer.email})");
+                    }
+                    else
+                    {
+                        LoggingHelper.LogError(new Exception($"Gửi email thất bại cho khách {customer.khach_hang_id}"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Lỗi tạo/gửi email hóa đơn");
+                // Không throw - vẫn hiển thị trang Success dù email có lỗi
+            }
+
             return View(booking);
         }
 
@@ -817,82 +901,119 @@ namespace WebCinema.Controllers
         }
 
         // **BƯỚC 4.5.1: CẬP NHẬT QR CODE KHI CHỌN KHUYẾN MÃI**
+        // **BƯỚC 4.5.1: CẬP NHẬT QR CODE KHI CHỌN KHUYẾN MÃI**
         [HttpPost]
         public ActionResult UpdateQRCodeWithPromo(int bookingId, string promoCode)
         {
             try
             {
                 var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
-                if (booking == null)
-                {
-                    return Json(new { success = false, message = "Booking không tồn tại" });
-                }
+                if (booking == null) return Json(new { success = false, message = "Booking null" });
 
-                //decimal originalTotal = booking.tong_tien;
+                // Lấy tổng gốc từ Session hoặc tính lại
                 if (Session[$"Booking_{bookingId}_OriginalTotal"] == null)
                 {
                     Session[$"Booking_{bookingId}_OriginalTotal"] = booking.tong_tien;
                 }
-                decimal originalTotal = Session[$"Booking_{bookingId}_OriginalTotal"] as decimal? ?? booking.tong_tien;
+                decimal originalTotal = (decimal)Session[$"Booking_{bookingId}_OriginalTotal"];
+
                 decimal discountAmount = 0m;
                 string discountType = "";
+                int? promoId = null; // Biến lưu ID mã giảm giá
 
-                // ✅ Tính toán discount từ promo code
                 if (!string.IsNullOrEmpty(promoCode))
                 {
                     var promo = db.Khuyen_Mais.FirstOrDefault(km => km.ma_khuyen_mai == promoCode);
                     if (promo != null)
                     {
-                        decimal giaTriGiam = promo.gia_tri_giam;  // ✅ NOT nullable
+                        // 1. Lưu ID khuyến mãi
+                        promoId = promo.ma_giam_gia_id;
+                        decimal giaTriGiam = promo.gia_tri_giam;
 
-                        // ✅ Xác định loại giảm (% hay VND)
+                        // Check loại giảm (% hay tiền mặt)
                         bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) &&
                             (promo.loai_giam_gia.Contains("Phần trăm") || promo.loai_giam_gia.Contains("%"));
 
-                        if (isPercent)
-                        {
-                            discountAmount = (originalTotal * giaTriGiam) / 100m;
-                            discountType = "%";
-                        }
-                        else
-                        {
-                            discountAmount = giaTriGiam;
-                            discountType = "VND";
-                        }
+                        // ============================================================
+                        // 🔴 LOGIC MỚI: XỬ LÝ THEO PHẠM VI ÁP DỤNG (pham_vi_ap_dung)
+                        // ============================================================
 
-                        LoggingHelper.LogInfo($"✅ PromoCode {promoCode}: giaTriGiam={giaTriGiam}, loai={discountType}, discount={discountAmount}");
+                        // TRƯỜNG HỢP 1: GIẢM GIÁ TOÀN ĐƠN (pham_vi_ap_dung = 0)
+                        if (promo.pham_vi_ap_dung == 0)
+                        {
+                            if (isPercent)
+                            {
+                                discountAmount = (originalTotal * giaTriGiam) / 100m;
+                                discountType = "% (Toàn đơn)";
+                            }
+                            else
+                            {
+                                discountAmount = giaTriGiam;
+                                discountType = "VND (Toàn đơn)";
+                            }
+                        }
+                        // TRƯỜNG HỢP 2: GIẢM GIÁ THEO MÓN (pham_vi_ap_dung = 1)
+                        else if (promo.pham_vi_ap_dung == 1)
+                        {
+                            // 1. Lấy danh sách món được giảm
+                            var allowedFoodIds = db.Khuyen_Mai_Do_Ans
+                                                   .Where(k => k.ma_giam_gia_id == promo.ma_giam_gia_id)
+                                                   .Select(k => k.do_an_id)
+                                                   .ToList();
+
+                            // 2. Duyệt qua các món trong đơn hàng để tính giảm giá
+                            var orderedFoods = db.DonHang_DoAns.Where(d => d.Dat_Ve_id == bookingId).ToList();
+
+                            foreach (var item in orderedFoods)
+                            {
+                                if (allowedFoodIds.Contains(item.Do_An_id))
+                                {
+                                    decimal itemPrice = item.Do_An.gia ?? 0;
+                                    decimal itemTotal = itemPrice * item.so_luong;
+
+                                    if (isPercent)
+                                    {
+                                        discountAmount += (itemTotal * giaTriGiam) / 100m;
+                                    }
+                                    else
+                                    {
+                                        // Giảm tiền mặt trên từng đơn vị sản phẩm (VD: Giảm 10k/ly)
+                                        discountAmount += (giaTriGiam * item.so_luong);
+                                    }
+                                }
+                            }
+
+                            discountType = isPercent ? "% (Theo món)" : "VND (Theo món)";
+
+                            // Nếu không có món nào được giảm -> Báo lỗi
+                            if (discountAmount == 0)
+                            {
+                                return Json(new { success = false, message = "Mã này không áp dụng cho các món bạn chọn." });
+                            }
+                        }
+                        // ============================================================
                     }
                 }
 
-                // ✅ Tính toán tổng tiền sau giảm
                 decimal finalTotal = originalTotal - discountAmount;
                 if (finalTotal < 0) finalTotal = 0;
 
-                // ✅ Cập nhật booking với tổng tiền mới
                 booking.tong_tien = finalTotal;
-                booking.phuong_thuc_thanh_toan = promoCode ?? "";  // Lưu mã promo
+
+                // --- CẬP NHẬT CỘT CHUẨN TRONG DB ---
+                booking.ma_giam_gia_id = promoId; // Lưu ID vào đây
+
                 db.SubmitChanges();
 
-                // ✅ Tạo QR Code mới với giá đúng
+                // Tạo QR mới...
                 var qrService = new QRCodePaymentService();
-                string qrDescription = qrService.GenerateTransactionDescription(bookingId);
-                string newQrUrl = qrService.GenerateQRCodeUrl(finalTotal, qrDescription);
+                string newQrUrl = qrService.GenerateQRCodeUrl(finalTotal, qrService.GenerateTransactionDescription(bookingId));
 
-                LoggingHelper.LogInfo($"✅ UpdateQRCode: BookingId={bookingId}, Original={originalTotal}, Discount={discountAmount}, Final={finalTotal}, PromoCode={promoCode}");
-
-                return Json(new
-                {
-                    success = true,
-                    newQrUrl = newQrUrl,
-                    finalTotal = finalTotal,
-                    discountAmount = discountAmount,
-                    discountType = discountType
-                });
+                return Json(new { success = true, newQrUrl, finalTotal, discountAmount, discountType });
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
-                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }

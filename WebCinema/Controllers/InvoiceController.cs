@@ -455,29 +455,6 @@ namespace WebCinema.Controllers
                 ViewBag.QRCodeUrl = qrUrl;
 
                 LoggingHelper.LogInfo($"✅ Hiển thị trang thanh toán thành công: Booking {bookingId}");
-
-                // ✅ TRIGGER: Gửi email hóa đơn tự động
-                try
-                {
-                    var invoiceService = new Services.InvoiceService();
-                    bool emailSent = invoiceService.GenerateAndSendFullInvoicePdf(bookingId);
-                    if (emailSent)
-                    {
-                        LoggingHelper.LogInfo($"✅ PaymentSuccess: PDF hóa đơn gửi tự động thành công");
-                        ViewBag.InvoiceEmailSent = true;
-                    }
-                    else
-                    {
-                        LoggingHelper.LogError(new Exception("Failed to send PDF invoice email"), $"PaymentSuccess({bookingId})");
-                        ViewBag.InvoiceEmailSent = false;
-                    }
-                }
-                catch (Exception emailEx)
-                {
-                    LoggingHelper.LogError(emailEx, $"PaymentSuccess - Auto send PDF invoice email failed for booking {bookingId}");
-                    ViewBag.InvoiceEmailSent = false;
-                }
-
                 return View();
             }
             catch (Exception ex)

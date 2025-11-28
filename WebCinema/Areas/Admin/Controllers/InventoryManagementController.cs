@@ -3,44 +3,71 @@ using System.Linq;
 using System.Web.Mvc;
 using System.Web;
 using System.IO;
+using System.Collections.Generic; // Thêm namespace này
 using WebCinema.Models;
 using WebCinema.Infrastructure;
 using WebCinema.Services;
 
 namespace WebCinema.Areas.Admin.Controllers
 {
-    [RoleAuthorize(Roles = "Admin,Staff")]
+    [RoleAuthorize(Roles = "Admin")] // Đổi role cho phù hợp
     public class InventoryManagementController : Controller
     {
         private CSDLDataContext db = new CSDLDataContext();
         private FoodService _foodService = new FoodService();
 
+        // Helper: Lấy ID Rạp của Quản lý đang đăng nhập
+        private int? GetCurrentRapId()
+        {
+            var username = User.Identity.Name;
+            var staff = db.Nhan_Viens.FirstOrDefault(nv => nv.email == username || nv.ho_ten == username);
+            return staff?.rap_id;
+        }
+
         // GET: Admin/InventoryManagement
+        // Hiển thị danh sách món ăn và Tồn kho tại rạp của Quản lý
         public ActionResult Index(string searchTerm, string category)
         {
-            // Set UTF-8 encoding
             Response.ContentEncoding = System.Text.Encoding.UTF8;
             Response.Charset = "utf-8";
 
-            var inventory = db.Do_Ans.AsQueryable();
+            int? currentRapId = GetCurrentRapId();
+            if (currentRapId == null)
+            {
+                // Nếu là Admin tổng (không thuộc rạp nào), có thể xử lý khác. 
+                // Ở đây giả định quản lý phải thuộc 1 rạp.
+                ViewBag.Error = "Tài khoản không thuộc rạp chiếu phim nào.";
+            }
 
-            // Search filter
+            // 1. Lấy danh sách món ăn
+            var query = db.Do_Ans.AsQueryable();
+
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                inventory = inventory.Where(d => 
-                    d.ten_san_pham.Contains(searchTerm) || 
-                    d.mo_ta.Contains(searchTerm));
+                query = query.Where(d => d.ten_san_pham.Contains(searchTerm) || d.mo_ta.Contains(searchTerm));
             }
 
-            // Category filter
             if (!string.IsNullOrEmpty(category))
             {
-                inventory = inventory.Where(d => d.loai == category);
+                query = query.Where(d => d.loai == category);
             }
 
-            var result = inventory.OrderBy(d => d.loai).ThenBy(d => d.ten_san_pham).ToList();
+            // 2. JOIN với Kho_Do_An để lấy số lượng tồn CỦA RẠP HIỆN TẠI
+            // Dùng GroupJoin (Left Join) để vẫn hiện món ăn dù trong kho chưa có record
+            var result = from d in query
+                         join k in db.Kho_Do_Ans
+                              on new { d.Do_An_id, RapId = currentRapId.GetValueOrDefault() } equals new { k.Do_An_id, RapId = k.rap_id } into khoGroup
+                         from k in khoGroup.DefaultIfEmpty()
+                         select new ManagerInventoryViewModel
+                         {
+                             DoAn = d,
+                             SoLuongTon = k != null ? (k.so_luong_ton ?? 0) : 0
+                         };
 
-            // Get unique categories for filter dropdown
+            // Sắp xếp
+            var model = result.OrderBy(x => x.DoAn.loai).ThenBy(x => x.DoAn.ten_san_pham).ToList();
+
+            // Dropdown Categories
             ViewBag.Categories = db.Do_Ans
                 .Where(d => d.loai != null)
                 .Select(d => d.loai)
@@ -51,39 +78,48 @@ namespace WebCinema.Areas.Admin.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = category;
 
-            return View(result);
+            return View(model);
         }
 
         // GET: Admin/InventoryManagement/Details/5
         public ActionResult Details(int id)
         {
-            // Set UTF-8 encoding
             Response.ContentEncoding = System.Text.Encoding.UTF8;
             Response.Charset = "utf-8";
 
+            int? currentRapId = GetCurrentRapId();
+
             var item = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == id);
-            if (item == null)
+            if (item == null) return HttpNotFound();
+
+            // 1. Lấy tồn kho hiện tại
+            var khoItem = db.Kho_Do_Ans.FirstOrDefault(k => k.Do_An_id == id && k.rap_id == currentRapId);
+            int stockQty = khoItem?.so_luong_ton ?? 0;
+
+            // 2. Query cơ bản cho đơn hàng đã thanh toán
+            var salesQuery = db.DonHang_DoAns
+                .Where(dh => dh.Do_An_id == id
+                             && dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // 3. Lọc theo Rạp (Quan trọng: Chỉ tính doanh số của rạp này)
+            if (currentRapId.HasValue)
             {
-                return HttpNotFound();
+                salesQuery = salesQuery.Where(dh => dh.Dat_Ve.Nhan_Vien.rap_id == currentRapId.Value);
             }
 
-            // ✅ FIXED: Chỉ thống kê đồ ăn từ đơn đã thanh toán
-            var totalSold = db.DonHang_DoAns
-                .Where(dh => dh.Do_An_id == id && dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán")
-                .Sum(dh => (int?)dh.so_luong) ?? 0;
+            // 4. Tính toán
+            var totalSold = salesQuery.Sum(dh => (int?)dh.so_luong) ?? 0;
 
-            var totalRevenue = db.DonHang_DoAns
-                .Where(dh => dh.Do_An_id == id && 
-                       dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" && 
-                       dh.Do_An.gia.HasValue)
+            var totalRevenue = salesQuery
+                .Where(dh => dh.Do_An.gia.HasValue)
                 .Sum(dh => (decimal?)(dh.so_luong * dh.Do_An.gia.Value)) ?? 0;
 
-            var recentOrders = db.DonHang_DoAns
-                .Where(dh => dh.Do_An_id == id && dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán")
+            var recentOrders = salesQuery
                 .OrderByDescending(dh => dh.Dat_Ve.ngay_tao)
                 .Take(10)
                 .ToList();
 
+            ViewBag.StockQuantity = stockQty; // Thêm biến này
             ViewBag.TotalSold = totalSold;
             ViewBag.TotalRevenue = totalRevenue;
             ViewBag.RecentOrders = recentOrders;
@@ -92,257 +128,132 @@ namespace WebCinema.Areas.Admin.Controllers
         }
 
         // GET: Admin/InventoryManagement/Create
+        // (Giữ nguyên logic tạo món mới, chỉ thêm status)
         public ActionResult Create()
         {
-            // Set UTF-8 encoding
-            Response.ContentEncoding = System.Text.Encoding.UTF8;
-            Response.Charset = "utf-8";
-
-            ViewBag.Categories = new SelectList(new[] 
-            { 
-                "Đồ ăn", 
-                "Đồ uống", 
-                "Combo", 
-                "Snack",
-                "Nước ngọt",
-                "Nước ép",
-                "Khác"
-            });
+            SetupCategoryViewBag();
             return View();
         }
 
         // POST: Admin/InventoryManagement/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Do_An item, HttpPostedFileBase imageFile, string imageUrl)
+        public ActionResult Create(Do_An item, HttpPostedFileBase imageFile)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    // Validate price
                     if (item.gia.HasValue && item.gia.Value < 0)
                     {
                         TempData["ErrorMessage"] = "Giá sản phẩm không được âm.";
-                        ViewBag.Categories = new SelectList(new[] 
-                        { 
-                            "Đồ ăn", 
-                            "Đồ uống", 
-                            "Combo", 
-                            "Snack",
-                            "Nước ngọt",
-                            "Nước ép",
-                            "Khác"
-                        }, item.loai);
+                        SetupCategoryViewBag(item.loai);
                         return View(item);
                     }
+
+                    // Set mặc định trạng thái
+                    if (string.IsNullOrEmpty(item.trang_thai)) item.trang_thai = "Đang bán";
+
+                    // Xử lý ảnh (nếu có logic upload ảnh)
+                    // ...
 
                     db.Do_Ans.InsertOnSubmit(item);
                     db.SubmitChanges();
 
-                    TempData["SuccessMessage"] = "Thêm sản phẩm thành công!";
+                    TempData["SuccessMessage"] = "Thêm món ăn vào Menu thành công!";
                     return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
             }
 
-            ViewBag.Categories = new SelectList(new[] 
-            { 
-                "Đồ ăn", 
-                "Đồ uống", 
-                "Combo", 
-                "Snack",
-                "Nước ngọt",
-                "Nước ép",
-                "Khác"
-            }, item.loai);
+            SetupCategoryViewBag(item.loai);
             return View(item);
         }
 
         // GET: Admin/InventoryManagement/Edit/5
         public ActionResult Edit(int id)
         {
-            // Set UTF-8 encoding
-            Response.ContentEncoding = System.Text.Encoding.UTF8;
-            Response.Charset = "utf-8";
-
             var item = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == id);
-            if (item == null)
-            {
-                return HttpNotFound();
-            }
+            if (item == null) return HttpNotFound();
 
-            ViewBag.Categories = new SelectList(new[] 
-            { 
-                "Đồ ăn", 
-                "Đồ uống", 
-                "Combo", 
-                "Snack",
-                "Nước ngọt",
-                "Nước ép",
-                "Khác"
-            }, item.loai);
+            SetupCategoryViewBag(item.loai);
             return View(item);
         }
 
         // POST: Admin/InventoryManagement/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, FormCollection form, HttpPostedFileBase imageFile, string imageUrl)
+        public ActionResult Edit(int id, FormCollection form)
         {
             try
             {
                 var item = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == id);
-                if (item == null)
-                {
-                    return HttpNotFound();
-                }
+                if (item == null) return HttpNotFound();
 
-                // Update fields
                 item.ten_san_pham = form["ten_san_pham"];
                 item.mo_ta = form["mo_ta"];
                 item.loai = form["loai"];
-                
+                item.trang_thai = form["trang_thai"]; // Cập nhật trạng thái (Đang bán/Ngưng bán)
+
                 if (decimal.TryParse(form["gia"], out decimal gia))
                 {
                     if (gia < 0)
                     {
-                        TempData["ErrorMessage"] = "Giá sản phẩm không được âm.";
+                        TempData["ErrorMessage"] = "Giá không hợp lệ.";
                         return RedirectToAction("Edit", new { id });
                     }
                     item.gia = gia;
                 }
-                else
-                {
-                    item.gia = null;
-                }
 
                 db.SubmitChanges();
-
-                TempData["SuccessMessage"] = "Cập nhật sản phẩm thành công!";
+                TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                LoggingHelper.LogError(ex);
-                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
             }
-
             return RedirectToAction("Edit", new { id });
         }
 
-        // POST: Admin/InventoryManagement/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id)
-        {
-            try
-            {
-                var item = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == id);
-                if (item == null)
-                {
-                    return Json(new { success = false, message = "Sản phẩm không tồn tại." });
-                }
-
-                // Check if item has orders
-                if (item.DonHang_DoAns.Any())
-                {
-                    return Json(new { success = false, message = "Không thể xóa sản phẩm đã có trong đơn hàng." });
-                }
-
-                db.Do_Ans.DeleteOnSubmit(item);
-                db.SubmitChanges();
-
-                return Json(new { success = true, message = "Xóa sản phẩm thành công!" });
-            }
-            catch (Exception ex)
-            {
-                LoggingHelper.LogError(ex);
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-            }
-        }
-
         // GET: Admin/InventoryManagement/Report
+        // Báo cáo doanh thu (Đã lọc theo Rạp)
         public ActionResult Report(int? month, int? year)
         {
-            // Set UTF-8 encoding
-            Response.ContentEncoding = System.Text.Encoding.UTF8;
-            Response.Charset = "utf-8";
-
+            int? currentRapId = GetCurrentRapId();
+            if (currentRapId == null) return RedirectToAction("Index");
 
             int selectedYear = year ?? DateTime.Now.Year;
             int? selectedMonth = month;
 
-            ViewBag.SelectedMonth = selectedMonth;
-            ViewBag.SelectedYear = selectedYear;
+            // Gọi Service đã viết ở bước trước, truyền vào RapId
+            // Hàm GetTopSellingItems trong FoodService đã được sửa để nhận tham số rapId
+            var topItems = _foodService.GetTopSellingItems(currentRapId, selectedMonth, selectedYear, 10);
 
-            // ✅ FIXED: Chỉ lấy dữ liệu từ đơn đã thanh toán
-            var salesQuery = db.DonHang_DoAns
-                .Where(dh => dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán");
+            // Tính tổng doanh thu riêng cho rạp này
+            // (Nếu FoodService chưa có hàm này, ta query trực tiếp ở đây cho nhanh)
+            var salesQuery = db.DonHang_DoAns.Where(dh =>
+                dh.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" &&
+                dh.Dat_Ve.Nhan_Vien.rap_id == currentRapId
+            );
 
             if (selectedMonth.HasValue)
-            {
-                salesQuery = salesQuery.Where(dh => 
-                    dh.Dat_Ve.ngay_tao.HasValue && 
-                    dh.Dat_Ve.ngay_tao.Value.Year == selectedYear && 
-                    dh.Dat_Ve.ngay_tao.Value.Month == selectedMonth.Value);
-            }
+                salesQuery = salesQuery.Where(dh => dh.Dat_Ve.ngay_tao.Value.Month == selectedMonth && dh.Dat_Ve.ngay_tao.Value.Year == selectedYear);
             else
-            {
-                salesQuery = salesQuery.Where(dh => 
-                    dh.Dat_Ve.ngay_tao.HasValue && 
-                    dh.Dat_Ve.ngay_tao.Value.Year == selectedYear);
-            }
+                salesQuery = salesQuery.Where(dh => dh.Dat_Ve.ngay_tao.Value.Year == selectedYear);
 
-            // Top selling items
-            var topItems = salesQuery
-                .GroupBy(dh => dh.Do_An_id)
-                .Select(g => new
-                {
-                    ItemId = g.Key,
-                    TotalQuantity = g.Sum(dh => dh.so_luong),
-                    TotalRevenue = g.Sum(dh => dh.so_luong * (dh.Do_An.gia ?? 0))
-                })
-                .OrderByDescending(x => x.TotalRevenue)
-                .Take(10)
-                .ToList()
-                .Select(x => new
-                {
-                    Item = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == x.ItemId),
-                    TotalQuantity = x.TotalQuantity,
-                    TotalRevenue = x.TotalRevenue
-                })
-                .Where(x => x.Item != null)
-                .ToList();
-
-            // Sales by category
-            var categoryStats = salesQuery
-                .Where(dh => dh.Do_An.loai != null)
-                .GroupBy(dh => dh.Do_An.loai)
-                .Select(g => new
-                {
-                    Category = g.Key,
-                    TotalQuantity = g.Sum(dh => dh.so_luong),
-                    TotalRevenue = g.Sum(dh => dh.so_luong * (dh.Do_An.gia ?? 0))
-                })
-                .OrderByDescending(x => x.TotalRevenue)
-                .ToList();
-
-            // Total revenue
-            var totalRevenue = salesQuery
-                .Sum(dh => (decimal?)(dh.so_luong * (dh.Do_An.gia ?? 0))) ?? 0;
-
-            var totalQuantity = salesQuery
-                .Sum(dh => (int?)dh.so_luong) ?? 0;
+            var totalRevenue = salesQuery.Sum(dh => (decimal?)(dh.so_luong * (dh.Do_An.gia ?? 0))) ?? 0;
+            var totalQuantity = salesQuery.Sum(dh => (int?)dh.so_luong) ?? 0;
 
             ViewBag.TopItems = topItems;
-            ViewBag.CategoryStats = categoryStats;
             ViewBag.TotalRevenue = totalRevenue;
             ViewBag.TotalQuantity = totalQuantity;
             ViewBag.PeriodLabel = selectedMonth.HasValue ? $"Tháng {selectedMonth}/{selectedYear}" : $"Năm {selectedYear}";
+            ViewBag.SelectedMonth = selectedMonth;
+            ViewBag.SelectedYear = selectedYear;
 
             return View();
         }
@@ -350,40 +261,33 @@ namespace WebCinema.Areas.Admin.Controllers
         // GET: Admin/InventoryManagement/StockWarnings
         public ActionResult StockWarnings()
         {
-            Response.ContentEncoding = System.Text.Encoding.UTF8;
-            Response.Charset = "utf-8";
+            int? currentRapId = GetCurrentRapId();
+            if (currentRapId == null) return RedirectToAction("Index");
 
-            var outOfStock = _foodService.GetOutOfStockItems();
-            var lowStock = _foodService.GetLowStockItems(10);
+            // Gọi Service lấy cảnh báo cho Rạp này
+            var lowStockItems = _foodService.GetLowStockItems(currentRapId.Value, 20); // Dưới 20 là cảnh báo
+
+            var outOfStock = lowStockItems.Where(x => x.SoLuongTon <= 0).ToList();
+            var warningStock = lowStockItems.Where(x => x.SoLuongTon > 0).ToList();
 
             ViewBag.OutOfStock = outOfStock;
-            ViewBag.LowStock = lowStock;
+            ViewBag.LowStock = warningStock;
 
             return View();
         }
 
-        // API: Lấy cảnh báo cho Dashboard
-        [HttpGet]
-        public JsonResult GetStockAlertsJson()
+        // Helper private
+        private void SetupCategoryViewBag(string selected = null)
         {
-            var warnings = _foodService.GetStockWarnings();
-            var outOfStock = _foodService.GetOutOfStockItems().Count;
-            var lowStock = _foodService.GetLowStockItems().Count;
-
-            return Json(new 
+            ViewBag.Categories = new SelectList(new[]
             {
-                warnings = warnings,
-                outOfStockCount = outOfStock,
-                lowStockCount = lowStock
-            }, JsonRequestBehavior.AllowGet);
+                "Đồ ăn", "Đồ uống", "Combo", "Snack", "Nước ngọt", "Nước ép", "Khác"
+            }, selected);
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                db.Dispose();
-            }
+            if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
     }

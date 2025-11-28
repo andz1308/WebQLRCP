@@ -1,178 +1,176 @@
 ﻿@{
-    ViewBag.Title = "Tạo Phiếu Nhập Hàng";
+    ViewBag.Title = "Tạo Yêu Cầu Nhập Hàng";
     Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    var listFood = ViewBag.ListFood as List<WebCinema.Models.Do_An>;
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
 }
 
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title">
-            <i class="fas fa-file-import"></i> Tạo Phiếu Nhập Hàng
-        </h2>
-        <a href="@Url.Action("Index", "StaffInventoryManagement")" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Quay Lại
-        </a>
-    </div>
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
-        </div>
-    }
-
-    @using (Html.BeginForm("Create", "StaffPurchaseOrder", FormMethod.Post, new { area = "Admin", id = "staffCreateForm" }))
-    {
-        @Html.AntiForgeryToken()
-
-        <!-- Thông tin phiếu nhập -->
-        <div style="background: white; border-radius: 8px; padding: 2rem; margin-bottom: 2rem; border: 1px solid #e0e0e0;">
-            <h5 style="color: #2c3e50; margin-bottom: 1.5rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem;">
-                <i class="fas fa-info-circle"></i> Thông Tin Phiếu Nhập
-            </h5>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-building"></i> Nhà Cung Cấp <span style="color: red;">*</span>
-                    </label>
-                    @Html.DropDownList("nha_cung_cap_id", (SelectList)ViewBag.Suppliers, "-- Chọn nhà cung cấp --", new { @class = "form-control", required = "required" })
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-calendar"></i> Ngày Dự Kiến Nhận <span style="color: red;">*</span>
-                    </label>
-                    <input type="date" name="expectedDate" id="expectedDate" class="form-control" required />
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-                <label class="form-label">Ghi Chú</label>
-                <textarea name="ghi_chu" class="form-control" rows="2" placeholder="Ghi chú về phiếu nhập..."></textarea>
-            </div>
-        </div>
-
-        <!-- Danh sách sản phẩm (same as before) -->
-        <div style="background: white; border-radius: 8px; padding: 2rem; border: 1px solid #e0e0e0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid #3498db; padding-bottom: 0.5rem;">
-                <h5 style="color: #2c3e50; margin: 0;">
-                    <i class="fas fa-list"></i> Danh Sách Sản Phẩm
-                </h5>
-                <button type="button" class="btn btn-primary" onclick="addProductRow()" style="padding: 0.5rem 1rem;">
-                    <i class="fas fa-plus"></i> Thêm Sản Phẩm
-                </button>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table class="data-table" style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr style="background: #f5f5f5;">
-                            <th style="padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; width: 30%;">Sản Phẩm</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; width: 20%;">Số Lượng</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; width: 20%;">Đơn Giá</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; width: 20%;">Thành Tiền</th>
-                            @*<th style="padding: 1rem; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; width: 15%;">Ghi Chú</th>*@
-                            <th style="padding: 1rem; text-align: center; font-weight: 600; border-bottom: 2px solid #ddd; width: 10%;">Xóa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productList">
-                        <tr class="product-row">
-                            <td style="padding: 0.8rem; border-bottom: 1px solid #eee;">
-                                <select name="product_1" class="form-control" style="width: 100%;" onchange="updatePrice(this)">
-                                    <option value="">-- Chọn sản phẩm --</option>
-                                    @{
-                                        var products = ViewBag.Products as System.Collections.Generic.List<WebCinema.Models.Do_An>;
-                                        if (products != null)
-                                        {
-                                            foreach (var product in products)
-                                            {
-                                                <option value="@product.Do_An_id" data-price="@(product.gia ?? 0)">@product.ten_san_pham (@product.loai)
-                                                </option>
-                                            }
-                                        }
-                                    }
-                                </select>
-                            </td>
-                            <td style="padding: 0.8rem; border-bottom: 1px solid #eee;">
-                                <input type="number" name="quantity_1" class="form-control" placeholder="0" min="0" onchange="calculateTotal(this)" />
-                            </td>
-                            <td style="padding: 0.8rem; border-bottom: 1px solid #eee;">
-                                <input type="number" name="price_1" class="form-control" placeholder="0" min="0" step="0.01" onchange="calculateTotal(this)" />
-                            </td>
-                            <td style="padding: 0.8rem; border-bottom: 1px solid #eee;">
-                                <span class="total-price">0 đ</span>
-                            </td>
-                            @*<td style="padding: 0.8rem; border-bottom: 1px solid #eee;">
-                                <input type="text" name="notes_1" class="form-control" placeholder="Ghi chú" />
-                            </td>*@
-                            <td style="padding: 0.8rem; border-bottom: 1px solid #eee; text-align: center;">
-                                <button type="button" class="btn btn-sm" onclick="removeProductRow(this)" style="background: #e74c3c; color: white; padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Tổng tiền -->
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e0e0e0; display: flex; justify-content: flex-end;">
-                <div style="min-width: 300px;">
-                    <div style="display: flex; justify-content: space-between; padding: 0.8rem; background: #f8f9fa; border-radius: 6px; font-weight: 600;">
-                        <span>TỔNG CỘNG:</span>
-                        <span style="color: #e74c3c; font-size: 1.2rem;" id="grandTotal">0 đ</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Buttons -->
-        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-            <a href="@Url.Action("Index", "StaffInventoryManagement")" class="btn btn-secondary" style="padding: 1rem 2rem;">
-                <i class="fas fa-times"></i> Hủy
-            </a>
-            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
-                <i class="fas fa-check"></i> Tiếp Tục
-            </button>
-        </div>
-    }
+<div class="content-header">
+    <h1><i class="fas fa-cart-plus"></i> Tạo Phiếu Nhập Hàng</h1>
 </div>
 
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Thông Tin Phiếu Nhập</h2>
+    </div>
+
+    <div style="padding: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label">Ghi chú nhập hàng:</label>
+            <textarea id="txtNote" class="form-control" rows="3" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Chọn Món Ăn Cần Nhập</h2>
+    </div>
+
+    <div style="padding: 1.5rem;">
+        <div class="row" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label class="form-label">Chọn món ăn:</label>
+                    <select id="ddlFood" class="form-control">
+                        @foreach (var item in listFood)
+                        {
+                            <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
+                                @item.ten_san_pham (@item.loai)
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label class="form-label">Số lượng:</label>
+                    <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
+                </div>
+            </div>
+            <div class="col-md-4" style="display: flex; align-items: flex-end;">
+                <button class="btn btn-success" onclick="addItem()">
+                    <i class="fas fa-plus"></i> Thêm vào danh sách
+                </button>
+            </div>
+        </div>
+
+        <table class="data-table" id="tblImport">
+            <thead>
+                <tr>
+                    <th>Tên món</th>
+                    <th>Loại</th>
+                    <th>Số lượng nhập</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div style="text-align: right; margin-top: 2rem;">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Hủy
+            </a>
+            <button class="btn btn-primary" onclick="submitOrder()">
+                <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var importList = [];
+
+    function addItem() {
+        var foodId = $('#ddlFood').val();
+        var foodName = $('#ddlFood option:selected').data('name');
+        var foodUnit = $('#ddlFood option:selected').data('unit');
+        var quantity = parseInt($('#numQuantity').val());
+
+        if (quantity <= 0) {
+            alert("Số lượng phải lớn hơn 0");
+            return;
+        }
+
+        // Kiểm tra xem món đã có trong list chưa
+        var exists = false;
+        for (var i = 0; i < importList.length; i++) {
+            if (importList[i].Id == foodId) {
+                importList[i].SoLuong += quantity;
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            importList.push({ Id: foodId, Name: foodName, Unit: foodUnit, SoLuong: quantity });
+        }
+
+        renderTable();
+    }
+
+    function removeItem(index) {
+        importList.splice(index, 1);
+        renderTable();
+    }
+
+    function renderTable() {
+        var html = '';
+        if (importList.length === 0) {
+            html = '<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #999;">Chưa có món nào được chọn</td></tr>';
+        } else {
+            for (var i = 0; i < importList.length; i++) {
+                html += `<tr>
+                            <td>${importList[i].Name}</td>
+                            <td>${importList[i].Unit}</td>
+                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" class="form-control" style="width: 80px; display: inline-block;" /></td>
+                            <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})"><i class="fas fa-trash"></i></button></td>
+                         </tr>`;
+            }
+        }
+        $('#tblImport tbody').html(html);
+    }
+
+    function updateQty(index, newVal) {
+        importList[index].SoLuong = parseInt(newVal);
+    }
+
+    function submitOrder() {
+        if (importList.length === 0) {
+            alert("Vui lòng chọn ít nhất 1 món ăn.");
+            return;
+        }
+
+        if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu nhập hàng này?")) return;
+
+        var note = $('#txtNote').val();
+
+        $.ajax({
+            url: '@Url.Action("Create")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ items: importList, ghiChu: note }),
+            success: function (res) {
+                if (res.success) {
+                    alert(res.message);
+                    window.location.href = '@Url.Action("Index")';
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    }
+
+    // Init
+    renderTable();
+</script>
+
 <style>
-    .content-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .card-title {
-        font-size: 1.5rem;
-        color: #2c3e50;
-        font-weight: 700;
-        margin: 0;
-    }
-
     .form-group {
-        margin-bottom: 1rem;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #333;
+        margin-bottom: 1.5rem;
     }
 
     .form-control {
@@ -180,136 +178,75 @@
         padding: 0.75rem;
         border: 1px solid #ddd;
         border-radius: 6px;
-        font-size: 0.95rem;
-        transition: border-color 0.3s ease;
+        font-size: 1rem;
     }
 
-    .form-control:focus {
-        outline: none;
-        border-color: #ff6b35;
-        box-shadow: 0 0 5px rgba(255, 107, 53, 0.2);
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #666;
     }
 
-    .btn {
-        padding: 0.75rem 1.5rem;
+    .btn-success {
+        background: #28a745;
+        color: white;
         border: none;
+        padding: 0.75rem 1.5rem;
         border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
         transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
     }
 
-    .btn-primary {
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+    .btn-danger {
+        background: #dc3545;
         color: white;
     }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
-    }
-
-    .btn-secondary {
-        background: #95a5a6;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #7f8c8d;
-        transform: translateY(-2px);
-    }
-
-    .alert {
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-
-    .total-price {
-        font-weight: 600;
-        color: #e74c3c;
-    }
+        .btn-danger:hover {
+            background: #c82333;
+        }
 
     .btn-sm {
         padding: 0.4rem 0.8rem;
         font-size: 0.875rem;
     }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .col-md-5, .col-md-3, .col-md-4 {
+        flex: 1;
+    }
+
+    .col-md-5 {
+        flex-basis: 40%;
+    }
+
+    .col-md-3 {
+        flex-basis: 25%;
+    }
+
+    .col-md-4 {
+        flex-basis: 30%;
+    }
+
+    @@media (max-width: 768px) {
+        .row {
+            flex-direction: column;
+        }
+
+        .col-md-5, .col-md-3, .col-md-4 {
+            flex-basis: 100%;
+        }
+    }
 </style>
-
-@section scripts {
-    <script>
-        let rowCount = 1;
-
-        // set expected date min to tomorrow
-        document.addEventListener('DOMContentLoaded', function() {
-            const expected = document.getElementById('expectedDate');
-            if (expected) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                expected.min = tomorrow.toISOString().split('T')[0];
-            }
-        });
-
-        function addProductRow() {
-            rowCount++;
-            const newRow = document.querySelector('.product-row').cloneNode(true);
-            
-            // Update names
-            const selects = newRow.querySelectorAll('select, input');
-            selects.forEach(el => {
-                const name = el.name;
-                if (name) {
-                    const newName = name.replace(/_\d+/, '_' + rowCount);
-                    el.name = newName;
-                    el.id = newName;
-                    if (el.tagName === 'INPUT') {
-                        el.value = '';
-                    }
-                }
-            });
-
-            document.getElementById('productList').appendChild(newRow);
-        }
-
-        function removeProductRow(button) {
-            const rows = document.querySelectorAll('.product-row');
-            if (rows.length > 1) {
-                button.closest('tr').remove();
-                updateGrandTotal();
-            } else {
-                alert('Phải giữ lại ít nhất 1 dòng sản phẩm!');
-            }
-        }
-
-        function updatePrice(select) {
-            const selectedOption = select.options[select.selectedIndex];
-            const price = selectedOption.getAttribute('data-price') || 0;
-            const row = select.closest('tr');
-            const priceInput = row.querySelector('input[name^="price_"]');
-            priceInput.value = price;
-            calculateTotal(priceInput);
-        }
-
-        function calculateTotal(input) {
-            const row = input.closest('tr');
-            const quantity = row.querySelector('input[name^="quantity_"]').value || 0;
-            const price = row.querySelector('input[name^="price_"]').value || 0;
-            const total = quantity * price;
-            row.querySelector('.total-price').textContent = (total).toLocaleString('vi-VN') + ' đ';
-            updateGrandTotal();
-        }
-
-        function updateGrandTotal() {
-            let grand = 0;
-            document.querySelectorAll('.total-price').forEach(el => {
-                const text = el.textContent.replace(/[^\d]/g, '');
-                grand += parseInt(text) || 0;
-            });
-            document.getElementById('grandTotal').textContent = grand.toLocaleString('vi-VN') + ' đ';
-        }
-    </script>
-}

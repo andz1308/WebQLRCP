@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using System.Web.Helpers;
 using WebCinema.Models;
 using WebCinema.Infrastructure;
+using WebCinema.Services;
 
 namespace WebCinema.Areas.Admin.Controllers
 {
@@ -21,7 +22,7 @@ namespace WebCinema.Areas.Admin.Controllers
                 int pageSize = 10;
                 int currentPage = page ?? 1;
 
-                var query = db.Yeu_Cau_Huy_Ves.Where(y => y != null).AsQueryable();
+                var query = db.HuyVes.Where(y => y != null).AsQueryable();
 
                 // Filter by status
                 if (!string.IsNullOrEmpty(status))
@@ -52,7 +53,7 @@ namespace WebCinema.Areas.Admin.Controllers
             {
                 LoggingHelper.LogError(ex);
                 ViewBag.ErrorMessage = "Lỗi khi tải danh sách: " + ex.Message;
-                return View(new System.Collections.Generic.List<Yeu_Cau_Huy_Ve>());
+                return View(new System.Collections.Generic.List<HuyVe>());
             }
         }
 
@@ -60,7 +61,7 @@ namespace WebCinema.Areas.Admin.Controllers
         [HttpGet]
         public ActionResult Details(int id)
         {
-            var cancelRequest = db.Yeu_Cau_Huy_Ves.FirstOrDefault(y => y.yeu_cau_id == id);
+            var cancelRequest = db.HuyVes.FirstOrDefault(y => y.yeu_cau_id == id);
             if (cancelRequest == null)
                 return HttpNotFound();
 
@@ -68,29 +69,29 @@ namespace WebCinema.Areas.Admin.Controllers
             if (booking == null)
                 return HttpNotFound();
 
-            var customer = cancelRequest.Khach_Hang;
+            // ✅ LẤY khách từ booking, không từ HuyVe
+            var customer = booking.Khach_Hang;
             var tickets = booking.Ves?.ToList() ?? new System.Collections.Generic.List<Ve>();
             var firstTicket = tickets.FirstOrDefault();
             var showtime = firstTicket?.Suat_Chieu;
-            var timeSlot = showtime?.Ca_Chieu;  // ✅ LẤY ca chiếu
+            var timeSlot = showtime?.Ca_Chieu;
 
             ViewBag.Booking = booking;
             ViewBag.Customer = customer;
             ViewBag.Tickets = tickets;
             ViewBag.Showtime = showtime;
-            ViewBag.TimeSlot = timeSlot;  // ✅ ĐẢ QUA ca chiếu
+            ViewBag.TimeSlot = timeSlot;
 
             return View(cancelRequest);
         }
 
-        // ✅ POST: Admin/TicketRefundManagement/ApproveCancel - Duyệt hủy vé
+        // ✅ POST: Admin/TicketRefundManagement/ApproveCancel - XÁC NHẬN CHUYỂN TIỀN
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ApproveCancel(int id, string note = "")
         {
             try
             {
-                // Validate anti-forgery manually to ensure we can return JSON on failure
                 try
                 {
                     AntiForgery.Validate();
@@ -105,79 +106,78 @@ namespace WebCinema.Areas.Admin.Controllers
                 if (!adminId.HasValue)
                     return Json(new { success = false, message = "❌ Admin không xác thực" });
 
-                var cancelRequest = db.Yeu_Cau_Huy_Ves.FirstOrDefault(y => y.yeu_cau_id == id);
+                var cancelRequest = db.HuyVes.FirstOrDefault(y => y.yeu_cau_id == id);
                 if (cancelRequest == null)
                     return Json(new { success = false, message = "❌ Yêu cầu không tồn tại" });
 
-                if (cancelRequest.trang_thai != "Chờ duyệt")
-                    return Json(new { success = false, message = "❌ Yêu cầu này không ở trạng thái 'Chờ duyệt'" });
+                // ✅ CHỈ XÁC NHẬN NẾU ĐANG CHỜ XÁC NHẬN CHUYỂN TIỀN
+                if (cancelRequest.trang_thai != "Chờ xác nhận")
+                    return Json(new { success = false, message = "❌ Yêu cầu này không ở trạng thái 'Chờ xác nhận'" });
 
                 var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == cancelRequest.dat_ve_id);
                 if (booking == null)
                     return Json(new { success = false, message = "❌ Không tìm thấy đơn đặt" });
 
-                // ✅ CẬP NHẬT: Trạng thái yêu cầu → "Đã Hủy"
-                cancelRequest.trang_thai = "Đã Hủy";
+                // ✅ CẬP NHẬT: Trạng thái yêu cầu → "Đã xác nhận chuyển tiền"
+                cancelRequest.trang_thai = "Đã xác nhận";
                 cancelRequest.ngay_duyet = DateTime.Now;
                 cancelRequest.admin_duyet_id = adminId.Value;
                 cancelRequest.ghi_chu = note;
 
-                // ✅ CẬP NHẬT: Trạng thái đơn đặt → "Đã Hủy"
-                booking.trang_thai_Dat_Ve = "Đã Hủy";
-
-                // ✅ GIẢI PHÓNG: Tất cả vé của đơn này
-                var allTickets = booking.Ves?.ToList() ?? new List<Ve>();
-                foreach (var ticket in allTickets)
-                {
-                    ticket.trang_thai_ve = "Đã Hủy";
-                    ticket.Dat_Ve_id = null;  // Giải phóng khỏi đơn đặt
-                    // ❌ KHÔNG SET NULL - tránh unique constraint violation
-                    // ticket.ma_qr_code = null;
-                }
-
-                // ✅ XÓA: Tất cả đồ ăn liên quan
-                var foodOrders = db.DonHang_DoAns?.Where(f => f.Dat_Ve_id == booking.Dat_Ve_id)?.ToList() ?? new List<DonHang_DoAn>();
-                foreach (var food in foodOrders)
-                {
-                    db.DonHang_DoAns.DeleteOnSubmit(food);
-                }
-
-                // ✅ HOÀN LẠI: Điểm tích lũy (dựa trên số lượng vé trong đơn đã thanh toán)
-                var customer = booking.Khach_Hang;
-                if (customer != null)
-                {
-                    // Đếm tất cả vé trong đơn thanh toán này
-                    int ticketCountInBooking = booking.Ves != null ? booking.Ves.Count : 0;
-                    
-                    if (ticketCountInBooking > 0 && customer.diem_tich_luy.HasValue && customer.diem_tich_luy >= ticketCountInBooking)
-                    {
-                        customer.diem_tich_luy -= ticketCountInBooking;
-                        LoggingHelper.LogInfo($"✅ Hoàn lại {ticketCountInBooking} điểm cho khách {customer.khach_hang_id}, Điểm còn lại: {customer.diem_tich_luy}");
-                    }
-                    else if (ticketCountInBooking > 0)
-                    {
-                        LoggingHelper.LogInfo($"⚠️ Không đủ điểm hoàn lại: Yêu cầu {ticketCountInBooking}, Hiện có {customer.diem_tich_luy}");
-                    }
-                }
-
                 db.SubmitChanges();
 
-                // Construct bank account display
-                string bankAccountDisplay = "N/A";
-                if (!string.IsNullOrEmpty(cancelRequest.so_tai_khoan_atm))
+                // ✅ GỬI EMAIL THÔNG BÁO KHO KHÁCH ĐÃ CHUYỂN TIỀN
+                try
                 {
-                    int startIndex = Math.Max(0, cancelRequest.so_tai_khoan_atm.Length - 4);
-                    bankAccountDisplay = "****" + cancelRequest.so_tai_khoan_atm.Substring(startIndex);
+                    var customer = booking.Khach_Hang;
+                    if (customer != null && !string.IsNullOrEmpty(customer.email))
+                    {
+                        var emailService = new EmailServiceMailKit();
+                        string emailMessage = $@"
+                        <p>Xin chào <strong>{customer.ho_ten}</strong>,</p>
+
+                        <p>Chúng tôi xác nhận rằng <strong>Admin đã xác nhận chuyển khoản hoàn lại</strong> cho bạn.</p>
+
+                        <h3>💰 Chi tiết chuyển khoản:</h3>
+                        <ul>
+                            <li><strong>Mã yêu cầu hủy:</strong> #{id}</li>
+                            <li><strong>Mã đơn:</strong> #{booking.Dat_Ve_id}</li>
+                            <li><strong>Số tiền hoàn lại:</strong> <span style='color: #27ae60; font-weight: bold;'>{cancelRequest.so_tien_hoan_lai:N0} ₫</span></li>
+                            <li><strong>Trạng thái:</strong> ✅ Đã xác nhận chuyển tiền</li>
+                            <li><strong>Ngày xác nhận:</strong> {DateTime.Now:dd/MM/yyyy HH:mm}</li>
+                        </ul>
+
+                        <h3>🔔 Thông báo:</h3>
+                        <p>Tiền hoàn lại sẽ được chuyển vào tài khoản ngân hàng của bạn trong vòng</p>
+
+                        <p style='margin-top: 20px; color: #666;'>Cảm ơn bạn đã sử dụng dịch vụ của DAV Cinema!</p>
+                        ";
+
+                        bool sent = emailService.SendInvoiceEmail(
+                            customer.email,
+                            customer.ho_ten,
+                            $"refund_confirmed_{id}_{DateTime.Now:yyyyMMdd_HHmmss}.html",
+                            null,
+                            emailMessage
+                        );
+
+                        if (sent)
+                            LoggingHelper.LogInfo($"✅ Gửi email xác nhận chuyển tiền tới: {customer.email}");
+                    }
+                }
+                catch (Exception emailEx)
+                {
+                    LoggingHelper.LogError(emailEx, "Lỗi gửi email xác nhận chuyển tiền");
                 }
 
                 string refundAmount = (cancelRequest.so_tien_hoan_lai ?? 0).ToString("N0");
 
-                LoggingHelper.LogInfo($"✅ Admin {adminId} duyệt hủy vé: Yêu cầu {id}, Booking {booking.Dat_Ve_id}, Hoàn: {refundAmount}₫");
+                LoggingHelper.LogInfo($"✅ Admin {adminId} xác nhận chuyển tiền: Yêu cầu {id}, Booking {booking.Dat_Ve_id}, Hoàn: {refundAmount}₫");
 
                 return Json(new
                 {
                     success = true,
-                    message = $"✅ Duyệt hủy vé thành công!\n\n💰 Số tiền hoàn lại: {refundAmount} ₫\n🏦 Tài khoản: {bankAccountDisplay}\n\n⏳ Khách hàng sẽ nhận tiền trong 1-3 ngày làm việc"
+                    message = $"✅ Xác nhận chuyển tiền thành công!\n\n💰 Số tiền hoàn lại: {refundAmount} ₫\n\n📧 Email thông báo đã gửi cho khách hàng"
                 });
             }
             catch (Exception ex)
@@ -208,7 +208,7 @@ namespace WebCinema.Areas.Admin.Controllers
                 if (!adminId.HasValue)
                     return Json(new { success = false, message = "❌ Admin không xác thực" });
 
-                var cancelRequest = db.Yeu_Cau_Huy_Ves.FirstOrDefault(y => y.yeu_cau_id == id);
+                var cancelRequest = db.HuyVes.FirstOrDefault(y => y.yeu_cau_id == id);
                 if (cancelRequest == null)
                     return Json(new { success = false, message = "❌ Yêu cầu không tồn tại" });
 

@@ -1,0 +1,141 @@
+﻿@model IEnumerable<WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai>
+
+@{
+    ViewBag.Title = "Duyệt Đề Xuất Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-percent"></i> Duyệt Đề Xuất Khuyến Mãi</h1>
+
+    <div class="btn-group">
+        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+            <i class="fas fa-box-open"></i> Nhập Kho
+        </a>
+        <a href="@Url.Action("Promotions")" class="btn btn-primary active">
+            <i class="fas fa-tags"></i> Khuyến Mãi
+        </a>
+    </div>
+</div>
+
+<div class="content-card mb-3 p-3">
+    @using (Html.BeginForm("Promotions", "ManagerPurchaseOrder", FormMethod.Get))
+    {
+        <div class="row">
+            <div class="col-md-3">
+                <label>Trạng thái:</label>
+                <select name="status" class="form-control" onchange="this.form.submit()">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Chờ duyệt" @(ViewBag.SelectedStatus == "Chờ duyệt" ? "selected" : "")>Chờ duyệt</option>
+                    <option value="Đã duyệt" @(ViewBag.SelectedStatus == "Đã duyệt" ? "selected" : "")>Đã duyệt</option>
+                    <option value="Từ chối" @(ViewBag.SelectedStatus == "Từ chối" ? "selected" : "")>Từ chối</option>
+                </select>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="content-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Mã Phiếu</th>
+                @if (isAdmin)
+                {
+                    <th>Rạp</th>
+}
+                <th>Nhân Viên</th>
+                <th>Ngày Tạo</th>
+                <th>Lý Do Chung</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>#DX-@item.de_xuat_id</strong></td>
+                    @if (isAdmin)
+                    {
+                        <td><span class="badge badge-secondary">@(item.Rap != null ? item.Rap.ten_rap : "N/A")</span></td>
+                    }
+                    <td>@(item.Nhan_Vien != null ? item.Nhan_Vien.ho_ten : "N/A")</td>
+                    <td>@item.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(item.ly_do.Length > 40 ? item.ly_do.Substring(0, 40) + "..." : item.ly_do)</td>
+                    <td>
+                        @if (item.trang_thai == "Chờ duyệt")
+                        {<span class="badge badge-warning">Chờ duyệt</span> }
+                        else if (item.trang_thai == "Đã duyệt")
+                        { <span class="badge badge-success">Đã duyệt</span> }
+                        else
+                        { <span class="badge badge-danger">Từ chối</span>}
+                    </td>
+                    <td>
+                        <a href="@Url.Action("PromotionDetails", new { id = item.de_xuat_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        @if (item.trang_thai == "Chờ duyệt")
+                        {
+                            <button onclick="approvePromo(@item.de_xuat_id)" class="btn btn-sm btn-success" title="Duyệt"><i class="fas fa-check"></i></button>
+                            <button onclick="rejectPromo(@item.de_xuat_id)" class="btn btn-sm btn-danger" title="Từ chối"><i class="fas fa-times"></i></button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section scripts {
+    <script>
+        function approvePromo(id) {
+            if (confirm('Duyệt đề xuất giảm giá này?')) {
+                $.post('@Url.Action("ApprovePromotion")', { id: id }, function (res) {
+                    if (res.success) { alert(res.message); location.reload(); }
+                    else alert(res.message);
+                });
+            }
+        }
+
+        function rejectPromo(id) {
+            var reason = prompt("Nhập lý do từ chối:");
+            if (reason != null) {
+                $.post('@Url.Action("RejectPromotion")', { id: id, reason: reason }, function (res) {
+                    if (res.success) { alert(res.message); location.reload(); }
+                    else alert(res.message);
+                });
+            }
+        }
+    </script>
+}
+<style>
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+</style>

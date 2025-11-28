@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  For more information on how to configure your ASP.NET application, please visit
+  https://go.microsoft.com/fwlink/?LinkId=301880
+  -->
+<configuration>
+  <connectionStrings>
+      <add name="CinemaDBConnectionString3" connectionString="Data Source=LAPTOP-RVM8MSBT\SQLEXPRESS01;Initial Catalog=CinemaDB;Integrated Security=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString1" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString2" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString4" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString5" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+      <add name="CinemaDBConnectionString6" connectionString="Data Source=LAPTOP-ME3RONDF;Initial Catalog=CinemaDB;Integrated Security=True;TrustServerCertificate=True" providerName="System.Data.SqlClient" />
+  </connectionStrings>
+  <appSettings>
+    <add key="webpages:Version" value="3.2.7.0" />
+    <add key="webpages:Enabled" value="false" />
+    <add key="ClientValidationEnabled" value="true" />
+    <add key="UnobtrusiveJavaScriptEnabled" value="true" />
+
+	  <add key="vnp_Url" value="https://sandbox.vnpayment.vn/paymentv2/vpcpay.html" />
+	  <add key="vnp_Api" value="https://sandbox.vnpayment.vn/merchant_webapi/api/transaction" />
+	  <add key="vnp_TmnCode" value="JCMWETHR" />
+	  <add key="vnp_HashSecret" value="2X8S1D0NFBRXWEOT7E803PVJOOHUDHYJ" />
+	  <add key="vnp_Returnurl" value="https://localhost:44300/Booking/PaymentCallback" />
+    
+    <!-- QR Code Payment Settings -->
+    <add key="QRCode:BankId" value="970436" />          <!-- Vietcombank -->
+    <add key="QRCode:AccountNo" value="1031419192" />   <!-- Số tài khoản ngân hàng -->
+    <add key="QRCode:AccountName" value="NGUYEN DUY AN" /> <!-- Tên chủ tài khoản -->
+
+    <!-- Email Settings (Gmail SMTP) -->
+    <add key="SmtpServer" value="smtp.gmail.com" />
+    <add key="SmtpPort" value="587" />
+    <add key="SenderEmail" value="daianh2k00@gmail.com" />
+    <add key="SenderPassword" value="oxpf ewhq bqyx gvwf" />
+    <add key="SenderName" value="DAV Cinema" />
+    <add key="InvoiceFolder" value="Content/hoadon" />
+    
+  </appSettings>
+  <system.web>
+    <!-- Ensure correct encodings for request/response and file reading -->
+    <globalization fileEncoding="utf-8" requestEncoding="utf-8" responseEncoding="utf-8" culture="vi-VN" uiCulture="vi-VN" />
+    <compilation debug="true" targetFramework="4.7.2">
+      <assemblies>
+        <add assembly="System.Data.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+      </assemblies>
+    </compilation>
+    <httpRuntime targetFramework="4.7.2" />
+
+    <!-- Enable Forms Authentication so auth cookie is issued and recognized -->
+    <authentication mode="Forms">
+      <forms loginUrl="~/Account/Login" defaultUrl="~/" timeout="43200" slidingExpiration="true" protection="All" />
+    </authentication>
+
+    <!-- Use cookies for session and auth; adjust timeouts as needed -->
+    <sessionState mode="InProc" cookieless="UseCookies" timeout="60" />
+    <httpCookies httpOnlyCookies="true" requireSSL="false" sameSite="Lax" />
+  </system.web>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="Antlr3.Runtime" publicKeyToken="eb42632606e9261f" />
+        <bindingRedirect oldVersion="0.0.0.0-3.5.0.2" newVersion="3.5.0.2" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.0.0" newVersion="13.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Optimization" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-1.1.0.0" newVersion="1.1.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="WebGrease" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-1.6.5135.21930" newVersion="1.6.5135.21930" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Helpers" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.WebPages" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Mvc" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-5.2.7.0" newVersion="5.2.7.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Runtime.CompilerServices.Unsafe" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-6.0.1.0" newVersion="6.0.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Memory" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-4.0.2.0" newVersion="4.0.2.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Text.Encoding.CodePages" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-8.0.0.0" newVersion="8.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Threading.Tasks.Extensions" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-4.2.1.0" newVersion="4.2.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Numerics.Vectors" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-4.1.5.0" newVersion="4.1.5.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Buffers" publicKeyToken="cc7b13ffcd2ddd51" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-4.0.4.0" newVersion="4.0.4.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+  <!-- ✅ XÓA system.codedom vì không cần thiết với .NET Framework 4.7.2 -->
+<system.webServer>
+    <handlers>
+      <remove name="ExtensionlessUrlHandler-Integrated-4.0" />
+      <remove name="OPTIONSVerbHandler" />
+      <remove name="TRACEVerbHandler" />
+      <add name="ExtensionlessUrlHandler-Integrated-4.0" path="*." verb="*" type="System.Web.Handlers.TransferRequestHandler" preCondition="integratedMode,runtimeVersionv4.0" />
+    </handlers>
+    <!-- ✅ THÊM: CORS support -->
+    <httpProtocol>
+      <customHeaders>
+        <add name="Access-Control-Allow-Origin" value="*" />
+        <add name="Access-Control-Allow-Headers" value="Content-Type, Authorization" />
+        <add name="Access-Control-Allow-Methods" value="GET, POST, PUT, DELETE, OPTIONS" />
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer></configuration>

@@ -1,0 +1,270 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Services
+{
+    /// <summary>
+    /// Service để tạo file PDF hóa đơn
+    /// </summary>
+    public class InvoicePdfService
+    {
+        private CSDLDataContext db;
+
+        public InvoicePdfService()
+        {
+            db = new CSDLDataContext();
+        }
+
+        /// <summary>
+        /// Tạo PDF hóa đơn từ Dat_Ve
+        /// </summary>
+        public string GenerateInvoicePdf(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                    throw new Exception("Không tìm thấy đơn đặt");
+
+                var customer = booking.Khach_Hang;
+                var tickets = booking.Ves.ToList();
+                var firstTicket = tickets.FirstOrDefault();
+                var showtime = firstTicket?.Suat_Chieu;
+
+                // ✅ Tính toán giá
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+                List<DonHang_DoAn> foodOrders = booking.DonHang_DoAns?.ToList() ?? new List<DonHang_DoAn>();
+                
+                foreach (var food in foodOrders)
+                {
+                    foodTotal += (food.Do_An.gia ?? 0m) * food.so_luong;
+                }
+
+                decimal originalTotal = ticketTotal + foodTotal;
+                decimal discount = originalTotal - booking.tong_tien;
+
+                // ✅ Tạo thư mục nếu chưa tồn tại
+                string invoiceDir = HttpContext.Current?.Server.MapPath("~/Content/hoadon") ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Content/hoadon");
+                if (!Directory.Exists(invoiceDir))
+                    Directory.CreateDirectory(invoiceDir);
+
+                // ✅ Tên file: invoice_[bookingId]_[datetime].pdf
+                string fileName = $"invoice_{bookingId}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                string filePath = Path.Combine(invoiceDir, fileName);
+
+                // ✅ Tạo PDF
+                Document doc = new Document(PageSize.A4, 20, 20, 20, 20);
+                PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
+                doc.Open();
+
+                // ✅ HEADER
+                PdfPTable headerTable = new PdfPTable(2);
+                headerTable.WidthPercentage = 100;
+                headerTable.SetWidths(new float[] { 50, 50 });
+
+                PdfPCell logoCell = new PdfPCell(new Phrase("DAV CINEMA", new Font(Font.HELVETICA, 24, Font.BOLD, BaseColor.RED)))
+                {
+                    Border = Rectangle.NO_BORDER,
+                    VerticalAlignment = Element.ALIGN_LEFT
+                };
+                headerTable.AddCell(logoCell);
+
+                PdfPCell dateCell = new PdfPCell(new Phrase($"Ngày: {DateTime.Now:dd/MM/yyyy HH:mm}", new Font(Font.HELVETICA, 10)))
+                {
+                    Border = Rectangle.NO_BORDER,
+                    VerticalAlignment = Element.ALIGN_RIGHT,
+                    HorizontalAlignment = Element.ALIGN_RIGHT
+                };
+                headerTable.AddCell(dateCell);
+
+                doc.Add(headerTable);
+                doc.Add(new Paragraph("\n"));
+
+                // ✅ TITLE
+                Paragraph title = new Paragraph("HÓA ĐƠN THANH TOÁN", new Font(Font.HELVETICA, 16, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                doc.Add(title);
+
+                Paragraph invoiceNum = new Paragraph($"Mã đơn: #{bookingId}", new Font(Font.HELVETICA, 12, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                doc.Add(invoiceNum);
+                doc.Add(new Paragraph("\n"));
+
+                // ✅ THÔNG TIN KHÁCH HÀNG
+                PdfPTable customerTable = new PdfPTable(2);
+                customerTable.WidthPercentage = 100;
+                customerTable.SetWidths(new float[] { 50, 50 });
+
+                customerTable.AddCell(CreateCell("Thông tin khách hàng:", true));
+                customerTable.AddCell(CreateCell("Thông tin đơn hàng:", true));
+
+                customerTable.AddCell(CreateCell($"Họ tên: {customer?.ho_ten ?? "N/A"}"));
+                customerTable.AddCell(CreateCell($"Trạng thái: {booking.trang_thai_Dat_Ve}"));
+
+                customerTable.AddCell(CreateCell($"Email: {customer?.email ?? "N/A"}"));
+                customerTable.AddCell(CreateCell($"Ngày tạo: {booking.ngay_tao?.ToString("dd/MM/yyyy HH:mm") ?? "N/A"}"));
+
+                customerTable.AddCell(CreateCell($"Điện thoại: {customer?.so_dien_thoai ?? "N/A"}"));
+                customerTable.AddCell(CreateCell($"Phương thức: {booking.phuong_thuc_thanh_toan ?? "N/A"}"));
+
+                doc.Add(customerTable);
+                doc.Add(new Paragraph("\n"));
+
+                // ✅ THÔNG TIN PHIM & SUẤT CHIẾU
+                if (showtime != null)
+                {
+                    PdfPTable showtimeTable = new PdfPTable(1);
+                    showtimeTable.WidthPercentage = 100;
+
+                    showtimeTable.AddCell(CreateCell("THÔNG TIN PHIM & SUẤT CHIẾU", true));
+                    showtimeTable.AddCell(CreateCell($"Phim: {showtime.Phim.ten_phim}"));
+                    showtimeTable.AddCell(CreateCell($"Rạp: {showtime.Phong_Chieu.Rap.ten_rap} - Phòng: {showtime.Phong_Chieu.ten_phong}"));
+                    showtimeTable.AddCell(CreateCell($"Ngày chiếu: {showtime.ngay_chieu:dd/MM/yyyy} - Giờ chiếu: {showtime.Ca_Chieu.gio_bat_dau:hh\\:mm}"));
+                    showtimeTable.AddCell(CreateCell($"Ghế: {string.Join(", ", tickets.Select(t => t.Ghe?.so_ghe ?? "N/A"))}"));
+
+                    doc.Add(showtimeTable);
+                    doc.Add(new Paragraph("\n"));
+                }
+
+                // ✅ DANH SÁCH VÉ
+                PdfPTable ticketsTable = new PdfPTable(3);
+                ticketsTable.WidthPercentage = 100;
+                ticketsTable.SetWidths(new float[] { 25, 35, 40 });
+
+                ticketsTable.AddCell(CreateCell("Ghế", true));
+                ticketsTable.AddCell(CreateCell("Mã QR", true));
+                ticketsTable.AddCell(CreateCell("Giá", true));
+
+                foreach (var ticket in tickets)
+                {
+                    ticketsTable.AddCell(CreateCell(ticket.Ghe?.so_ghe ?? "N/A"));
+                    ticketsTable.AddCell(CreateCell(ticket.ma_qr_code ?? "N/A", 8));
+                    ticketsTable.AddCell(CreateCell(ticket.gia_ve.ToString("N0") + " ₫", true));
+                }
+
+                doc.Add(new Paragraph("Danh sách vé:", new Font(Font.HELVETICA, 12, Font.BOLD)));
+                doc.Add(ticketsTable);
+                doc.Add(new Paragraph("\n"));
+
+                // ✅ DANH SÁCH ĐỒ ĂN (nếu có)
+                if (foodOrders.Any())
+                {
+                    PdfPTable foodTable = new PdfPTable(4);
+                    foodTable.WidthPercentage = 100;
+                    foodTable.SetWidths(new float[] { 40, 15, 20, 25 });
+
+                    foodTable.AddCell(CreateCell("Tên đồ ăn", true));
+                    foodTable.AddCell(CreateCell("SL", true));
+                    foodTable.AddCell(CreateCell("Đơn giá", true));
+                    foodTable.AddCell(CreateCell("Thành tiền", true));
+
+                    foreach (var foodOrder in foodOrders)
+                    {
+                        decimal unitPrice = foodOrder.Do_An.gia ?? 0m;
+                        decimal itemTotal = unitPrice * foodOrder.so_luong;
+
+                        foodTable.AddCell(CreateCell(foodOrder.Do_An.ten_san_pham));
+                        foodTable.AddCell(CreateCell(foodOrder.so_luong.ToString(), true));
+                        foodTable.AddCell(CreateCell(unitPrice.ToString("N0") + " ₫", true));
+                        foodTable.AddCell(CreateCell(itemTotal.ToString("N0") + " ₫", true));
+                    }
+
+                    doc.Add(new Paragraph("Đồ ăn & thức uống:", new Font(Font.HELVETICA, 12, Font.BOLD)));
+                    doc.Add(foodTable);
+                    doc.Add(new Paragraph("\n"));
+                }
+
+                // ✅ CHI TIẾT THANH TOÁN
+                PdfPTable paymentTable = new PdfPTable(2);
+                paymentTable.WidthPercentage = 100;
+                paymentTable.SetWidths(new float[] { 60, 40 });
+
+                paymentTable.AddCell(CreateCell("Tiền vé", false, 10));
+                paymentTable.AddCell(CreateCell(ticketTotal.ToString("N0") + " ₫", true, 10));
+
+                if (foodTotal > 0)
+                {
+                    paymentTable.AddCell(CreateCell("Tiền đồ ăn", false, 10));
+                    paymentTable.AddCell(CreateCell(foodTotal.ToString("N0") + " ₫", true, 10));
+                }
+
+                paymentTable.AddCell(CreateCell("Tổng tiền gốc", false, 10, true));
+                paymentTable.AddCell(CreateCell(originalTotal.ToString("N0") + " ₫", true, 10, true));
+
+                if (discount > 0)
+                {
+                    paymentTable.AddCell(CreateCell("Giảm giá", false, 10));
+                    paymentTable.AddCell(CreateCell($"-{discount.ToString("N0")} ₫", true, 10));
+                }
+
+                paymentTable.AddCell(CreateCell("TỔNG THANH TOÁN", false, 12, true));
+                PdfPCell totalCell = CreateCell(booking.tong_tien.ToString("N0") + " ₫", true, 12, true);
+                totalCell.BackgroundColor = new BaseColor(220, 220, 220);
+                paymentTable.AddCell(totalCell);
+
+                doc.Add(paymentTable);
+                doc.Add(new Paragraph("\n\n"));
+
+                // ✅ FOOTER
+                Paragraph footer = new Paragraph("Cảm ơn bạn đã sử dụng dịch vụ của DAV CINEMA", new Font(Font.HELVETICA, 10, Font.ITALIC))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                doc.Add(footer);
+
+                doc.Close();
+                writer.Close();
+
+                LoggingHelper.LogInfo($"✅ Tạo PDF hóa đơn: {fileName}");
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex, "Lỗi tạo PDF hóa đơn");
+                throw;
+            }
+        }
+
+        // ✅ Helper method tạo cell
+        private PdfPCell CreateCell(string text, bool isHeader = false, float fontSize = 10, bool isBold = false)
+        {
+            Font font = isHeader || isBold
+                ? new Font(Font.HELVETICA, fontSize, Font.BOLD)
+                : new Font(Font.HELVETICA, fontSize);
+
+            PdfPCell cell = new PdfPCell(new Phrase(text, font))
+            {
+                Padding = 8,
+                BorderColor = BaseColor.LIGHT_GRAY,
+                VerticalAlignment = Element.ALIGN_MIDDLE
+            };
+
+            if (isHeader)
+            {
+                cell.BackgroundColor = new BaseColor(200, 200, 200);
+                cell.HorizontalAlignment = Element.ALIGN_CENTER;
+            }
+
+            return cell;
+        }
+
+        protected override void Finalize()
+        {
+            if (db != null)
+                db.Dispose();
+            base.Finalize();
+        }
+    }
+}

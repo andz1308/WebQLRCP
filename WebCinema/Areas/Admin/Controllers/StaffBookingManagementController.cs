@@ -81,10 +81,10 @@ namespace WebCinema.Areas.Admin.Controllers
                 var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == id);
                 if (booking == null)
                 {
-                    return Json(new { success = false, message = "Không tồn tại." });
+                    return Json(new { success = false, message = "Không tòn tại." });
                 }
 
-                booking.trang_thai_Dat_Ve = "Đã Hủy";
+                booking.trang_thai_Dat_Ve = "Đã Hửy";
 
                 // ? B??C 1: Gi?i phóng T?T C? vé c?a booking này
                 var allVesInBooking = db.Ves.Where(v => v.Dat_Ve_id == id).ToList();
@@ -104,7 +104,7 @@ namespace WebCinema.Areas.Admin.Controllers
 
                 db.SubmitChanges();
 
-                LoggingHelper.LogInfo($"? Staff Cancel: Hủy Dat_Ve ID={id}, giải phóng {allVesInBooking.Count} vé");
+                LoggingHelper.LogInfo($" Staff Cancel: Hủy Dat_Ve ID={id}, giải phóng {allVesInBooking.Count} vé");
 
                 return Json(new { success = true, message = "Hủy đơn đặt thành công!" });
             }

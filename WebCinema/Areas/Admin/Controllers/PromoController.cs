@@ -11,35 +11,14 @@ namespace WebCinema.Areas.Admin.Controllers
     [RoleAuthorize(Roles = "Admin")]
     public class PromoController : Controller
     {
-        private CSDLDataContext db;
+        private CSDLDataContext db = new CSDLDataContext();
 
-        public PromoController()
-        {
-            try
-            {
-                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
-                if (!string.IsNullOrEmpty(connString))
-                {
-                    db = new CSDLDataContext(connString);
-                }
-                else
-                {
-                    db = new CSDLDataContext();
-                }
-            }
-            catch
-            {
-                db = new CSDLDataContext();
-            }
-        }
-
-        // GET: Admin/Promo - Danh sách mã khuyến mãi
+        // GET: Admin/Promo
         public ActionResult Index(int? page)
         {
             int pageSize = 10;
             int pageNumber = page ?? 1;
 
-            // Use the actual primary key property `ma_giam_gia_id` instead of a non-existent `khuyen_mai_id`.
             var promoCodes = db.Khuyen_Mais
                 .OrderByDescending(k => k.ma_giam_gia_id)
                 .ToList();
@@ -56,129 +35,170 @@ namespace WebCinema.Areas.Admin.Controllers
             return View(pagedPromoCodes);
         }
 
-        // GET: Admin/Promo/Create - Tạo mã khuyến mãi mới
+        // GET: Admin/Promo/Create
         [HttpGet]
         public ActionResult Create()
         {
+            // Lấy danh sách món ăn để hiển thị checkbox
+            ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai == "Đang kinh doanh").ToList();
             return View();
         }
 
-        // POST: Admin/Promo/Create - Lưu mã khuyến mãi mới
+        // POST: Admin/Promo/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(FormCollection collection)
+        public ActionResult Create(FormCollection collection, int[] selectedFoods) // Thêm mảng selectedFoods
         {
             try
             {
                 var khuyen_mai = new Khuyen_Mai();
 
-                // Bind dữ liệu từ form
-                var maKhuyenProp = khuyen_mai.GetType().GetProperty("ma_khuyen_mai");
-                var moTaProp = khuyen_mai.GetType().GetProperty("mo_ta");
-                var giaTriGiamProp = khuyen_mai.GetType().GetProperty("gia_tri_giam");
-                var loaiGiamProp = khuyen_mai.GetType().GetProperty("loai_giam_gia");
-                var soLuongProp = khuyen_mai.GetType().GetProperty("so_luong_con_lai");
-                var trangThaiProp = khuyen_mai.GetType().GetProperty("trang_thai");
-                var ngayBatDauProp = khuyen_mai.GetType().GetProperty("ngay_bat_dau");
-                var ngayKetThucProp = khuyen_mai.GetType().GetProperty("ngay_ket_thuc");
+                // Bind dữ liệu cơ bản
+                khuyen_mai.ma_khuyen_mai = collection["ma_khuyen_mai"];
+                khuyen_mai.mo_ta = collection["mo_ta"];
 
-                if (maKhuyenProp != null) maKhuyenProp.SetValue(khuyen_mai, collection["ma_khuyen_mai"]);
-                if (moTaProp != null) moTaProp.SetValue(khuyen_mai, collection["mo_ta"]);
-                if (giaTriGiamProp != null && decimal.TryParse(collection["gia_tri_giam"], out decimal giaTriGiam))
-                    giaTriGiamProp.SetValue(khuyen_mai, giaTriGiam);
-                if (loaiGiamProp != null)
+                if (decimal.TryParse(collection["gia_tri_giam"], out decimal giaTriGiam))
+                    khuyen_mai.gia_tri_giam = giaTriGiam;
+
+                khuyen_mai.loai_giam_gia = !string.IsNullOrEmpty(collection["loai_giam_gia"]) ? collection["loai_giam_gia"] : "Giảm giá";
+
+                if (int.TryParse(collection["so_luong_con_lai"], out int soLuong))
+                    khuyen_mai.so_luong_con_lai = soLuong;
+
+                khuyen_mai.trang_thai = collection["trang_thai"] ?? "Hoạt động";
+
+                if (DateTime.TryParse(collection["ngay_bat_dau"], out DateTime ngayBatDau))
+                    khuyen_mai.ngay_bat_dau = ngayBatDau;
+
+                if (DateTime.TryParse(collection["ngay_ket_thuc"], out DateTime ngayKetThuc))
+                    khuyen_mai.ngay_ket_thuc = ngayKetThuc;
+
+                // 🔴 CẬP NHẬT MỚI: PHẠM VI ÁP DỤNG
+                // 0: Toàn đơn (Mặc định), 1: Theo món
+                int phamVi = 0;
+                if (int.TryParse(collection["pham_vi_ap_dung"], out phamVi))
                 {
-                    string loaiGiamValue = collection["loai_giam_gia"];
-                    if (string.IsNullOrEmpty(loaiGiamValue))
-                        loaiGiamValue = "Giảm giá";  // giá trị mặc định nếu form không có
-                    loaiGiamProp.SetValue(khuyen_mai, loaiGiamValue);
+                    khuyen_mai.pham_vi_ap_dung = phamVi;
                 }
-                if (soLuongProp != null && int.TryParse(collection["so_luong_con_lai"], out int soLuong))
-                    soLuongProp.SetValue(khuyen_mai, soLuong);
-                if (trangThaiProp != null) trangThaiProp.SetValue(khuyen_mai, collection["trang_thai"] ?? "Hoạt động");
-                if (ngayBatDauProp != null && DateTime.TryParse(collection["ngay_bat_dau"], out DateTime ngayBatDau))
-                    ngayBatDauProp.SetValue(khuyen_mai, ngayBatDau);
-                if (ngayKetThucProp != null && DateTime.TryParse(collection["ngay_ket_thuc"], out DateTime ngayKetThuc))
-                    ngayKetThucProp.SetValue(khuyen_mai, ngayKetThuc);
 
                 db.Khuyen_Mais.InsertOnSubmit(khuyen_mai);
-                db.SubmitChanges();
+                db.SubmitChanges(); // Lưu để lấy ID
 
-                LoggingHelper.LogInfo($"✅ Tạo mã khuyến mãi mới: {collection["ma_khuyen_mai"]}");
+                // 🔴 CẬP NHẬT MỚI: LƯU DANH SÁCH MÓN ĂN (Nếu phạm vi = 1)
+                if (khuyen_mai.pham_vi_ap_dung == 1 && selectedFoods != null && selectedFoods.Length > 0)
+                {
+                    foreach (var foodId in selectedFoods)
+                    {
+                        var link = new Khuyen_Mai_Do_An
+                        {
+                            ma_giam_gia_id = khuyen_mai.ma_giam_gia_id,
+                            do_an_id = foodId
+                        };
+                        db.Khuyen_Mai_Do_Ans.InsertOnSubmit(link);
+                    }
+                    db.SubmitChanges();
+                }
+
                 TempData["SuccessMessage"] = "Tạo mã khuyến mãi thành công!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                ViewBag.ErrorMessage = "Có lỗi xảy ra: " + ex.Message;
+                ViewBag.ErrorMessage = "Lỗi: " + ex.Message;
+                ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai == "Đang kinh doanh").ToList(); // Reload list nếu lỗi
                 return View();
             }
         }
 
-        // GET: Admin/Promo/Edit/{id} - Chỉnh sửa mã khuyến mãi
+        // GET: Admin/Promo/Edit/{id}
         [HttpGet]
         public ActionResult Edit(int id)
         {
-            // Use direct property access for ID
             var khuyen_mai = db.Khuyen_Mais.FirstOrDefault(k => k.ma_giam_gia_id == id);
-            if (khuyen_mai == null)
-            {
-                return HttpNotFound("Không tìm thấy mã khuyến mãi");
-            }
+            if (khuyen_mai == null) return HttpNotFound();
+
+            // Lấy danh sách món ăn & đánh dấu những món đã được chọn
+            ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai == "Đang kinh doanh").ToList();
+
+            // Lấy danh sách ID các món đã liên kết với mã này
+            ViewBag.SelectedFoodIds = db.Khuyen_Mai_Do_Ans
+                .Where(k => k.ma_giam_gia_id == id)
+                .Select(k => k.do_an_id)
+                .ToList();
 
             return View(khuyen_mai);
         }
 
-        // POST: Admin/Promo/Edit/{id} - Lưu chỉnh sửa mã khuyến mãi
+        // POST: Admin/Promo/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, FormCollection collection)
+        public ActionResult Edit(int id, FormCollection collection, int[] selectedFoods)
         {
             try
             {
                 var khuyen_mai = db.Khuyen_Mais.FirstOrDefault(k => k.ma_giam_gia_id == id);
-                if (khuyen_mai == null)
+                if (khuyen_mai == null) return HttpNotFound();
+
+                // Update thông tin cơ bản
+                khuyen_mai.mo_ta = collection["mo_ta"];
+
+                if (decimal.TryParse(collection["gia_tri_giam"], out decimal giaTriGiam))
+                    khuyen_mai.gia_tri_giam = giaTriGiam;
+
+                if (int.TryParse(collection["so_luong_con_lai"], out int soLuong))
+                    khuyen_mai.so_luong_con_lai = soLuong;
+
+                khuyen_mai.trang_thai = collection["trang_thai"];
+
+                if (DateTime.TryParse(collection["ngay_bat_dau"], out DateTime ngayBatDau))
+                    khuyen_mai.ngay_bat_dau = ngayBatDau;
+
+                if (DateTime.TryParse(collection["ngay_ket_thuc"], out DateTime ngayKetThuc))
+                    khuyen_mai.ngay_ket_thuc = ngayKetThuc;
+
+                // 🔴 CẬP NHẬT: PHẠM VI ÁP DỤNG
+                if (int.TryParse(collection["pham_vi_ap_dung"], out int phamVi))
                 {
-                    return HttpNotFound("Không tìm thấy mã khuyến mãi");
+                    khuyen_mai.pham_vi_ap_dung = phamVi;
                 }
 
-                // Update dữ liệu
-                var moTaProp = khuyen_mai.GetType().GetProperty("mo_ta");
-                var giaTriGiamProp = khuyen_mai.GetType().GetProperty("gia_tri_giam");
-                //var loaiGiamProp = khuyen_mai.GetType().GetProperty("loai_giam_gia");
-                var soLuongProp = khuyen_mai.GetType().GetProperty("so_luong_con_lai");
-                var trangThaiProp = khuyen_mai.GetType().GetProperty("trang_thai");
-                var ngayBatDauProp = khuyen_mai.GetType().GetProperty("ngay_bat_dau");
-                var ngayKetThucProp = khuyen_mai.GetType().GetProperty("ngay_ket_thuc");
+                // 🔴 CẬP NHẬT: DANH SÁCH MÓN ĂN
+                // 1. Xóa hết liên kết cũ
+                var oldLinks = db.Khuyen_Mai_Do_Ans.Where(k => k.ma_giam_gia_id == id).ToList();
+                db.Khuyen_Mai_Do_Ans.DeleteAllOnSubmit(oldLinks);
 
-                if (moTaProp != null) moTaProp.SetValue(khuyen_mai, collection["mo_ta"]);
-                if (giaTriGiamProp != null && decimal.TryParse(collection["gia_tri_giam"], out decimal giaTriGiam))
-                    giaTriGiamProp.SetValue(khuyen_mai, giaTriGiam);
-                //if (loaiGiamProp != null) loaiGiamProp.SetValue(khuyen_mai, collection["loai_giam_gia"]);
-                if (soLuongProp != null && int.TryParse(collection["so_luong_con_lai"], out int soLuong))
-                    soLuongProp.SetValue(khuyen_mai, soLuong);
-                if (trangThaiProp != null) trangThaiProp.SetValue(khuyen_mai, collection["trang_thai"]);
-                if (ngayBatDauProp != null && DateTime.TryParse(collection["ngay_bat_dau"], out DateTime ngayBatDau))
-                    ngayBatDauProp.SetValue(khuyen_mai, ngayBatDau);
-                if (ngayKetThucProp != null && DateTime.TryParse(collection["ngay_ket_thuc"], out DateTime ngayKetThuc))
-                    ngayKetThucProp.SetValue(khuyen_mai, ngayKetThuc);
+                // 2. Thêm liên kết mới (Nếu phạm vi = 1)
+                if (khuyen_mai.pham_vi_ap_dung == 1 && selectedFoods != null)
+                {
+                    foreach (var foodId in selectedFoods)
+                    {
+                        var link = new Khuyen_Mai_Do_An
+                        {
+                            ma_giam_gia_id = id,
+                            do_an_id = foodId
+                        };
+                        db.Khuyen_Mai_Do_Ans.InsertOnSubmit(link);
+                    }
+                }
 
                 db.SubmitChanges();
-
-                LoggingHelper.LogInfo($"✅ Cập nhật mã khuyến mãi: {khuyen_mai.ma_khuyen_mai}");
-                TempData["SuccessMessage"] = "Cập nhật mã khuyến mãi thành công!";
+                TempData["SuccessMessage"] = "Cập nhật thành công!";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
-                ViewBag.ErrorMessage = "Có lỗi xảy ra: " + ex.Message;
-                return View();
+                ViewBag.ErrorMessage = "Lỗi: " + ex.Message;
+                // Reload data for view
+                ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai == "Đang kinh doanh").ToList();
+                ViewBag.SelectedFoodIds = selectedFoods != null ? selectedFoods.ToList() : new List<int>();
+                return View(db.Khuyen_Mais.FirstOrDefault(k => k.ma_giam_gia_id == id));
             }
         }
 
         // POST: Admin/Promo/Delete/{id} - Xóa mã khuyến mãi
+        // POST: Admin/Promo/Delete/{id}
         [HttpPost]
         public ActionResult Delete(int id)
         {
@@ -190,11 +210,20 @@ namespace WebCinema.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Không tìm thấy mã khuyến mãi" });
                 }
 
-                db.Khuyen_Mais.DeleteOnSubmit(khuyen_mai);
+                // 🔴 LOGIC CŨ: Xóa hẳn khỏi DB
+                // db.Khuyen_Mais.DeleteOnSubmit(khuyen_mai);
+
+                // ✅ LOGIC MỚI: Chuyển trạng thái (Soft Delete)
+                khuyen_mai.trang_thai = "Ngừng hoạt động";
+
+                // Tùy chọn: Set số lượng về 0 để chắc chắn không ai dùng được nữa
+                // khuyen_mai.so_luong_con_lai = 0; 
+
                 db.SubmitChanges();
 
-                LoggingHelper.LogInfo($"✅ Xóa mã khuyến mãi: {khuyen_mai.ma_khuyen_mai}");
-                return Json(new { success = true, message = "Xóa mã khuyến mãi thành công!" });
+                LoggingHelper.LogInfo($"✅ Đã ngừng hoạt động mã: {khuyen_mai.ma_khuyen_mai}");
+
+                return Json(new { success = true, message = "Đã chuyển mã sang trạng thái 'Ngừng hoạt động'!" });
             }
             catch (Exception ex)
             {

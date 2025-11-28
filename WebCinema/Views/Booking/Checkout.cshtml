@@ -1,14 +1,14 @@
 ﻿@{
     ViewBag.Title = "Thanh Toán";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    
+
     var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
     var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
     IEnumerable<object> foodItems = ViewBag.FoodItems as IEnumerable<object>;
     var ticketTotal = (decimal)ViewBag.TicketTotal;
     var foodTotal = (decimal)ViewBag.FoodTotal;
     var grandTotal = (decimal)ViewBag.GrandTotal;
-    
+
     var booking = ViewBag.Booking as WebCinema.Models.Dat_Ve;
     var bookingIdValue = booking != null ? booking.Dat_Ve_id : 0;
     var qrCodeUrl = ViewBag.QRCodeUrl as string;
@@ -29,16 +29,16 @@
         text-align: center;
     }
 
-    .checkout-header h2 {
-        margin: 0 0 0.3rem 0;
-        font-size: 1.8rem;
-    }
+        .checkout-header h2 {
+            margin: 0 0 0.3rem 0;
+            font-size: 1.8rem;
+        }
 
-    .checkout-header p {
-        margin: 0;
-        opacity: 0.9;
-        font-size: 0.95rem;
-    }
+        .checkout-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
 
     .progress-steps {
         background: white;
@@ -69,53 +69,53 @@
         font-weight: bold;
     }
 
-    .step.active { 
-        color: #ff6b35; 
+    .step.active {
+        color: #ff6b35;
     }
 
-    .step.active .step-number { 
-        background: #ff6b35; 
-        color: white; 
+        .step.active .step-number {
+            background: #ff6b35;
+            color: white;
+        }
+
+    .step.completed .step-number {
+        background: #27ae60;
+        color: white;
     }
 
-    .step.completed .step-number { 
-        background: #27ae60; 
-        color: white; 
-    }
-
-    .checkout-content { 
-        display: grid; 
-        grid-template-columns: 1fr 380px; 
-        gap: 2.5rem; 
-        padding: 2rem; 
+    .checkout-content {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2.5rem;
+        padding: 2rem;
         background: white;
     }
 
-    .info-section { 
-        background: #f8f9fa; 
-        padding: 1.5rem; 
-        border-radius: 8px; 
-        border-left: 4px solid #ff6b35; 
+    .info-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #ff6b35;
         margin-bottom: 1.5rem;
     }
 
-    .section-title { 
-        font-size: 1.1rem; 
-        font-weight: 700; 
-        color: #333; 
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
         margin: 0 0 1rem 0;
-        display: flex; 
-        align-items: center; 
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
     }
 
     /* Movie Info */
-    .movie-info { 
-        display: flex; 
+    .movie-info {
+        display: flex;
         gap: 1rem;
     }
 
-    .movie-poster { 
+    .movie-poster {
         width: 70px;
         height: 100px;
         object-fit: cover;
@@ -142,11 +142,11 @@
         color: #666;
     }
 
-    .movie-details div {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
+        .movie-details div {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
 
     /* Tickets Display */
     .ticket-grid {
@@ -215,16 +215,17 @@
         display: none;
     }
 
-    .qr-payment-section.show {
-        display: block;
-        animation: slideDown 0.3s ease;
-    }
+        .qr-payment-section.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
 
     @@keyframes slideDown {
         from {
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -240,11 +241,11 @@
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
-    .qr-code-container img {
-        max-width: 280px;
-        height: auto;
-        border-radius: 6px;
-    }
+        .qr-code-container img {
+            max-width: 280px;
+            height: auto;
+            border-radius: 6px;
+        }
 
     .qr-instructions {
         margin-top: 1.5rem;
@@ -253,19 +254,19 @@
         text-align: left;
     }
 
-    .qr-instructions strong {
-        display: block;
-        margin-bottom: 0.8rem;
-    }
+        .qr-instructions strong {
+            display: block;
+            margin-bottom: 0.8rem;
+        }
 
-    .qr-instructions ol {
-        margin: 0;
-        padding-left: 1.5rem;
-    }
+        .qr-instructions ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
 
-    .qr-instructions li {
-        margin-bottom: 0.5rem;
-    }
+        .qr-instructions li {
+            margin-bottom: 0.5rem;
+        }
 
     /* Order Summary (Right Panel) */
     .order-summary {
@@ -294,14 +295,14 @@
         font-size: 0.95rem;
     }
 
-    .summary-line:last-of-type {
-        border-bottom: none;
-    }
+        .summary-line:last-of-type {
+            border-bottom: none;
+        }
 
-    .summary-line span:last-child {
-        font-weight: 600;
-        color: #333;
-    }
+        .summary-line span:last-child {
+            font-weight: 600;
+            color: #333;
+        }
 
     .summary-total {
         display: flex;
@@ -315,14 +316,14 @@
         font-weight: bold;
     }
 
-    .summary-total span:first-child {
-        color: #333;
-    }
+        .summary-total span:first-child {
+            color: #333;
+        }
 
-    .summary-total span:last-child {
-        color: #ff6b35;
-        font-size: 1.4rem;
-    }
+        .summary-total span:last-child {
+            color: #ff6b35;
+            font-size: 1.4rem;
+        }
 
     .btn-confirm {
         width: 100%;
@@ -342,16 +343,16 @@
         gap: 0.5rem;
     }
 
-    .btn-confirm:hover:not(:disabled) {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
-    }
+        .btn-confirm:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+        }
 
-    .btn-confirm:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-        transform: none;
-    }
+        .btn-confirm:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
 
     .btn-back {
         width: 100%;
@@ -370,11 +371,11 @@
         gap: 0.5rem;
     }
 
-    .btn-back:hover {
-        border-color: #ff6b35;
-        color: #ff6b35;
-        background: #fff5f2;
-    }
+        .btn-back:hover {
+            border-color: #ff6b35;
+            color: #ff6b35;
+            background: #fff5f2;
+        }
 
     /* ✅ PROMO CODE TABLE */
     .promo-code-table {
@@ -396,35 +397,35 @@
         position: relative;
     }
 
-    .promo-code-row:hover {
-        border-color: #ff6b35;
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
-    }
+        .promo-code-row:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        }
 
-    .promo-code-row.disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        background: #f5f5f5;
-        pointer-events: none;
-    }
+        .promo-code-row.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+            pointer-events: none;
+        }
 
-    .promo-code-row.disabled .promo-code-checkbox {
-        opacity: 0.3;
-    }
+            .promo-code-row.disabled .promo-code-checkbox {
+                opacity: 0.3;
+            }
 
-    .promo-code-row.disabled .promo-code-name,
-    .promo-code-row.disabled .promo-code-desc {
-        color: #999;
-    }
+            .promo-code-row.disabled .promo-code-name,
+            .promo-code-row.disabled .promo-code-desc {
+                color: #999;
+            }
 
-    .promo-code-row.disabled .discount-value {
-        color: #ccc;
-    }
+            .promo-code-row.disabled .discount-value {
+                color: #ccc;
+            }
 
-    .promo-code-row.selected {
-        border-color: #27ae60;
-        background: #f0f8f5;
-    }
+        .promo-code-row.selected {
+            border-color: #27ae60;
+            background: #f0f8f5;
+        }
 
     .promo-code-checkbox {
         width: 20px;
@@ -480,15 +481,15 @@
         font-weight: 600;
     }
 
-    .promo-code-badge.valid {
-        background: #d4edda;
-        color: #155724;
-    }
+        .promo-code-badge.valid {
+            background: #d4edda;
+            color: #155724;
+        }
 
-    .promo-code-badge.invalid {
-        background: #f8d7da;
-        color: #721c24;
-    }
+        .promo-code-badge.invalid {
+            background: #f8d7da;
+            color: #721c24;
+        }
 
     .promo-code-discount {
         text-align: right;
@@ -538,9 +539,9 @@
             padding: 2rem 1rem;
         }
 
-        .checkout-header h2 {
-            font-size: 1.4rem;
-        }
+            .checkout-header h2 {
+                font-size: 1.4rem;
+            }
 
         .progress-steps {
             gap: 1.5rem;
@@ -563,9 +564,9 @@
             padding: 1rem;
         }
 
-        .qr-code-container img {
-            max-width: 200px;
-        }
+            .qr-code-container img {
+                max-width: 200px;
+            }
     }
 </style>
 
@@ -644,8 +645,8 @@
                         @foreach (var item in foodItems)
                         {
                             if (item == null) { continue; }
-                            string foodName = "N/A"; 
-                            int quantity = 0; 
+                            string foodName = "N/A";
+                            int quantity = 0;
                             decimal price = 0m;
                             try
                             {
@@ -687,7 +688,7 @@
                 <div class="qr-payment-section" id="qrPaymentSection">
                     <h3><i class="fas fa-qrcode"></i> Quét Mã QR Để Thanh Toán</h3>
                     <p>Sử dụng ứng dụng ngân hàng để quét mã QR dưới đây</p>
-                    
+
                     <div class="qr-code-container">
                         <img src="@qrCodeUrl" alt="QR Code Payment" />
                     </div>
@@ -709,7 +710,7 @@
         <!-- Order Summary -->
         <div class="order-summary">
             <h3 class="summary-title"><i class="fas fa-receipt"></i> Tổng Đơn Hàng</h3>
-            
+
             <div class="summary-line">
                 <span>Tiền vé (@(tickets != null ? tickets.Count : 0) vé)</span>
                 <span>@ticketTotal.ToString("N0") ₫</span>
@@ -728,11 +729,18 @@
                 <span>@grandTotal.ToString("N0") ₫</span>
             </div>
 
-            <button class="btn-confirm" onclick="handlePaymentClick(@bookingIdValue)" id="paymentBtn">
-                <i class="fas fa-check-circle"></i> Thanh Toán
-            </button>
+            <div class="payment-methods" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <button class="btn-vnpay" onclick="payWithVnPay()" style="background: #005baa; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" alt="VNPay" style="height: 24px; background: white; padding: 2px; border-radius: 4px;">
+                    Thanh toán qua VNPay
+                </button>
 
-            <button class="btn-back" onclick="goBack()">
+                @*<button class="btn-confirm" onclick="handlePaymentClick(@bookingIdValue)" id="paymentBtn">
+                        <i class="fas fa-qrcode"></i> Quét QR Ngân Hàng (Thủ công)
+                    </button>*@
+            </div>
+
+            <button class="btn-back" onclick="goBack()" style="margin-top: 10px;">
                 <i class="fas fa-arrow-left"></i> Quay Lại
             </button>
         </div>
@@ -755,14 +763,14 @@
             var customerId = @(Session["CustomerId"] ?? 0);
             // ✅ FIX: Lấy foodItems từ ViewBag với đầy đủ info (bao gồm loai Do_An)
             var foodItems = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.FoodItems ?? new List<object>()));
-            
+
             // ✅ DEBUG: Log thông tin đồ ăn để check có Combo không
             console.log('📦 Food Items sent to backend:', foodItems);
-            
+
             $.ajax({
                 url: '@Url.Action("GetAvailablePromoCodes", "Booking")',
                 type: 'POST',
-                data: { 
+                data: {
                     customerId: customerId,
                     foodItemsJson: JSON.stringify(foodItems)
                 },
@@ -783,19 +791,19 @@
             }
 
             var html = '<div class="promo-code-table">';
-            
+
             promoCodes.forEach(function(promo) {
                 var isDisabled = !promo.isApplicable || promo.soLuongConLai <= 0;
-                var statusBadge = promo.isApplicable ? 
-                    '<span class="promo-code-badge valid">✓ Áp dụng được</span>' : 
+                var statusBadge = promo.isApplicable ?
+                    '<span class="promo-code-badge valid">✓ Áp dụng được</span>' :
                     '<span class="promo-code-badge invalid">✗ ' + promo.reason + '</span>';
-                
-                var discountDisplay = promo.loaiGiam === '%' ? 
-                    '-' + promo.giaTriGiam + '%' : 
+
+                var discountDisplay = promo.loaiGiam === '%' ?
+                    '-' + promo.giaTriGiam + '%' :
                     '-' + promo.giaTriGiam + '₫';
-                
+
                 var discountDesc = promo.loaiGiam === '%' ? 'Giảm giá' : 'Giảm tiền';
-                
+
                 html += '<div class="promo-code-row ' + (isDisabled ? 'disabled' : '') + '" ' +
                         'onclick="selectPromoCode(this, \'' + promo.maKhuyen + '\', ' + promo.giaTriGiam + ', \'' + promo.loaiGiam + '\')">' +
                     '<div class="promo-code-checkbox">' + (promo.isApplicable ? '✓' : '') + '</div>' +
@@ -829,15 +837,15 @@
             if ($(element).hasClass('selected')) {
                 $(element).removeClass('selected');
                 selectedPromoCode = null;
-                
+
                 // ✅ Reset tổng tiền về ban đầu using safe GRAND_TOTAL
                 var originalTotal = Number(GRAND_TOTAL) || 0;
                 $('.summary-total span:last-child').text(originalTotal.toLocaleString('vi-VN') + ' ₫');
                 $('#discountLine').remove();
-                
+
                 // ✅ Reset QR Code về giá gốc
                 updateQRCodeWithPromo(null);
-                
+
                 console.log('❌ Bỏ chọn mã');
                 return;
             }
@@ -857,7 +865,7 @@
 
             console.log('✅ Chọn mã:', selectedPromoCode);
             updateTotalWithDiscount(giaTriGiam, loaiGiam);
-            
+
             // ✅ CẬP NHẬT QR CODE
             updateQRCodeWithPromo(maKhuyen);
         }
@@ -865,11 +873,11 @@
         // ✅ HÀM CẬP NHẬT QR CODE VỚI KHUYẾN MÃI
         function updateQRCodeWithPromo(promoCode) {
             var bookingId = @bookingIdValue;
-            
+
             $.ajax({
                 url: '@Url.Action("UpdateQRCodeWithPromo", "Booking")',
                 type: 'POST',
-                data: { 
+                data: {
                     bookingId: bookingId,
                     promoCode: promoCode
                 },
@@ -879,7 +887,7 @@
                         if (response.newQrUrl) {
                             $('#qrPaymentSection img').attr('src', response.newQrUrl);
                         }
-                        
+
                         console.log('✅ QR Code updated:');
                         console.log('   New Total:', response.finalTotal.toLocaleString('vi-VN') + ' ₫');
                         console.log('   Discount:', response.discountAmount.toLocaleString('vi-VN') + ' ' + response.discountType);
@@ -906,7 +914,7 @@
             var $btn = $('#paymentBtn');
             $btn.html('<i class="fas fa-check-circle"></i> Xác Nhận Đã Thanh Toán');
             $btn.css('background', 'linear-gradient(135deg, #27ae60 0%, #229954 100%)');
-            
+
             $('html, body').animate({
                 scrollTop: $('#qrPaymentSection').offset().top - 100
             }, 500);
@@ -922,18 +930,18 @@
             $('button').prop('disabled', true);
             var $btn = $('#paymentBtn');
             $btn.html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
-            
+
             $.ajax({
                 url: '@Url.Action("ConfirmQRPayment", "Invoice")',
                 type: 'POST',
-                data: { 
+                data: {
                     bookingId: bookingId,
                     promoCode: selectedPromoCode ? selectedPromoCode.maKhuyen : null
                 },
                 success: function (response) {
                     if (response.success) {
                         alert('✅ ' + response.message + '\n\nHệ thống sẽ tự động chuyển hướng khi Admin duyệt đơn của bạn.');
-                        
+
                         var checkInterval = setInterval(function() {
                             $.ajax({
                                 url: '@Url.Action("CheckBookingStatus", "Invoice")',
@@ -982,16 +990,16 @@
             // ✅ Update UI trên trang
             var $totalSpan = $('.summary-total span:last-child');
             $totalSpan.text(newTotal.toLocaleString('vi-VN') + ' ₫');
-            
+
             // ✅ Thêm dòng discount vào summary
             var discountLineHtml = '<div class="summary-line" id="discountLine" style="color: #27ae60; font-weight: 600;">' +
                 '<span>Giảm giá</span>' +
                 '<span>-' + discountAmount.toLocaleString('vi-VN') + ' ₫</span>' +
                 '</div>';
-            
+
             // Xóa discount line cũ nếu có
             $('#discountLine').remove();
-            
+
             // Thêm discount line trước tổng
             $('.summary-total').before(discountLineHtml);
 
@@ -1000,9 +1008,32 @@
             console.log('   Giảm:', discountAmount.toLocaleString('vi-VN') + ' ₫');
             console.log('   Tổng mới:', newTotal.toLocaleString('vi-VN') + ' ₫');
         }
-        
-        function goBack() { 
-            window.history.back(); 
+
+        function goBack() {
+            window.history.back();
+        }
+        // ✅ HÀM THANH TOÁN VNPAY
+        function payWithVnPay() {
+            // Disable nút để tránh bấm nhiều lần
+            $('.btn-vnpay').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang chuyển hướng...');
+
+            $.ajax({
+                url: '@Url.Action("ProcessPayment", "Booking")',
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        // ✅ Redirect sang trang thanh toán của VNPay
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        alert('❌ Lỗi: ' + response.message);
+                        $('.btn-vnpay').prop('disabled', false).html('Thanh toán qua VNPay');
+                    }
+                },
+                error: function() {
+                    alert('❌ Lỗi hệ thống. Vui lòng thử lại.');
+                    $('.btn-vnpay').prop('disabled', false).html('Thanh toán qua VNPay');
+                }
+            });
         }
     </script>
 }

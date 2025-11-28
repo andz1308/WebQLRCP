@@ -78,19 +78,19 @@
                     <div style="display: grid; gap: 0.8rem;">
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Phim:</strong>
-                            <span>@(movie != null ? movie.ten_phim : "")</span>
+                            <span>@(movie != null ? movie.ten_phim : "N/A")</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Rạp:</strong>
-                            <span>@(cinema != null ? cinema.ten_rap : "")</span>
+                            <span>@(cinema != null ? cinema.ten_rap : "N/A")</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Phòng:</strong>
-                            <span>@(room != null ? room.ten_phong : "")</span>
+                            <span>@(room != null ? room.ten_phong : "N/A")</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Ngày chiếu:</strong>
-                            <span>@(showtime != null ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "")</span>
+                            <span>@(showtime != null ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "N/A")</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Ca chiếu:</strong>
@@ -101,13 +101,13 @@
                                 }
                                 else
                                 {
-                                    @:
+                                    @:N/A
                                 }
                             </span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: #f8f9fa; border-radius: 4px;">
                             <strong>Ngôn ngữ:</strong>
-                            <span>@(showtime != null ? showtime.ngon_ngu : "")</span>
+                            <span>@(showtime != null ? showtime.ngon_ngu : "N/A")</span>
                         </div>
                     </div>
                 </div>
@@ -151,15 +151,15 @@
                             <tr>
                                 <td>@stt</td>
                                 <td><strong>#@ticket.ve_id</strong></td>
-                                <td><strong>@(seat != null ? seat.so_ghe : "")</strong></td>
-                                <td>@(seatType != null ? seatType.ten_loai : "")</td>
+                                <td><strong>@(seat != null ? seat.so_ghe : "N/A")</strong></td>
+                                <td>@(seatType != null ? seatType.ten_loai : "N/A")</td>
                                 <td><strong>@ticket.gia_ve.ToString("N0") VNĐ</strong></td>
                                 <td>
                                     <span style="padding: 0.3rem 0.8rem; background: @ticketStatusColor; color: white; border-radius: 4px; font-size: 0.85rem;">
                                         @ticket.trang_thai_ve
                                     </span>
                                 </td>
-                                <td style="font-family: monospace; font-size: 0.85rem;">@(ticket.ma_qr_code ?? "")</td>
+                                <td style="font-family: monospace; font-size: 0.85rem;">@(ticket.ma_qr_code ?? "N/A")</td>
                             </tr>
                             stt++;
                         }
@@ -209,7 +209,7 @@
                                 
                                 <tr>
                                     <td>@foodStt</td>
-                                    <td><strong>@(food != null ? food.ten_san_pham : "")</strong></td>
+                                    <td><strong>@(food != null ? food.ten_san_pham : "N/A")</strong></td>
                                     <td>@foodOrder.so_luong</td>
                                     <td>@donGia.ToString("N0") VNĐ</td>
                                     <td><strong>@thanhTien.ToString("N0") VNĐ</strong></td>
