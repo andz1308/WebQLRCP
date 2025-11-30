@@ -75,12 +75,46 @@ namespace WebCinema.Areas.Admin.Controllers
                 .OrderBy(c => c)
                 .ToList();
 
+            var cinemaStocks = db.Raps.Select(r => new CinemaStockViewModel
+            {
+                TenRap = r.ten_rap,
+                // Tính tổng số lượng các món trong kho rạp này
+                TongSoLuong = r.Kho_Do_Ans.Sum(k => (int?)k.so_luong_ton) ?? 0,
+
+                // Lấy chi tiết từng món
+                DanhSachMon = r.Kho_Do_Ans.Select(k => new StockItemViewModel
+                {
+                    TenMon = k.Do_An.ten_san_pham,
+                    SoLuong = k.so_luong_ton ?? 0,
+                    TrangThai = (k.so_luong_ton <= 0) ? "Hết hàng" :
+                                (k.so_luong_ton < 20) ? "Sắp hết" : "Ổn định"
+                }).OrderBy(m => m.SoLuong).ToList() // Sắp xếp món ít lên đầu để dễ thấy
+            }).ToList();
+
+            ViewBag.CinemaStocks = cinemaStocks;
+
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = category;
 
             return View(model);
         }
+        // Trong InventoryManagementController.cs
 
+        [HttpGet]
+        public ActionResult GetStockDetail(int id)
+        {
+            var stocks = db.Kho_Do_Ans
+                .Where(k => k.Do_An_id == id)
+                .Select(k => new
+                {
+                    TenRap = k.Rap.ten_rap,
+                    SoLuong = k.so_luong_ton ?? 0
+                })
+                .OrderBy(k => k.TenRap)
+                .ToList();
+
+            return Json(new { success = true, data = stocks }, JsonRequestBehavior.AllowGet);
+        }
         // GET: Admin/InventoryManagement/Details/5
         public ActionResult Details(int id)
         {
@@ -118,6 +152,21 @@ namespace WebCinema.Areas.Admin.Controllers
                 .OrderByDescending(dh => dh.Dat_Ve.ngay_tao)
                 .Take(10)
                 .ToList();
+            // 1. Lấy danh sách tồn kho của TẤT CẢ các rạp
+            var stockByCinema = db.Kho_Do_Ans
+                .Where(k => k.Do_An_id == id)
+                .Select(k => new StockDetailViewModel
+                {
+                    TenRap = k.Rap.ten_rap,
+                    SoLuongTon = k.so_luong_ton ?? 0
+                })
+                .OrderBy(k => k.TenRap)
+                .ToList();
+
+            // Nếu muốn hiển thị cả các rạp chưa có trong kho (số lượng 0)
+            // Bạn có thể join với bảng Rap (Tùy chọn)
+
+            ViewBag.StockByCinema = stockByCinema; // Truyền sang View
 
             ViewBag.StockQuantity = stockQty; // Thêm biến này
             ViewBag.TotalSold = totalSold;
@@ -290,5 +339,23 @@ namespace WebCinema.Areas.Admin.Controllers
             if (disposing) db.Dispose();
             base.Dispose(disposing);
         }
+    }
+    public class StockDetailViewModel
+    {
+        public string TenRap { get; set; }
+        public int SoLuongTon { get; set; }
+    }
+    public class CinemaStockViewModel
+    {
+        public string TenRap { get; set; }
+        public int TongSoLuong { get; set; }
+        public List<StockItemViewModel> DanhSachMon { get; set; }
+    }
+
+    public class StockItemViewModel
+    {
+        public string TenMon { get; set; }
+        public int SoLuong { get; set; }
+        public string TrangThai { get; set; } // "Hết hàng", "Sắp hết", "OK"
     }
 }

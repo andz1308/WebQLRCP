@@ -5,6 +5,22 @@
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
 
     var allFoods = ViewBag.AllFoods as List<WebCinema.Models.Do_An>;
+    var selectedFoodIds = ViewBag.SelectedFoodIds as List<int>;
+    var suggestedCode = ViewBag.SuggestedCode as string;
+
+    // --- LOGIC KHỞI TẠO GIÁ TRỊ (QUAN TRỌNG) ---
+    // Nếu Model có dữ liệu (từ đề xuất), lấy giá trị ra. Nếu không, để mặc định.
+    var initMoTa = Model != null ? Model.mo_ta : "";
+    var initGiaTri = Model != null && Model.gia_tri_giam > 0 ? Model.gia_tri_giam.ToString("0.##") : "";
+    var initSoLuong = Model != null ? Model.so_luong_con_lai.ToString() : "100";
+    var initPhamVi = Model != null ? Model.pham_vi_ap_dung : 0;
+
+    // Ngày bắt đầu/kết thúc mặc định
+    var today = DateTime.Now.ToString("yyyy-MM-dd");
+    var nextWeek = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
+
+    var initBatDau = Model != null && Model.ngay_bat_dau != DateTime.MinValue ? Model.ngay_bat_dau.ToString("yyyy-MM-dd") : today;
+    var initKetThuc = Model != null && Model.ngay_ket_thuc != DateTime.MinValue ? Model.ngay_ket_thuc.ToString("yyyy-MM-dd") : nextWeek;
 }
 
 <div class="create-promo-container">
@@ -34,12 +50,10 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="ma_khuyen_mai">
-                            <i class="fas fa-tag"></i> Mã Khuyến Mãi
-                            <span class="required">*</span>
+                            <i class="fas fa-tag"></i> Mã Khuyến Mãi <span class="required">*</span>
                         </label>
-                        <input type="text" id="ma_khuyen_mai" name="ma_khuyen_mai"
-                               placeholder="Ví dụ: SUMMER2024" required maxlength="20"
-                               class="form-control" />
+                        <input type="text" id="ma_khuyen_mai" name="ma_khuyen_mai" value="@suggestedCode"
+                               placeholder="Ví dụ: SUMMER2024" required maxlength="20" class="form-control" />
                         <small class="form-hint">Mã duy nhất để khách hàng sử dụng</small>
                     </div>
 
@@ -56,12 +70,9 @@
 
                 <div class="form-group full-width">
                     <label for="mo_ta">
-                        <i class="fas fa-align-left"></i> Mô Tả
-                        <span class="required">*</span>
+                        <i class="fas fa-align-left"></i> Mô Tả <span class="required">*</span>
                     </label>
-                    <textarea id="mo_ta" name="mo_ta"
-                              placeholder="Mô tả chi tiết về chương trình khuyến mãi..."
-                              required class="form-control" rows="3"></textarea>
+                    <textarea id="mo_ta" name="mo_ta" placeholder="Mô tả chi tiết..." required class="form-control" rows="3">@initMoTa</textarea>
                 </div>
             </div>
 
@@ -74,8 +85,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="loai_giam_gia">
-                            <i class="fas fa-calculator"></i> Loại Giảm Giá
-                            <span class="required">*</span>
+                            <i class="fas fa-calculator"></i> Loại Giảm Giá <span class="required">*</span>
                         </label>
                         <select id="loai_giam_gia" name="loai_giam_gia" class="form-control">
                             <option value="%">Theo Phần Trăm (%)</option>
@@ -85,22 +95,19 @@
 
                     <div class="form-group">
                         <label for="gia_tri_giam">
-                            <i class="fas fa-dollar-sign"></i> Giá Trị Giảm
-                            <span class="required">*</span>
+                            <i class="fas fa-dollar-sign"></i> Giá Trị Giảm <span class="required">*</span>
                         </label>
-                        <input type="number" id="gia_tri_giam" name="gia_tri_giam"
-                               placeholder="0" min="0" step="1" required class="form-control" />
+                        <input type="number" id="gia_tri_giam" name="gia_tri_giam" value="@initGiaTri"
+                               placeholder="0" min="0" step="0.01" required class="form-control" />
                         <small class="form-hint">Nhập số tiền hoặc phần trăm giảm</small>
                     </div>
 
                     <div class="form-group">
                         <label for="so_luong_con_lai">
-                            <i class="fas fa-box"></i> Số Lượng Mã
-                            <span class="required">*</span>
+                            <i class="fas fa-box"></i> Số Lượng Mã <span class="required">*</span>
                         </label>
-                        <input type="number" id="so_luong_con_lai" name="so_luong_con_lai"
+                        <input type="number" id="so_luong_con_lai" name="so_luong_con_lai" value="@initSoLuong"
                                placeholder="100" min="1" required class="form-control" />
-                        <small class="form-hint">Tổng số mã có thể sử dụng</small>
                     </div>
                 </div>
             </div>
@@ -112,38 +119,29 @@
                 </div>
 
                 <div class="form-group full-width">
-                    <label for="pham_vi_ap_dung">
-                        <i class="fas fa-bullseye"></i> Chọn Phạm Vi
-                        <span class="required">*</span>
+                    <label>
+                        <i class="fas fa-bullseye"></i> Chọn Phạm Vi <span class="required">*</span>
                     </label>
                     <div class="radio-group">
                         <label class="radio-option">
-                            <input type="radio" name="pham_vi_ap_dung" value="0"
-                                   onchange="toggleFoodSelection()" checked />
+                            <input type="radio" name="pham_vi_ap_dung" value="0" onchange="toggleFoodSelection()" @(initPhamVi == 0 ? "checked" : "") />
                             <div class="radio-content">
                                 <i class="fas fa-shopping-cart"></i>
-                                <div>
-                                    <strong>Toàn Bộ Đơn Hàng</strong>
-                                    <small>Áp dụng cho tổng giá trị đơn hàng</small>
-                                </div>
+                                <div><strong>Toàn Bộ Đơn Hàng</strong><small>Áp dụng cho tổng giá trị đơn hàng</small></div>
                             </div>
                         </label>
 
                         <label class="radio-option">
-                            <input type="radio" name="pham_vi_ap_dung" value="1"
-                                   onchange="toggleFoodSelection()" />
+                            <input type="radio" name="pham_vi_ap_dung" value="1" onchange="toggleFoodSelection()" @(initPhamVi == 1 ? "checked" : "") />
                             <div class="radio-content">
                                 <i class="fas fa-utensils"></i>
-                                <div>
-                                    <strong>Món Ăn Cụ Thể</strong>
-                                    <small>Chỉ áp dụng cho các món được chọn</small>
-                                </div>
+                                <div><strong>Món Ăn Cụ Thể</strong><small>Chỉ áp dụng cho các món được chọn</small></div>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div id="foodSelectionArea" class="food-selection-area" style="display:none;">
+                <div id="foodSelectionArea" class="food-selection-area" style="display:@(initPhamVi == 1 ? "block" : "none");">
                     <div class="selection-header">
                         <i class="fas fa-list-check"></i>
                         <span>Chọn các món ăn được áp dụng khuyến mãi</span>
@@ -154,21 +152,20 @@
                         <div class="food-grid">
                             @foreach (var food in allFoods)
                             {
+                                // ✅ SỬA: Logic check món ăn từ đề xuất
+                                bool isChecked = selectedFoodIds != null && selectedFoodIds.Contains(food.Do_An_id);
                                 <label class="food-checkbox">
-                                    <input type="checkbox" name="selectedFoods" value="@food.Do_An_id" />
+                                    <input type="checkbox" name="selectedFoods" value="@food.Do_An_id" @(isChecked ? "checked" : "") />
                                     <span class="checkbox-custom"></span>
                                     <span class="food-name">@food.ten_san_pham</span>
-                                </label>
-                            }
-                        </div>
-                    }
+                                </label>}
+                        </div> }
                     else
                     {
                         <div class="no-food">
                             <i class="fas fa-box-open"></i>
                             <p>Chưa có món ăn nào trong hệ thống</p>
-                        </div>
-                    }
+                        </div>}
                 </div>
             </div>
 
@@ -183,27 +180,26 @@
                         <label for="ngay_bat_dau">
                             <i class="fas fa-calendar-plus"></i> Ngày Bắt Đầu
                         </label>
-                        <input type="date" id="ngay_bat_dau" name="ngay_bat_dau" class="form-control" />
+                        <input type="date" id="ngay_bat_dau" name="ngay_bat_dau" value="@initBatDau" class="form-control" />
                     </div>
 
                     <div class="form-group">
                         <label for="ngay_ket_thuc">
                             <i class="fas fa-calendar-check"></i> Ngày Kết Thúc
                         </label>
-                        <input type="date" id="ngay_ket_thuc" name="ngay_ket_thuc" class="form-control" />
+                        <input type="date" id="ngay_ket_thuc" name="ngay_ket_thuc" value="@initKetThuc" class="form-control" />
                     </div>
                 </div>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-check"></i> Tạo Mã Khuyến Mãi
+                    <i class="fas fa-check"></i> Lưu & Kích Hoạt
                 </button>
                 <a href="@Url.Action("Index", "Promo")" class="btn btn-cancel">
                     <i class="fas fa-times"></i> Hủy Bỏ
                 </a>
-            </div>
-        }
+            </div>}
     </div>
 </div>
 
@@ -635,26 +631,20 @@
         var selectedValue = null;
 
         radios.forEach(radio => {
-            if (radio.checked) {
-                selectedValue = radio.value;
-            }
+            if (radio.checked) selectedValue = radio.value;
         });
 
         var area = document.getElementById('foodSelectionArea');
-
         if (selectedValue === '1') {
             area.style.display = 'block';
         } else {
             area.style.display = 'none';
-            var checkboxes = area.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
+            // Optional: Uncheck all if hidden
+            // var checkboxes = area.querySelectorAll('input[type="checkbox"]');
+            // checkboxes.forEach(cb => cb.checked = false);
         }
     }
 
-    // Set min date to today
-    document.addEventListener('DOMContentLoaded', function () {
-        var today = new Date().toISOString().split('T')[0];
-        document.getElementById('ngay_bat_dau').setAttribute('min', today);
-        document.getElementById('ngay_ket_thuc').setAttribute('min', today);
-    });
+    // Khởi chạy 1 lần để đảm bảo UI đúng
+    toggleFoodSelection();
 </script>

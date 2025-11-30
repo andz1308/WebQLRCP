@@ -284,7 +284,6 @@
     <Compile Include="Areas\Admin\Controllers\ShowtimeManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\ShowtimeTicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffBookingManagementController.cs" />
-    <Compile Include="Areas\Admin\Controllers\StaffDashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffDashboardNewController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffInventoryManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffOfflineBookingController.cs" />
@@ -435,7 +434,6 @@
     <Content Include="Areas\Admin\Views\StaffOfflineBooking\Index.cshtml" />
     <Content Include="Areas\Admin\Views\StaffOfflineBooking\SelectSeats.cshtml" />
     <Content Include="Areas\Admin\Views\StaffOfflineBooking\TicketVerification.cshtml" />
-    <Content Include="Areas\Admin\Views\StaffDashboard\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\LayoutStaff.cshtml" />
     <Content Include="Areas\Admin\Views\StaffInvoice\ViewInvoice.cshtml" />
     <Content Include="Areas\Admin\Views\StaffShowtimeTicketManagement\Index.cshtml" />
@@ -460,6 +458,7 @@
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\Promotions.cshtml" />
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\PromotionDetails.cshtml" />
     <Content Include="Areas\Admin\Views\StaffDashboardNew\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffDashboard\Index.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

@@ -20,7 +20,7 @@ namespace WebCinema.Areas.Admin.Controllers
             return db.Nhan_Viens.FirstOrDefault(nv => nv.email == username || nv.ho_ten == username);
         }
 
-        
+
         // --- 1. HÀM PHỤ ĐỂ CHECK ADMIN (Dùng chung cho cả Controller) ---
         private bool CheckIsAdmin(Nhan_Vien staff)
         {
@@ -274,7 +274,9 @@ namespace WebCinema.Areas.Admin.Controllers
                 // Hoặc chỉ duyệt để nhân viên dán tem giảm giá.
 
                 db.SubmitChanges();
-                return Json(new { success = true, message = "Đã duyệt đề xuất khuyến mãi!" });
+
+                string redirectUrl = Url.Action("CreateFromProposal", "Promo", new { area = "Admin", proposalId = id });
+                return Json(new { success = true, isRedirect = true, redirectUrl = redirectUrl, message = "Đã duyệt! Đang chuyển sang tạo mã khuyến mãi..." });
             }
             catch (Exception ex)
             {

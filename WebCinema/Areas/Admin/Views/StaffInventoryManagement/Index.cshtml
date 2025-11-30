@@ -49,6 +49,40 @@
     </div>
 </div>
 
+<div class="content-card mb-4 bg-light border-0">
+    <div class="card-body p-4">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-8">
+                <h5 class="text-center mb-3 text-muted font-weight-bold text-uppercase">
+                    <i class="fas fa-magic"></i> Tác Vụ Tự Động Theo Tồn Kho
+                </h5>
+
+                <div class="input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-danger" onclick="autoImport()" type="button" title="Nhập các món thấp hơn mức này">
+                            <i class="fas fa-ambulance"></i> Nhập Hàng (Tồn &le;)
+                        </button>
+                    </div>
+
+                    <input type="number" id="txtAutoThreshold" class="form-control text-center font-weight-bold text-primary"
+                           value="20" min="0" placeholder="Nhập số lượng...">
+
+                    <div class="input-group-append">
+                        <button class="btn btn-warning text-dark" onclick="autoPromo()" type="button" title="Sale các món cao hơn mức này">
+                            Xả Hàng (Tồn &ge;) <i class="fas fa-tags"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i> Nhập một con số để lọc danh sách sản phẩm tự động
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="content-card">
     <div class="card-header">
         <h2 class="card-title"><i class="fas fa-boxes"></i> Danh Sách Tồn Kho</h2>
@@ -66,7 +100,7 @@
                     <th>Giá Bán</th>
                     <th style="text-align: center;">Tồn Kho</th>
                     <th>Trạng Thái</th>
-                    <th style="width: 100px;">Thao Tác</th>
+                    <th style="width: 120px;">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
@@ -100,19 +134,15 @@
                         <td style="text-align: center;">
                             @if (item.SoLuongTon <= 0)
                             {
-                                <span class="badge badge-danger" style="font-size: 0.9rem; padding: 8px 12px;">Hết hàng</span>
+                                <span class="badge badge-danger">Hết hàng</span>
                             }
                             else if (item.SoLuongTon < 20)
                             {
-                                <span class="badge badge-warning" style="color: #fff; font-size: 0.9rem; padding: 8px 12px;">
-                                    Sắp hết: @item.SoLuongTon
-                                </span>
+                                <span class="badge badge-warning" style="color: #000;">Sắp hết: @item.SoLuongTon</span>
                             }
                             else
                             {
-                                <span class="badge badge-success" style="font-size: 0.9rem; padding: 8px 12px;">
-                                    Sẵn có: @item.SoLuongTon
-                                </span>
+                                <span class="badge badge-success">Sẵn có: @item.SoLuongTon</span>
                             }
                         </td>
 
@@ -129,8 +159,11 @@
 
                         <td>
                             <div class="action-buttons">
-                                <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-sm btn-info" title="Xem chi tiết nhập xuất">
+                                <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-sm btn-info" title="Chi tiết">
                                     <i class="fas fa-chart-line"></i>
+                                </a>
+                                <a href="@Url.Action("Create", "StaffPurchaseOrder", new { area = "Admin", autoSelectId = item.Do_An_id })" class="btn btn-sm btn-primary" title="Nhập hàng này">
+                                    <i class="fas fa-plus"></i>
                                 </a>
                             </div>
                         </td>
@@ -147,6 +180,73 @@
         </div>
     }
 </div>
+
+<script>
+    function autoImport() {
+        var limit = document.getElementById('txtImportLimit').value;
+        if(!limit || limit < 0) { alert('Số lượng không hợp lệ'); return; }
+
+        var url = '@Url.Action("Create", "StaffPurchaseOrder", new { area = "Admin" })' + '?autoMode=LowStock&threshold=' + limit;
+        window.location.href = url;
+    }
+
+    function autoPromo() {
+        var minStock = document.getElementById('txtPromoStock').value;
+        var maxSold = document.getElementById('txtPromoSold').value;
+
+        var url = '@Url.Action("Create", "StaffPromotion", new { area = "Admin" })' +
+                  '?autoMode=SlowStock&minStock=' + minStock + '&maxSold=' + maxSold;
+        window.location.href = url;
+    }
+    // 1. Tự động Nhập Hàng (Lấy món <= threshold)
+    function autoImport() {
+        var val = $('#txtAutoThreshold').val();
+        if (!val || val < 0) { alert('Vui lòng nhập số lượng hợp lệ'); return; }
+
+        // Gọi Controller Nhập Hàng
+        var url = '@Url.Action("Create", "StaffPurchaseOrder", new { area = "Admin" })' +
+                  '?autoMode=LowStock&threshold=' + val;
+        window.location.href = url;
+    }
+
+    // 2. Tự động Khuyến Mãi (Lấy món >= threshold)
+    function autoPromo() {
+        var val = $('#txtAutoThreshold').val();
+        if (!val || val < 0) { alert('Vui lòng nhập số lượng hợp lệ'); return; }
+
+        // Gọi Controller Khuyến Mãi (Bỏ tham số maxSold, chỉ dùng minStock)
+        var url = '@Url.Action("Create", "StaffPromotion", new { area = "Admin" })' +
+                  '?autoMode=SlowStock&minStock=' + val;
+        window.location.href = url;
+    }
+</script>
+
+<style>
+    /* ... (Giữ nguyên các style cũ của bạn) ... */
+
+    /* Style cho input group */
+    .input-group {
+        display: flex;
+        width: 100%;
+    }
+
+    .input-group-prepend .input-group-text {
+        border-radius: 6px 0 0 6px;
+        border: 1px solid #ced4da;
+        padding: 0.6rem;
+        background-color: #e9ecef;
+    }
+
+    .input-group .form-control {
+        border-radius: 0;
+        flex: 1;
+    }
+
+    .input-group-append .btn {
+        border-radius: 0 6px 6px 0;
+        padding: 0.6rem 1rem;
+    }
+</style>
 
 <style>
     .badge-danger {

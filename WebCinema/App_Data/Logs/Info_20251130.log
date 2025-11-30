@@ -1,3 +1,27 @@
 [2025-11-30 07:18:28] ? BookingExpirationService started
 [2025-11-30 07:35:31] ? BookingExpirationService started
 [2025-11-30 08:21:51] ? BookingExpirationService started
+[2025-11-30 12:50:16] ? BookingExpirationService started
+[2025-11-30 13:01:49] ? BookingExpirationService started
+[2025-11-30 13:06:35] ? BookingExpirationService started
+[2025-11-30 13:07:22] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeParasite
+[2025-11-30 20:55:38] ? BookingExpirationService started
+[2025-11-30 21:01:17] ? BookingExpirationService started
+[2025-11-30 21:04:01] ? BookingExpirationService started
+[2025-11-30 21:17:10] ? BookingExpirationService started
+[2025-11-30 21:19:24] ? BookingExpirationService started
+[2025-11-30 21:21:04] ✅ Đã ngừng hoạt động mã: PROMO_3011
+[2025-11-30 21:44:10] SelectSeats (Fresh DB): showtime=29, paidBookings=62, bookedCount=22
+[2025-11-30 21:44:10] Booked seat ids: 202,205,206,207,215,216,217,222,225,226,227,235,236,255,258,262,266,267,277,286,293,295
+[2025-11-30 21:48:46] ? BookingExpirationService started
+[2025-11-30 21:49:11] SelectSeats (Fresh DB): showtime=29, paidBookings=62, bookedCount=22
+[2025-11-30 21:49:11] Booked seat ids: 202,205,206,207,215,216,217,222,225,226,227,235,236,255,258,262,266,267,277,286,293,295
+[2025-11-30 21:49:28] ✅ Tạo Dat_Ve mới: ID=192, Trạng thái=Chưa thanh toán
+[2025-11-30 21:49:28] ✅ Sinh QR code: DAVCINEMA-192-751-639001361683564812 -> qr_DAVCINEMA-192-751-639001361683564812.png
+[2025-11-30 21:49:28] ✅ Cập nhật Dat_Ve: ID=192, Tổng tiền=82000,00, Vé=1, Đồ ăn=0
+[2025-11-30 21:49:28] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=82000&addInfo=DatVe192
+[2025-11-30 21:50:17] Actor 9: Found 3 movies
+[2025-11-30 21:58:56] ? BookingExpirationService started
+[2025-11-30 21:59:56] ? Found 1 expired bookings to cancel
+[2025-11-30 21:59:56] ? Cancelled expired booking ID=192, Customer=1, Released 1 seats
+[2025-11-30 21:59:56] ? Successfully cancelled 1 expired bookings and released seats

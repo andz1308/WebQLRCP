@@ -112,7 +112,7 @@ namespace WebCinema.Controllers
                     dat_ve_id = bookingId,
                     ly_do_huy = reason ?? "Không cung cấp lý do",
                     so_tien_hoan_lai = soTienHoanLai,
-                    phan_tram_hoan_30 = 30m,
+                    phan_tram_hoan = 30m,
                     trang_thai = "Chờ xác nhận",  // ✅ CHỜ ADMIN XÁC NHẬN CHUYỂN TIỀN
                     ngay_tao = DateTime.Now
                 };

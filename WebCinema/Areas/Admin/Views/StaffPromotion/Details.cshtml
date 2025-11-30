@@ -1,286 +1,131 @@
-﻿@{
-    ViewBag.Title = "Tạo Phiếu Đề Xuất";
+﻿@model WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai
+@using WebCinema.Areas.Admin.Controllers
+
+@{
+    ViewBag.Title = "Chi Tiết Phiếu Đề Xuất";
     Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
-    var slowItems = ViewBag.SlowItems as List<WebCinema.Services.SlowItemViewModel>;
-    var allFoods = ViewBag.AllFoods as List<WebCinema.Models.Do_An>;
-    Response.ContentEncoding = System.Text.Encoding.UTF8;
-    Response.Charset = "utf-8";
+
+    var details = ViewBag.Details as IEnumerable<PromotionDetailViewModel>;
 }
 
 <div class="content-header">
-    <h1><i class="fas fa-bullhorn"></i> Tạo Đề Xuất Khuyến Mãi</h1>
+    <h1><i class="fas fa-file-alt"></i> Chi Tiết Phiếu #DX-@Model.de_xuat_id</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
 </div>
-<br />
-@if (slowItems != null && slowItems.Any())
-{
-    <div class="content-card" style="background: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 2rem;">
-        <div class="card-header" style="background: transparent; border-bottom: none; padding-bottom: 0;">
-            <h2 class="card-title" style="color: #856404;">
-                <i class="fas fa-exclamation-triangle"></i> Gợi ý: Các Món Bán Chậm Cần Giải Cứu
-            </h2>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="content-card mb-3">
+            <div class="card-header bg-light">
+                <h3 class="card-title m-0">Thông Tin Chung</h3>
+            </div>
+            <div class="p-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Ngày tạo:</strong>
+                    <span>@Model.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Trạng thái:</strong>
+                    @if (Model.trang_thai == "Chờ duyệt")
+                    {<span class="badge badge-warning">Chờ duyệt</span> }
+                    else if (Model.trang_thai == "Đã duyệt")
+                    { <span class="badge badge-success">Đã duyệt</span> }
+                    else
+                    { <span class="badge badge-danger">Từ chối</span>}
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong style="font-size:1.1rem;">Mức Giảm Đề Xuất:</strong>
+                        <span class="badge badge-danger p-2" style="font-size:1.2rem;">-@Model.muc_giam_gia%</span>
+                    </div>
+                    <hr style="border-top:1px dashed #ccc; margin:10px 0;" />
+                    <div class="small">
+                        <em>Áp dụng cho tất cả các món trong danh sách bên phải.</em>
+                        @if ((Model.so_luong_ton ?? 0) > 0)
+                        {
+                            <div class="mt-1 text-dark">
+                                <i class="fas fa-filter"></i> Điều kiện lọc: Tồn kho > @Model.so_luong_ton
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Lý do:</strong></label>
+                    <div class="bg-light p-2 rounded border">@Model.ly_do</div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ghi_chu_quan_ly))
+                {
+                    <div class="form-group mt-3">
+                        <label class="text-danger"><strong><i class="fas fa-user-tie"></i> Phản hồi từ Quản lý:</strong></label>
+                        <div class="alert alert-info">@Model.ghi_chu_quan_ly</div>
+                    </div>
+                }
+
+                @if (Model.ngay_duyet.HasValue)
+                {
+                    <div class="text-right text-muted small mt-2">
+                        Duyệt ngày: @Model.ngay_duyet.Value.ToString("dd/MM/yyyy")
+                    </div>
+                }
+            </div>
         </div>
-        <div style="padding: 1.5rem;">
-            <table class="data-table">
+    </div>
+
+    <div class="col-md-7">
+        <div class="content-card">
+            <div class="card-header bg-light">
+                <h3 class="card-title m-0">Danh Sách Sản Phẩm (@(details != null ? details.Count() : 0) món)</h3>
+            </div>
+
+            <table class="data-table table-hover">
                 <thead>
                     <tr>
-                        <th>Tên Món</th>
-                        <th style="text-align: center;">Tồn Kho</th>
-                        <th style="text-align: center;">Bán (30 ngày)</th>
-                        <th>Thao Tác</th>
+                        <th>STT</th>
+                        <th>Tên Món Ăn</th>
+                        <th>Loại</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in slowItems)
+                    @if (details != null)
                     {
-                        <tr>
-                            <td><strong>@item.DoAn.ten_san_pham</strong></td>
-                            <td style="text-align: center;">
-                                <span class="badge badge-danger" style="font-size: 0.9rem; padding: 8px 12px;">@item.SoLuongTon</span>
-                            </td>
-                            <td style="text-align: center;">@item.DaBan30Ngay</td>
-                            <td>
-                                <button class="btn btn-sm btn-success" onclick="addToList(@item.DoAn.Do_An_id, '@Html.Raw(item.DoAn.ten_san_pham.Replace("'", "\\'"))', 20)">
-                                    <i class="fas fa-plus"></i> Thêm (Giảm 20%)
-                                </button>
-                            </td>
-                        </tr>
+                        int i = 1;
+                        foreach (var item in details)
+                        {
+                            <tr>
+                                <td class="text-center text-muted">@(i++)</td>
+                                <td>
+                                    <strong>@item.da.ten_san_pham</strong>
+                                </td>
+                                <td><span class="badge badge-secondary">@item.da.loai</span></td>
+
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
         </div>
     </div>
-}
-
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-cogs"></i> Thêm Sản Phẩm</h2>
-    </div>
-
-    <div style="padding: 1.5rem; background: #f9f9fa; border-radius: 8px; margin-bottom: 2rem;">
-        <div class="row" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
-            <div class="form-group">
-                <label class="form-label">Chọn Món Ăn:</label>
-                <select id="ddlFood" class="form-control">
-                    @foreach (var item in allFoods)
-                    {
-                        <option value="@item.Do_An_id" data-name="@Html.Raw(item.ten_san_pham.Replace("'", "\\'"))">@item.ten_san_pham</option>
-                    }
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Giảm Giá (%):</label>
-                <input type="number" id="numPercent" class="form-control" value="10" min="1" max="100" />
-            </div>
-            <div></div>
-            <button class="btn btn-success" onclick="addManual()">
-                <i class="fas fa-plus"></i> Thêm vào phiếu
-            </button>
-        </div>
-    </div>
 </div>
-
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Sản Phẩm Trong Phiếu</h2>
-    </div>
-
-    <div style="padding: 1.5rem;">
-        <table class="data-table" id="tblProposal">
-            <thead>
-                <tr>
-                    <th>Tên Món Ăn</th>
-                    <th style="text-align: center;">Mức Giảm Giá (%)</th>
-                    <th style="width: 100px; text-align: center;">Thao Tác</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-pen"></i> Lý Do Đề Xuất</h2>
-    </div>
-
-    <div style="padding: 1.5rem;">
-        <div class="form-group">
-            <label class="form-label">Nhập lý do chung cho đợt đề xuất này:</label>
-            <textarea id="txtReason" class="form-control" rows="4" placeholder="Ví dụ: Các sản phẩm này có tồn kho cao nhưng bán chậm, cần giảm giá để giải cứu kho..."></textarea>
-        </div>
-
-        <div style="text-align: right; margin-top: 2rem;">
-            <a href="@Url.Action("Index")" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Hủy
-            </a>
-            <button class="btn btn-primary" onclick="submitProposal()">
-                <i class="fas fa-paper-plane"></i> Gửi Đề Xuất
-            </button>
-        </div>
-    </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    var list = [];
-
-    function addToList(id, name, pct) {
-        // Kiểm tra xem món đã tồn tại
-        if (list.find(x => x.Id == id)) {
-            alert("Món này đã có trong phiếu!");
-            return;
-        }
-        list.push({ Id: id, Name: name, Percent: pct });
-        render();
-    }
-
-    function addManual() {
-        var foodId = $('#ddlFood').val();
-        var foodName = $('#ddlFood option:selected').data('name');
-        var percent = $('#numPercent').val();
-        addToList(foodId, foodName, percent);
-    }
-
-    function removeItem(i) {
-        list.splice(i, 1);
-        render();
-    }
-
-    function render() {
-        var html = '';
-        if (list.length === 0) {
-            html = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #999;">Chưa có sản phẩm nào. Vui lòng thêm sản phẩm cần giảm giá.</td></tr>';
-        } else {
-            list.forEach((item, i) => {
-                html += `<tr>
-                            <td><strong>${item.Name}</strong></td>
-                            <td style="text-align: center;">
-                                <span style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">-${item.Percent}%</span>
-                            </td>
-                            <td style="text-align: center;">
-                                <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                         </tr>`;
-            });
-        }
-        $('#tblProposal tbody').html(html);
-    }
-
-    function submitProposal() {
-        if (list.length === 0) {
-            alert("Vui lòng thêm ít nhất 1 sản phẩm vào phiếu.");
-            return;
-        }
-        if (!$('#txtReason').val().trim()) {
-            alert("Vui lòng nhập lý do đề xuất.");
-            return;
-        }
-        if (!confirm("Xác nhận gửi đề xuất khuyến mãi này?")) {
-            return;
-        }
-
-        $.ajax({
-            url: '@Url.Action("Create")',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                items: list,
-                reason: $('#txtReason').val()
-            }),
-            success: function (res) {
-                if (res.success) {
-                    alert("Gửi đề xuất thành công!");
-                    window.location.href = '@Url.Action("Index")';
-                } else {
-                    alert("Lỗi: " + (res.message || "Không rõ nguyên nhân"));
-                }
-            },
-            error: function (xhr) {
-                alert("Lỗi gửi yêu cầu!");
-                console.error(xhr);
-            }
-        });
-    }
-
-    // Init
-    render();
-</script>
 
 <style>
-    .form-group {
-        margin-bottom: 0;
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
     }
 
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 1rem;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #666;
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-success {
-        background: #28a745;
+    .badge-success {
+        background-color: #28a745;
         color: white;
-    }
-
-        .btn-success:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
-        color: white;
-    }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
-        }
-
-    .btn-secondary {
-        background: #95a5a6;
-        color: white;
-    }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-        }
-
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-    .btn-sm {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.875rem;
+        padding: 5px 10px;
+        border-radius: 4px;
     }
 
     .badge-danger {
@@ -290,42 +135,11 @@
         border-radius: 4px;
     }
 
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-        .data-table thead {
-            background: #f5f5f5;
-        }
-
-        .data-table th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .data-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-    .row {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-end;
-    }
-
-    @@media (max-width: 768px) {
-        .row {
-            flex-direction: column;
-            align-items: stretch;
-        }
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
     }
 </style>

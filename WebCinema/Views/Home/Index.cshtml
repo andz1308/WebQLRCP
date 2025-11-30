@@ -11,16 +11,99 @@
     ViewBag.Title = "Home Page";
 }
 
+<!-- BANNER SLIDER -->
+<section class="banner-slider">
+    <div class="slider-container">
+        <div class="slide active" style="background-image: url('https://cdn.mobilecity.vn/mobilecity-vn/images/2024/01/phim-hanh-dong-my.jpg.webp'); background-size: cover; background-position: center;">
+            <div class="slide-overlay">
+                <div class="slide-content">
+                    <h2>Phim Hành Động Mới Nhất</h2>
+                    <p>Trải nghiệm rạp chiếu phim đẳng cấp thế giới</p>
+                    <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
+                </div>
+            </div>
+        </div>
+        <div class="slide" style="background-image: url('https://www.elle.vn/wp-content/uploads/2020/10/23/420765/phim-tinh-cam-cam-dong.jpg'); background-size: cover; background-position: center;">
+            <div class="slide-overlay">
+                <div class="slide-content">
+                    <h2>Phim Tình Cảm Hay Nhất</h2>
+                    <p>Cảm nhận những giây phút đặc biệt cùng người thân</p>
+                    <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
+                </div>
+            </div>
+        </div>
+        <div class="slide" style="background-image: url('https://cdn.popsww.com/blog/sites/2/2021/03/top-phim-hoat-hinh-hay-nhat-the-gioi.jpg'); background-size: cover; background-position: center;">
+            <div class="slide-overlay">
+                <div class="slide-content">
+                    <h2>Phim Hoạt Hình Cho Gia Đình</h2>
+                    <p>Vui vẻ cùng gia đình tại DAV</p>
+                    <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
+                </div>
+            </div>
+        </div>
+        <div class="slide" style="background-image: url('https://tiki.vn/blog/wp-content/uploads/2023/11/phim-kinh-di-han-quoc-thumb-compressed.jpg'); background-size: cover; background-position: center;">
+            <div class="slide-overlay">
+                <div class="slide-content">
+                    <h2>Phim Kinh Dị Rùng Rợn</h2>
+                    <p>Cảm nhận những giây phút rùng rợn tại rạp</p>
+                    <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slider-controls">
+        <span class="dot active" onclick="currentSlide(0)"></span>
+        <span class="dot" onclick="currentSlide(1)"></span>
+        <span class="dot" onclick="currentSlide(2)"></span>
+        <span class="dot" onclick="currentSlide(3)"></span>
+    </div>
+</section>
+
+<!-- FILTER SECTION -->
+<section class="filter-section">
+    <form id="filterForm" method="get" action="@Url.Action("Index", "Home")">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label>Chọn Rạp</label>
+                <select name="cinemaId" id="cinemaFilter">
+                    <option value="">Tất cả rạp</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ngày Chiếu</label>
+                <input type="date" name="date" id="dateFilter">
+            </div>
+            <div class="filter-group">
+                <label>Thể Loại</label>
+                <select name="genreId" id="genreFilter">
+                    <option value="">Tất cả thể loại</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ngôn Ngữ</label>
+                <select name="language" id="languageFilter">
+                    <option value="">Tất cả ngôn ngữ</option>
+                </select>
+            </div>
+            <div class="filter-btn-group">
+                <button type="submit" class="filter-submit-btn">
+                    <i class="fas fa-filter"></i> Lọc Phim
+                </button>
+            </div>
+        </div>
+    </form>
+</section>
+
 <section class="movies-section" id="movies">
     <h2 class="section-title">Phim Đang Chiếu</h2>
-    
+
     @if (ViewBag.TotalMovies > 0)
     {
         @*<p style="color: #666; margin-bottom: 1.5rem;">
-            Hiển thị @Model.Count() phim (Tổng: @ViewBag.TotalMovies phim)
-        </p>*@
+                Hiển thị @Model.Count() phim (Tổng: @ViewBag.TotalMovies phim)
+            </p>*@
     }
-    
+
     <div class="movies-grid">
         @if (Model != null && Model.Any())
         {
@@ -33,14 +116,14 @@
                 // Use reflection to get ImagePath if the viewmodel doesn't have the property at compile time
                 var imgPathProp = item.GetType().GetProperty("ImagePath");
                 var imgPath = imgPathProp != null ? imgPathProp.GetValue(item, null) as string : null;
-                
+
                 string genreText = genres != null && genres.Any() ? string.Join(", ", genres) : "Chưa phân loại";
                 string durationText = movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A";
-                
+
                 // Tính số sao đầy và sao rỗng
                 int fullStars = (int)Math.Round(avgRating);
                 int emptyStars = 5 - fullStars;
-                
+
                 <div class="movie-card" onclick="location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">
                     <div class="movie-poster">
                         @if (!string.IsNullOrEmpty(imgPath))
@@ -106,19 +189,19 @@
             </div>
         }
     </div>
-    
+
     @* PHÂN TRANG *@
     @if (ViewBag.TotalPages > 1)
     {
         <div style="margin-top: 3rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             @if (ViewBag.CurrentPage > 1)
             {
-                <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })" 
+                <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })"
                    style="padding: 0.6rem 1.2rem; background: #fff; border: 2px solid #ff6b35; color: #ff6b35; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.3rem;">
                     <i class="fas fa-chevron-left"></i> Trước
                 </a>
             }
-            
+
             @for (int i = 1; i <= ViewBag.TotalPages; i++)
             {
                 if (i == ViewBag.CurrentPage)
@@ -129,7 +212,7 @@
                 }
                 else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
                 {
-                    <a href="@Url.Action("Index", new { page = i, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })" 
+                    <a href="@Url.Action("Index", new { page = i, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })"
                        style="padding: 0.6rem 1.2rem; background: #fff; border: 2px solid #e0e0e0; color: #333; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;">
                         @i
                     </a>
@@ -139,10 +222,10 @@
                     <span style="padding: 0.6rem 1.2rem; color: #999;">...</span>
                 }
             }
-            
+
             @if (ViewBag.CurrentPage < ViewBag.TotalPages)
             {
-                <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })" 
+                <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1, cinemaId = ViewBag.SelectedCinemaId, genreId = ViewBag.SelectedGenreId, language = ViewBag.SelectedLanguage })"
                    style="padding: 0.6rem 1.2rem; background: #fff; border: 2px solid #ff6b35; color: #ff6b35; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.3rem;">
                     Sau <i class="fas fa-chevron-right"></i>
                 </a>
@@ -155,7 +238,7 @@
 <section class="promotions-section" id="promotions">
     <div class="promotions-container">
         <h2 class="section-title">Sự Kiện & Khuyến Mãi Nổi Bật</h2>
-        
+
         <div class="promo-carousel-wrapper">
             <div class="promo-carousel">
                 <div class="promo-slide">
@@ -253,11 +336,11 @@
         backdrop-filter: blur(5px);
     }
 
-    .promo-nav:hover {
-        background: rgba(255, 107, 53, 1);
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-    }
+        .promo-nav:hover {
+            background: rgba(255, 107, 53, 1);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
 
     .promo-nav-prev {
         left: 20px;
@@ -288,18 +371,18 @@
         border: 2px solid rgba(255, 255, 255, 0.7);
     }
 
-    .promo-dot:hover {
-        background: rgba(255, 255, 255, 0.8);
-        transform: scale(1.2);
-    }
+        .promo-dot:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.2);
+        }
 
-    .promo-dot.active {
-        background: #ff6b35;
-        border-color: #ff8555;
-        width: 30px;
-        border-radius: 6px;
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
-    }
+        .promo-dot.active {
+            background: #ff6b35;
+            border-color: #ff8555;
+            width: 30px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
 
     /* Responsive */
     @@media (max-width: 768px) {
@@ -331,9 +414,9 @@
             height: 10px;
         }
 
-        .promo-dot.active {
-            width: 24px;
-        }
+            .promo-dot.active {
+                width: 24px;
+            }
     }
 
     @@media (max-width: 480px) {
@@ -436,7 +519,7 @@
                 var diaChi = cinemaType.GetProperty("dia_chi").GetValue(cinemaObj, null) as string;
                 var moTa = cinemaType.GetProperty("mo_ta").GetValue(cinemaObj, null) as string;
                 var email = cinemaType.GetProperty("email").GetValue(cinemaObj, null) as string;
-                
+
                 <div class="cinema-card">
                     <div class="cinema-image">
                         <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;

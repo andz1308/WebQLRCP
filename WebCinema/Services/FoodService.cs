@@ -237,7 +237,7 @@ namespace WebCinema.Services
         }
 
         #endregion
-        public bool CreateImportRequest(int nhanVienId, int rapId, List<Chi_Tiet_Phieu_Nhap> chiTietList, string ghiChu)
+        public bool CreateImportRequest(int nhanVienId, int rapId, List<Chi_Tiet_Phieu_Nhap> chiTietList, string ghiChu, int? supplierId)
         {
             try
             {
@@ -248,7 +248,8 @@ namespace WebCinema.Services
                     rap_id = rapId,
                     ngay_nhap = DateTime.Now,
                     ghi_chu = ghiChu,
-                    trang_thai = "Chờ duyệt" // Mặc định là chờ duyệt
+                    trang_thai = "Chờ duyệt", // Mặc định là chờ duyệt
+                    nha_cung_cap_id = supplierId // <--- CẬP NHẬT MỚI
                 };
                 _db.Phieu_Nhaps.InsertOnSubmit(phieuNhap);
                 _db.SubmitChanges(); // Để lấy ID
@@ -330,10 +331,13 @@ namespace WebCinema.Services
             }
         }
         // --- Tìm món bán chậm (Tồn > 20 nhưng bán < 10 trong 30 ngày) ---
-        public List<SlowItemViewModel> GetSlowSellingItems(int rapId)
+        public List<SlowItemViewModel> GetSlowSellingItems(int rapId, int minStock, int maxSold)
         {
             var oneMonthAgo = DateTime.Now.AddDays(-30);
-            var inventory = _db.Kho_Do_Ans.Where(k => k.rap_id == rapId && k.so_luong_ton > 20).ToList();
+
+            // Lọc theo tham số minStock truyền vào
+            var inventory = _db.Kho_Do_Ans.Where(k => k.rap_id == rapId && k.so_luong_ton >= minStock).ToList();
+
             var result = new List<SlowItemViewModel>();
 
             foreach (var item in inventory)
@@ -345,7 +349,8 @@ namespace WebCinema.Services
                                  && dh.Dat_Ve.Nhan_Vien.rap_id == rapId)
                     .Sum(dh => (int?)dh.so_luong) ?? 0;
 
-                if (soldCount < 10) // Ngưỡng bán chậm
+                // Lọc theo tham số maxSold truyền vào
+                if (soldCount <= maxSold)
                 {
                     result.Add(new SlowItemViewModel { DoAn = item.Do_An, SoLuongTon = item.so_luong_ton ?? 0, DaBan30Ngay = soldCount });
                 }
@@ -354,42 +359,51 @@ namespace WebCinema.Services
         }
 
         // --- Tạo phiếu đề xuất (Transaction) ---
-        public bool CreatePromotionProposal(int nhanVienId, int rapId, string reason, List<Chi_Tiet_De_Xuat_Khuyen_Mai> details)
+        // Trong FoodService.cs
+
+        public bool CreatePromotionProposal(int nhanVienId, int rapId, string reason, int percent, int stockThreshold, List<Chi_Tiet_De_Xuat_Khuyen_Mai> details)
         {
             if (_db.Connection.State == ConnectionState.Closed)
             {
                 _db.Connection.Open();
             }
+
             using (var transaction = _db.Connection.BeginTransaction())
             {
                 _db.Transaction = transaction;
                 try
                 {
-                    // 1. Lưu Master
+                    // 1. Lưu Master (Kèm mức giảm giá và mức tồn kho điều kiện)
                     var phieu = new Phieu_De_Xuat_Khuyen_Mai
                     {
                         nhan_vien_id = nhanVienId,
                         rap_id = rapId,
                         ly_do = reason,
+                        muc_giam_gia = percent,
+                        so_luong_ton = stockThreshold, // <--- LƯU VÀO ĐÂY
                         trang_thai = "Chờ duyệt",
                         ngay_tao = DateTime.Now
                     };
+
                     _db.Phieu_De_Xuat_Khuyen_Mais.InsertOnSubmit(phieu);
                     _db.SubmitChanges();
 
-                    // 2. Lưu Details
+                    // 2. Lưu Chi tiết (Chỉ cần ID món ăn)
                     foreach (var item in details)
                     {
-                        var kho = _db.Kho_Do_Ans.FirstOrDefault(k => k.rap_id == rapId && k.Do_An_id == item.do_an_id);
                         item.de_xuat_id = phieu.de_xuat_id;
-                        item.so_luong_ton = kho != null ? (kho.so_luong_ton ?? 0) : 0;
                         _db.Chi_Tiet_De_Xuat_Khuyen_Mais.InsertOnSubmit(item);
                     }
+
                     _db.SubmitChanges();
                     transaction.Commit();
                     return true;
                 }
-                catch { transaction.Rollback(); return false; }
+                catch
+                {
+                    transaction.Rollback();
+                    return false;
+                }
             }
         }
         public bool UpdateStock(int rapId, List<StockModel> items, bool isAdding)

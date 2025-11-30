@@ -28,8 +28,6 @@
       <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="de_xuat_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="do_an_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="so_luong_ton" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="muc_giam_gia" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Association Name="Do_An_Chi_Tiet_De_Xuat_Khuyen_Mai" Member="Do_An" ThisKey="do_an_id" OtherKey="Do_An_id" Type="Do_An" IsForeignKey="true" />
       <Association Name="Phieu_De_Xuat_Khuyen_Mai_Chi_Tiet_De_Xuat_Khuyen_Mai" Member="Phieu_De_Xuat_Khuyen_Mai" ThisKey="de_xuat_id" OtherKey="de_xuat_id" Type="Phieu_De_Xuat_Khuyen_Mai" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
@@ -145,7 +143,7 @@
       <Column Name="dat_ve_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="ly_do_huy" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="so_tien_hoan_lai" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
-      <Column Name="phan_tram_hoan_30" Type="System.Decimal" DbType="Decimal(5,2)" CanBeNull="true" />
+      <Column Name="phan_tram_hoan" Type="System.Decimal" DbType="Decimal(5,2)" CanBeNull="true" />
       <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="ngay_tao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="ngay_duyet" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
@@ -167,7 +165,6 @@
       <Column Name="ngay_sinh" Type="System.DateTime" DbType="Date" CanBeNull="true" />
       <Column Name="gioi_tinh" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
       <Column Name="dia_chi" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="atm" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Association Name="Khach_Hang_Danh_Gia" Member="Danh_Gias" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Danh_Gia" />
       <Association Name="Khach_Hang_Dat_Ve" Member="Dat_Ves" ThisKey="khach_hang_id" OtherKey="khach_hang_id" Type="Dat_Ve" />
     </Type>
@@ -232,6 +229,17 @@
       <Association Name="Loai_Phim_Phim_LoaiPhim" Member="Phim_LoaiPhims" ThisKey="loaiphim_id" OtherKey="loaiphim_id" Type="Phim_LoaiPhim" />
     </Type>
   </Table>
+  <Table Name="dbo.Nha_Cung_Cap" Member="Nha_Cung_Caps">
+    <Type Name="Nha_Cung_Cap">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="ten_nha_cung_cap" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="so_dien_thoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="dia_chi" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Association Name="Nha_Cung_Cap_Phieu_Nhap" Member="Phieu_Nhaps" ThisKey="id" OtherKey="nha_cung_cap_id" Type="Phieu_Nhap" />
+    </Type>
+  </Table>
   <Table Name="dbo.Nha_San_Xuat" Member="Nha_San_Xuats">
     <Type Name="Nha_San_Xuat">
       <Column Name="nha_san_xuat_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -267,6 +275,8 @@
       <Column Name="de_xuat_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="nhan_vien_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="rap_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="muc_giam_gia" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="so_luong_ton" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ly_do" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="ngay_tao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
@@ -285,7 +295,9 @@
       <Column Name="ngay_nhap" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="ghi_chu" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="trang_thai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="nha_cung_cap_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="Phieu_Nhap_Chi_Tiet_Phieu_Nhap" Member="Chi_Tiet_Phieu_Nhaps" ThisKey="phieu_nhap_id" OtherKey="phieu_nhap_id" Type="Chi_Tiet_Phieu_Nhap" />
+      <Association Name="Nha_Cung_Cap_Phieu_Nhap" Member="Nha_Cung_Cap" ThisKey="nha_cung_cap_id" OtherKey="id" Type="Nha_Cung_Cap" IsForeignKey="true" />
       <Association Name="Nhan_Vien_Phieu_Nhap" Member="Nhan_Vien" ThisKey="nhan_vien_id" OtherKey="nhanvien_id" Type="Nhan_Vien" IsForeignKey="true" />
       <Association Name="Rap_Phieu_Nhap" Member="Rap" ThisKey="rap_id" OtherKey="rap_id" Type="Rap" IsForeignKey="true" />
     </Type>

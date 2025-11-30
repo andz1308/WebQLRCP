@@ -231,6 +231,44 @@ namespace WebCinema.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
+        // GET: Admin/Promo/CreateFromProposal/{proposalId}
+        [HttpGet]
+        public ActionResult CreateFromProposal(int proposalId)
+        {
+            // 1. Lấy thông tin phiếu đề xuất
+            var proposal = db.Phieu_De_Xuat_Khuyen_Mais.FirstOrDefault(p => p.de_xuat_id == proposalId);
+            if (proposal == null) return RedirectToAction("Create");
+
+            // 2. Lấy danh sách món ăn trong phiếu đề xuất
+            var foodIds = db.Chi_Tiet_De_Xuat_Khuyen_Mais
+                .Where(ct => ct.de_xuat_id == proposalId)
+                .Select(ct => ct.do_an_id)
+                .ToList();
+
+            // 3. Chuẩn bị dữ liệu để điền vào form (dùng Model hoặc ViewBag)
+            // Chúng ta sẽ tái sử dụng View "Create" nhưng truyền Model có sẵn dữ liệu
+            var model = new Khuyen_Mai
+            {
+                mo_ta = proposal.ly_do,            // Lấy lý do làm mô tả
+                gia_tri_giam = proposal.muc_giam_gia, // Lấy mức giảm
+                loai_giam_gia = "%",               // Mặc định là % (vì form đề xuất nhập %)
+                pham_vi_ap_dung = 1,               // Mặc định là Theo món (vì đề xuất xả kho thường theo món)
+                so_luong_con_lai = 100,            // Mặc định số lượng
+                ngay_bat_dau = DateTime.Now,
+                ngay_ket_thuc = DateTime.Now.AddDays(7), // Mặc định 7 ngày
+                trang_thai = "Hoạt động"
+            };
+
+            // Truyền danh sách món đã chọn sang View
+            ViewBag.SelectedFoodIds = foodIds;
+            ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai != "Ngừng kinh doanh").ToList();
+
+            // Gợi ý mã code (Optional)
+            ViewBag.SuggestedCode = "PROMO_" + DateTime.Now.ToString("ddMM");
+
+            // Trả về View Create nhưng kèm Model
+            return View("Create", model);
+        }
 
         protected override void Dispose(bool disposing)
         {

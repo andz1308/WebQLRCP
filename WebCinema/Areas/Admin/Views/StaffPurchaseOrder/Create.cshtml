@@ -2,81 +2,76 @@
     ViewBag.Title = "Tạo Yêu Cầu Nhập Hàng";
     Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
     var listFood = ViewBag.ListFood as List<WebCinema.Models.Do_An>;
-    Response.ContentEncoding = System.Text.Encoding.UTF8;
-    Response.Charset = "utf-8";
+    var suppliers = ViewBag.Suppliers as List<WebCinema.Models.Nha_Cung_Cap>;
 }
 
 <div class="content-header">
     <h1><i class="fas fa-cart-plus"></i> Tạo Phiếu Nhập Hàng</h1>
 </div>
 
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Thông Tin Phiếu Nhập</h2>
+<div class="content-card" style="padding: 20px;">
+
+    <div class="form-group">
+        <label>Ghi chú nhập hàng:</label>
+        <textarea id="txtNote" class="form-control" rows="2" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
     </div>
 
-    <div style="padding: 1.5rem;">
-        <div class="form-group">
-            <label class="form-label">Ghi chú nhập hàng:</label>
-            <textarea id="txtNote" class="form-control" rows="3" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
-        </div>
-    </div>
-</div>
-
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-list"></i> Chọn Món Ăn Cần Nhập</h2>
-    </div>
-
-    <div style="padding: 1.5rem;">
-        <div class="row" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
-            <div class="col-md-5">
-                <div class="form-group">
-                    <label class="form-label">Chọn món ăn:</label>
-                    <select id="ddlFood" class="form-control">
-                        @foreach (var item in listFood)
+    <div class="row" style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Nhà Cung Cấp (*):</label>
+                <select id="ddlSupplier" class="form-control">
+                    <option value="">-- Chọn nhà cung cấp --</option>
+                    @if (suppliers != null)
+                    {
+                        foreach (var ncc in suppliers)
                         {
-                            <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
-                                @item.ten_san_pham (@item.loai)
-                            </option>
-                        }
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label class="form-label">Số lượng:</label>
-                    <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
-                </div>
-            </div>
-            <div class="col-md-4" style="display: flex; align-items: flex-end;">
-                <button class="btn btn-success" onclick="addItem()">
-                    <i class="fas fa-plus"></i> Thêm vào danh sách
-                </button>
+                            <option value="@ncc.id">@ncc.ten_nha_cung_cap</option>
+}
+                    }
+                </select>
             </div>
         </div>
-
-        <table class="data-table" id="tblImport">
-            <thead>
-                <tr>
-                    <th>Tên món</th>
-                    <th>Loại</th>
-                    <th>Số lượng nhập</th>
-                    <th>Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-
-        <div style="text-align: right; margin-top: 2rem;">
-            <a href="@Url.Action("Index")" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Hủy
-            </a>
-            <button class="btn btn-primary" onclick="submitOrder()">
-                <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+        <div class="col-md-5">
+            <label>Chọn món ăn:</label>
+            <select id="ddlFood" class="form-control">
+                @foreach (var item in listFood)
+                {
+                    <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
+                        @item.ten_san_pham (@item.loai)
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Số lượng:</label>
+            <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
+        </div>
+        <div class="col-md-4" style="display: flex; align-items: flex-end;">
+            <button class="btn btn-success" onclick="addItem()">
+                <i class="fas fa-plus"></i> Thêm vào danh sách
             </button>
         </div>
+    </div>
+
+    <table class="table table-bordered" id="tblImport">
+        <thead>
+            <tr>
+                <th>Tên món</th>
+                <th>Loại</th>
+                <th>Số lượng nhập</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div style="text-align: right; margin-top: 20px;">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">Hủy</a>
+        <button class="btn btn-primary" onclick="submitOrder()">
+            <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+        </button>
     </div>
 </div>
 
@@ -120,13 +115,13 @@
     function renderTable() {
         var html = '';
         if (importList.length === 0) {
-            html = '<tr><td colspan="4" class="text-center" style="padding: 2rem; color: #999;">Chưa có món nào được chọn</td></tr>';
+            html = '<tr><td colspan="4" class="text-center">Chưa có món nào được chọn</td></tr>';
         } else {
             for (var i = 0; i < importList.length; i++) {
                 html += `<tr>
                             <td>${importList[i].Name}</td>
                             <td>${importList[i].Unit}</td>
-                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" class="form-control" style="width: 80px; display: inline-block;" /></td>
+                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" style="width: 80px;" /></td>
                             <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})"><i class="fas fa-trash"></i></button></td>
                          </tr>`;
             }
@@ -163,90 +158,75 @@
             }
         });
     }
+    function submitOrder() {
+        if (importList.length === 0) {
+            alert("Vui lòng chọn ít nhất 1 món ăn.");
+            return;
+        }
 
+        // 🆕 Validate Nhà Cung Cấp
+        var supplierId = $('#ddlSupplier').val();
+        if (!supplierId) {
+            alert("Vui lòng chọn Nhà cung cấp.");
+            return;
+        }
+
+        if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu nhập hàng này?")) return;
+
+        var note = $('#txtNote').val();
+
+        $.ajax({
+            url: '@Url.Action("Create")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                items: importList,
+                ghiChu: note,
+                supplierId: supplierId // Gửi ID nhà cung cấp về Server
+            }),
+            success: function (res) {
+                if (res.success) {
+                    alert(res.message);
+                    window.location.href = '@Url.Action("Index")';
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    }
+    // Thêm vào cuối phần <script> trong Create.cshtml
+
+// Thêm vào cuối thẻ <script> trong file StaffPurchaseOrder/Create.cshtml
+
+$(document).ready(function() {
+    // 1. Lấy dữ liệu tự động từ Controller (nếu có)
+
+    var autoData = @Html.Raw(ViewBag.AutoImportList ?? "[]");
+
+    // 2. Nếu có dữ liệu -> Đổ vào bảng ngay
+    if (autoData && autoData.length > 0) {
+
+        // Xóa danh sách cũ (nếu có)
+        importList = [];
+
+        // Duyệt qua từng món và thêm vào mảng quản lý
+        autoData.forEach(function(item) {
+            importList.push({
+                Id: item.Id,
+                Name: item.Name,
+                Unit: item.Unit,
+                SoLuong: item.SoLuong // Mặc định 50 (hoặc số bạn set trong Controller)
+            });
+        });
+
+        // 3. Vẽ lại bảng HTML
+        renderTable();
+
+        // 4. Thông báo nhẹ
+        var msg = '@Html.Raw(ViewBag.AutoMessage)';
+        if(msg) alert(msg);
+    }
+});
     // Init
     renderTable();
 </script>
-
-<style>
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 1rem;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #666;
-    }
-
-    .btn-success {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-        .btn-success:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-
-    .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-    .btn-sm {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.875rem;
-    }
-
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .col-md-5, .col-md-3, .col-md-4 {
-        flex: 1;
-    }
-
-    .col-md-5 {
-        flex-basis: 40%;
-    }
-
-    .col-md-3 {
-        flex-basis: 25%;
-    }
-
-    .col-md-4 {
-        flex-basis: 30%;
-    }
-
-    @@media (max-width: 768px) {
-        .row {
-            flex-direction: column;
-        }
-
-        .col-md-5, .col-md-3, .col-md-4 {
-            flex-basis: 100%;
-        }
-    }
-</style>

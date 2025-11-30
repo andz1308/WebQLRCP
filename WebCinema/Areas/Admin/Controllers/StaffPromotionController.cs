@@ -53,25 +53,69 @@ namespace WebCinema.Areas.Admin.Controllers
         }
 
         // 3. Trang tạo phiếu mới (Kèm gợi ý)
-        public ActionResult Create()
+        // GET: Admin/StaffPromotion/Create
+        public ActionResult Create(string autoMode, int? minStock)
         {
             var staff = GetCurrentStaff();
-            ViewBag.SlowItems = _foodService.GetSlowSellingItems(staff.rap_id.Value);
+            if (staff == null) return RedirectToAction("Login");
+
+            int stockLimit = minStock ?? 0;
+            ViewBag.StockLimit = stockLimit; // <--- Truyền sang View để giữ giá trị này
+
+            // Lấy danh sách tất cả món ăn để hiển thị dropdown thủ công
             ViewBag.AllFoods = db.Do_Ans.Where(d => d.trang_thai == "Đang kinh doanh").ToList();
+
+            // 🆕 LOGIC MỚI: CHỈ LỌC THEO TỒN KHO (BỎ QUA DOANH SỐ BÁN)
+            if (autoMode == "SlowStock" && staff.rap_id.HasValue)
+            {
+                int limit = minStock ?? 50; // Mặc định 50 nếu không nhập
+
+                // Tìm các món có tồn kho >= limit
+                var highStockItems = db.Kho_Do_Ans
+                    .Where(k => k.rap_id == staff.rap_id.Value && k.so_luong_ton >= limit)
+                    .Select(k => new {
+                        Id = k.Do_An_id,
+                        Name = k.Do_An.ten_san_pham,
+                        CurrentStock = k.so_luong_ton
+                    })
+                    .ToList();
+
+                if (highStockItems.Any())
+                {
+                    var autoPromoList = highStockItems.Select(x => new {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Percent = 20 // Mặc định giảm 20%
+                    }).ToList();
+
+                    ViewBag.AutoPromoList = Newtonsoft.Json.JsonConvert.SerializeObject(autoPromoList);
+                    ViewBag.AutoMessage = $"Đã tìm thấy {highStockItems.Count} món có tồn kho cao (>= {limit}).";
+
+                    // Không cần ViewBag.SlowItems nữa vì ta dùng AutoPromoList JSON trực tiếp
+                }
+                else
+                {
+                    ViewBag.AutoMessage = $"Không có món nào tồn kho trên {limit}.";
+                }
+            }
+
             return View();
         }
 
         // 4. Xử lý lưu (Ajax POST)
         [HttpPost]
-        public JsonResult Create(List<ProposalItemModel> items, string reason)
+        public JsonResult Create(List<ProposalItemSimpleModel> items, string reason, int percent, int stockThreshold)
         {
             var staff = GetCurrentStaff();
             if (items == null || items.Count == 0) return Json(new { success = false, message = "Chưa chọn món nào." });
 
-            var details = items.Select(x => new Chi_Tiet_De_Xuat_Khuyen_Mai { do_an_id = x.Id, muc_giam_gia = x.Percent }).ToList();
-            bool result = _foodService.CreatePromotionProposal(staff.nhanvien_id, staff.rap_id.Value, reason, details);
+            var details = items.Select(x => new Chi_Tiet_De_Xuat_Khuyen_Mai { do_an_id = x.Id }).ToList();
 
-            return Json(new { success = result });
+            // Gọi Service
+            bool result = _foodService.CreatePromotionProposal(staff.nhanvien_id, staff.rap_id.Value, reason, percent, stockThreshold, details);
+
+            if (result) return Json(new { success = true, message = "Gửi đề xuất thành công!" });
+            return Json(new { success = false, message = "Lỗi hệ thống." });
         }
     }
 
@@ -81,5 +125,10 @@ namespace WebCinema.Areas.Admin.Controllers
     {
         public WebCinema.Models.Chi_Tiet_De_Xuat_Khuyen_Mai ct { get; set; }
         public WebCinema.Models.Do_An da { get; set; }
+    }
+    public class ProposalItemSimpleModel
+    {
+        public int Id { get; set; }
+        // public string Name { get; set; } // Có thể thêm name để hiển thị lại nếu cần
     }
 }

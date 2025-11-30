@@ -1284,7 +1284,7 @@
                             <a href="@Url.Action("Profile", "Account")">Tài khoản của tôi</a>
                             <a href="@Url.Action("MyTickets", "TicketRefund")">Vé của tôi</a>
                             @*<a href="@Url.Action("Profile", "Account")#content-1">Lịch sử đặt vé</a>*@
-                            <a href="@Url.Action("Profile", "Account")#content-2">Ưu đãi của tôi</a>
+                            @*<a href="@Url.Action("Profile", "Account")#content-2">Ưu đãi của tôi</a>*@
                             @*<a href="@Url.Action("ChangePassword", "Account")">Đổi Mật Khẩu</a>*@
                             <a href="@Url.Action("Logout", "Account")">Đăng xuất</a>
                         </div>
@@ -1300,88 +1300,7 @@
         </div>
     </header>
 
-    <!-- BANNER SLIDER -->
-    <section class="banner-slider">
-        <div class="slider-container">
-            <div class="slide active" style="background-image: url('https://cdn.mobilecity.vn/mobilecity-vn/images/2024/01/phim-hanh-dong-my.jpg.webp'); background-size: cover; background-position: center;">
-                <div class="slide-overlay">
-                    <div class="slide-content">
-                        <h2>Phim Hành Động Mới Nhất</h2>
-                        <p>Trải nghiệm rạp chiếu phim đẳng cấp thế giới</p>
-                        <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
-                    </div>
-                </div>
-            </div>
-            <div class="slide" style="background-image: url('https://www.elle.vn/wp-content/uploads/2020/10/23/420765/phim-tinh-cam-cam-dong.jpg'); background-size: cover; background-position: center;">
-                <div class="slide-overlay">
-                    <div class="slide-content">
-                        <h2>Phim Tình Cảm Hay Nhất</h2>
-                        <p>Cảm nhận những giây phút đặc biệt cùng người thân</p>
-                        <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
-                    </div>
-                </div>
-            </div>
-            <div class="slide" style="background-image: url('https://cdn.popsww.com/blog/sites/2/2021/03/top-phim-hoat-hinh-hay-nhat-the-gioi.jpg'); background-size: cover; background-position: center;">
-                <div class="slide-overlay">
-                    <div class="slide-content">
-                        <h2>Phim Hoạt Hình Cho Gia Đình</h2>
-                        <p>Vui vẻ cùng gia đình tại DAV</p>
-                        <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
-                    </div>
-                </div>
-            </div>
-            <div class="slide" style="background-image: url('https://tiki.vn/blog/wp-content/uploads/2023/11/phim-kinh-di-han-quoc-thumb-compressed.jpg'); background-size: cover; background-position: center;">
-                <div class="slide-overlay">
-                    <div class="slide-content">
-                        <h2>Phim Kinh Dị Rùng Rợn</h2>
-                        <p>Cảm nhận những giây phút rùng rợn tại rạp</p>
-                        <button class="slide-btn" onclick="scrollToMovies()">Đặt Vé Ngay</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="slider-controls">
-            <span class="dot active" onclick="currentSlide(0)"></span>
-            <span class="dot" onclick="currentSlide(1)"></span>
-            <span class="dot" onclick="currentSlide(2)"></span>
-            <span class="dot" onclick="currentSlide(3)"></span>
-        </div>
-    </section>
-
-    <!-- FILTER SECTION -->
-    <section class="filter-section">
-        <form id="filterForm" method="get" action="@Url.Action("Index", "Home")">
-            <div class="filter-container">
-                <div class="filter-group">
-                    <label>Chọn Rạp</label>
-                    <select name="cinemaId" id="cinemaFilter">
-                        <option value="">Tất cả rạp</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Ngày Chiếu</label>
-                    <input type="date" name="date" id="dateFilter">
-                </div>
-                <div class="filter-group">
-                    <label>Thể Loại</label>
-                    <select name="genreId" id="genreFilter">
-                        <option value="">Tất cả thể loại</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Ngôn Ngữ</label>
-                    <select name="language" id="languageFilter">
-                        <option value="">Tất cả ngôn ngữ</option>
-                    </select>
-                </div>
-                <div class="filter-btn-group">
-                    <button type="submit" class="filter-submit-btn">
-                        <i class="fas fa-filter"></i> Lọc Phim
-                    </button>
-                </div>
-            </div>
-        </form>
-    </section>
+    
 
     <!-- MOVIES SECTION -->
     <!-- --------------------------------------------------------------------------------------------------------------- -->

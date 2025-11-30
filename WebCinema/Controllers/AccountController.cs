@@ -130,7 +130,7 @@ namespace WebCinema.Controllers
 
                     if (auth.Role == "Staff")
                     {
-                        return RedirectToAction("Index", "StaffDashboard", new { area = "Admin" });
+                        return RedirectToAction("Index", "StaffDashboardNew", new { area = "Admin" });
                     }
 
                     return RedirectToAction("Index", "Home");

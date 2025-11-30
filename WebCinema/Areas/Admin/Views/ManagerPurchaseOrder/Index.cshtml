@@ -17,7 +17,6 @@
         <div class="row align-items-center">
             <div class="col-md-3">
                 <label>Lọc Trạng Thái:</label>
-                <br />
                 <select name="status" class="form-control" onchange="this.form.submit()">
                     <option value="">-- Tất cả --</option>
                     <option value="Chờ duyệt" @(ViewBag.SelectedStatus == "Chờ duyệt" ? "selected" : "")>Chờ duyệt</option>
@@ -26,7 +25,6 @@
                     <option value="Đã hủy" @(ViewBag.SelectedStatus == "Đã hủy" ? "selected" : "")>Đã hủy / Từ chối</option>
                 </select>
             </div>
-            <br />
             <div class="col-md-9 text-right">
                 <span class="text-muted"><i class="fas fa-info-circle"></i> Bộ lọc áp dụng cho cả 2 danh sách bên dưới</span>
             </div>
@@ -171,9 +169,17 @@
 
         // --- XỬ LÝ KHUYẾN MÃI (Cột Phải) ---
         function approvePromo(id) {
-            if (confirm('Duyệt đề xuất KHUYẾN MÃI này?')) {
+            if (confirm('Duyệt đề xuất này và tạo mã khuyến mãi ngay?')) {
                 $.post('@Url.Action("ApprovePromotion")', { id: id }, function (res) {
-                    if (res.success) { location.reload(); } else { alert(res.message); }
+                    if (res.success) {
+                        alert(res.message);
+                        if (res.isRedirect) {
+                            window.location.href = res.redirectUrl; // Chuyển sang trang tạo mã
+                        } else {
+                            location.reload();
+                        }
+                    }
+                    else alert(res.message);
                 });
             }
         }
@@ -189,98 +195,47 @@
 }
 
 <style>
+    /* CSS để bảng nhỏ gọn hơn khi chia đôi màn hình */
+    .btn-xs {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+        border-radius: 3px;
+    }
+
+    .table td, .table th {
+        padding: 0.5rem;
+        vertical-align: middle;
+    }
+
     .badge-warning {
         background-color: #ffc107;
         color: #212529;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border-radius: 4px;
+        font-size: 0.75rem;
     }
 
     .badge-success {
         background-color: #28a745;
         color: white;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border-radius: 4px;
+        font-size: 0.75rem;
     }
 
     .badge-danger {
         background-color: #dc3545;
         color: white;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border-radius: 4px;
+        font-size: 0.75rem;
     }
 
     .badge-info {
         background-color: #17a2b8;
         color: white;
-        padding: 5px 10px;
-        border-radius: 15px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
     }
-
-    .badge {
-        font-weight: 600;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-    }
-
-    .btn-xs {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.875rem;
-    }
-
-    .btn-info {
-        background: #3498db;
-        color: white;
-    }
-
-        .btn-info:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-    .btn-success {
-        background: #28a745;
-        color: white;
-    }
-
-        .btn-success:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-
-        .table thead {
-            background: #f5f5f5;
-        }
-
-        .table th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .table td {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .table tbody tr:hover {
-            background: #f9f9f9;
-        }
 </style>

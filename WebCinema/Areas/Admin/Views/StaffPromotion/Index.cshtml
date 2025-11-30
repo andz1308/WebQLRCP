@@ -3,27 +3,18 @@
 @{
     ViewBag.Title = "Lịch Sử Đề Xuất Khuyến Mãi";
     Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
-    Response.ContentEncoding = System.Text.Encoding.UTF8;
-    Response.Charset = "utf-8";
 }
 
 <div class="content-header">
-    <h1><i class="fas fa-bullhorn"></i> Lịch Sử Đề Xuất Khuyến Mãi</h1>
-    <br />
+    <h1><i class="fas fa-history"></i> Lịch Sử Đề Xuất Khuyến Mãi</h1>
     <div class="header-actions">
         <a href="@Url.Action("Create")" class="btn btn-primary">
             <i class="fas fa-plus"></i> Tạo Đề Xuất Mới
         </a>
     </div>
-    <br />
 </div>
 
 <div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Đề Xuất</h2>
-        <span class="badge badge-info">Tổng: @Model.Count() đề xuất</span>
-    </div>
-
     @if (Model != null && Model.Any())
     {
         <table class="data-table">
@@ -70,19 +61,17 @@
                         <td>
                             @if (!string.IsNullOrEmpty(item.ghi_chu_quan_ly))
                             {
-                                <span style="color: #17a2b8;"><i class="fas fa-comment-dots"></i> @item.ghi_chu_quan_ly</span>
+                                <span class="text-info"><i class="fas fa-comment-dots"></i> @item.ghi_chu_quan_ly</span>
                             }
                             else
                             {
-                                <span style="color: #999;">-</span>
+                                <span class="text-muted">-</span>
                             }
                         </td>
                         <td>
-                            <div class="action-buttons">
-                                <a href="@Url.Action("Details", new { id = item.de_xuat_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </div>
+                            <a href="@Url.Action("Details", new { id = item.de_xuat_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </a>
                         </td>
                     </tr>
                 }
@@ -93,7 +82,7 @@
     {
         <div style="text-align: center; padding: 3rem; color: #999;">
             <i class="fas fa-folder-open" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-            <p style="font-size: 1.2rem;">Bạn chưa gửi đề xuất khuyến mãi nào.</p>
+            <p>Bạn chưa gửi đề xuất khuyến mãi nào.</p>
         </div>
     }
 </div>
@@ -119,68 +108,4 @@
         padding: 5px 10px;
         border-radius: 4px;
     }
-
-    .badge-info {
-        background-color: #17a2b8;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 15px;
-    }
-
-    .badge {
-        font-weight: 600;
-    }
-
-    .header-actions {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-    }
-
-    .btn-sm {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.875rem;
-    }
-
-    .btn-info {
-        background: #3498db;
-        color: white;
-    }
-
-        .btn-info:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-
-        .data-table thead {
-            background: #f5f5f5;
-        }
-
-        .data-table th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: #2c3e50;
-            border-bottom: 2px solid #ddd;
-        }
-
-        .data-table td {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .data-table tbody tr:hover {
-            background: #f9f9f9;
-        }
 </style>
