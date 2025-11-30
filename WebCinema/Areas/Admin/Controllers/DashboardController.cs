@@ -3,6 +3,7 @@ using System.Linq;
 using System.Web.Mvc;
 using WebCinema.Models;
 using WebCinema.Infrastructure;
+using System.Collections.Generic;
 
 namespace WebCinema.Areas.Admin.Controllers
 {
@@ -12,337 +13,765 @@ namespace WebCinema.Areas.Admin.Controllers
         private CSDLDataContext db = new CSDLDataContext();
 
         // GET: Admin/Dashboard
-        public ActionResult Index(int? month, int? year)
+        public ActionResult Index(DateTime? filterDate, int? filterMonth, int? filterYear)
         {
             try
             {
-                // Set default year to current year if not provided
-                int selectedYear = year ?? DateTime.Now.Year;
-                int? selectedMonth = month;
+                // Xác định filter
+                DateTime today = DateTime.Now.Date;
+                int currentYear = filterYear ?? DateTime.Now.Year;
+                int? currentMonth = filterMonth;
 
-                ViewBag.SelectedMonth = selectedMonth;
-                ViewBag.SelectedYear = selectedYear;
-
-                // ✅ UPDATED: Filter base query - chỉ lấy vé từ đơn đặt có trang_thai_Dat_Ve = "Đã Thanh toán"
-                // and whose tickets have a related Suat_Chieu (showtime)
-                var paidBookingsQuery = db.Dat_Ves
-                    .Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán" && d.Ves.Any(v => v.Suat_Chieu != null));
-
-                // Filter by showtime date (Suat_Chieu.ngay_chieu) instead of Dat_Ve.ngay_tao
-                if (selectedMonth.HasValue)
+                var model = new AdminDashboardViewModel
                 {
-                    paidBookingsQuery = paidBookingsQuery.Where(d =>
-                        d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == selectedYear && v.Suat_Chieu.ngay_chieu.Month == selectedMonth.Value));
-                }
-                else
-                {
-                    paidBookingsQuery = paidBookingsQuery.Where(d =>
-                        d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == selectedYear));
-                }
+                    FilterDate = filterDate,
+                    FilterMonth = filterMonth,
+                    FilterYear = currentYear
+                };
 
-                var totalMovies = db.Phims.Count();
-                var totalUsers = db.Khach_Hangs.Count();
-                
-                // ✅ UPDATED: Chỉ đếm đơn có trạng thái "Đã Thanh toán"
-                var totalBookings = paidBookingsQuery.Count();
+                // 1.1. Dashboard Tổng Hợp
+                model.Summary = GetDashboardSummary(today, currentMonth, currentYear);
 
-                // ✅ UPDATED: Tổng doanh thu từ vé của đơn đặt "Đã Thanh toán"
-                var totalRevenue = paidBookingsQuery.AsEnumerable().Sum(d => 
-                    (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
-                    (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0)
-                );
+                // 1.2. Thống Kê Theo Rạp
+                model.CinemaStatistics = GetCinemaStatistics(currentMonth, currentYear);
 
-                // Monthly revenue for the selected year - ✅ UPDATED (Tính cả đồ ăn)
-                var monthlyRevenue = selectedMonth.HasValue 
-                    ? paidBookingsQuery.AsEnumerable().Sum(d =>
-                        (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
-                        (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0)
-                    )
-                    : db.Dat_Ves
-                        .Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán" 
-                            && d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == selectedYear))
-                        .AsEnumerable()
-                        .Sum(d =>
-                            (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
-                            (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0)
-                        );
+                // 1.3. Thống Kê Theo Phim
+                model.MovieStatistics = GetMovieStatistics(currentMonth, currentYear);
 
-                var monthlyBookings = selectedMonth.HasValue
-                    ? paidBookingsQuery.Count()
-                    : db.Dat_Ves
-                        .Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán" 
-                            && d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == selectedYear))
-                        .Count();
+                // 1.4. Thống Kê Đồ Ăn & Combo
+                model.FoodStatistics = GetFoodStatistics(currentMonth, currentYear);
 
-                // ✅ UPDATED: Top movies by revenue - Tính cả tiền vé + tiền đồ ăn
-                var topMovies = paidBookingsQuery
-                    .SelectMany(d => d.Ves)
-                    .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phim != null)
-                    .GroupBy(v => v.Suat_Chieu.phim_id)
-                    .Select(g => new
-                    {
-                        PhimId = g.Key,
-                        TotalTickets = g.Count(),
-                        TicketRevenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0
-                    })
-                    .AsEnumerable()
-                    .Select(g => new
-                    {
-                        PhimId = g.PhimId,
-                        TotalTickets = g.TotalTickets,
-                        TicketRevenue = g.TicketRevenue,
-                        FoodRevenue = paidBookingsQuery
-                            .Where(d => d.Ves.Any(v => v.Suat_Chieu.phim_id == g.PhimId))
-                            .AsEnumerable()
-                            .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
-                    })
-                    .Select(x => new
-                    {
-                        PhimId = x.PhimId,
-                        TotalTickets = x.TotalTickets,
-                        Revenue = x.TicketRevenue + x.FoodRevenue
-                    })
-                    .OrderByDescending(x => x.Revenue)
-                    .Take(5)
-                    .ToList()
-                    .Select(x => new
-                    {
-                        Movie = db.Phims.FirstOrDefault(p => p.phim_id == x.PhimId),
-                        TotalTickets = x.TotalTickets,
-                        Revenue = x.Revenue
-                    })
-                    .Where(x => x.Movie != null)
-                    .Take(5)
-                    .ToList();
+                // 1.5. Thống Kê Khách Hàng
+                model.CustomerStatistics = GetCustomerStatistics(currentMonth, currentYear);
 
-                // ✅ NEW: Phim được đặt vé nhiều nhất - Tính cả đồ ăn
-                var topBookingMovies = paidBookingsQuery
-                    .SelectMany(d => d.Ves)
-                    .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phim != null)
-                    .GroupBy(v => v.Suat_Chieu.phim_id)
-                    .Select(g => new
-                    {
-                        PhimId = g.Key,
-                        SoVeDat = g.Count(),
-                        TicketRevenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
-                    })
-                    .AsEnumerable()
-                    .Select(x => new
-                    {
-                        PhimId = x.PhimId,
-                        SoVeDat = x.SoVeDat,
-                        TongDoanhThu = x.TicketRevenue + 
-                            paidBookingsQuery
-                                .Where(d => d.Ves.Any(v => v.Suat_Chieu.phim_id == x.PhimId))
-                                .AsEnumerable()
-                                .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
-                    })
-                    .OrderByDescending(x => x.SoVeDat)
-                    .Take(5)
-                    .ToList()
-                    .Select(x => new
-                    {
-                        Phim = db.Phims.FirstOrDefault(p => p.phim_id == x.PhimId),
-                        SoVeDat = x.SoVeDat,
-                        TongDoanhThu = x.TongDoanhThu
-                    })
-                    .Where(x => x.Phim != null)
-                    .Take(5)
-                    .ToList();
+                // 1.6. Thống Kê Nhân Viên
+                model.StaffStatistics = GetStaffStatistics(currentMonth, currentYear);
 
-                // ✅ NEW: Rạp có nhiều lượt đặt vé nhất - Tính cả đồ ăn
-                var topCinemasByBookings = paidBookingsQuery
-                    .SelectMany(d => d.Ves)
-                    .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null)
-                    .GroupBy(v => v.Suat_Chieu.Phong_Chieu.rap_id)
-                    .Select(g => new
-                    {
-                        RapId = g.Key,
-                        SoVe = g.Count(),
-                        TicketRevenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
-                    })
-                    .AsEnumerable()
-                    .Select(x => new
-                    {
-                        RapId = x.RapId,
-                        SoVe = x.SoVe,
-                        DoanhThu = x.TicketRevenue +
-                            paidBookingsQuery
-                                .Where(d => d.Ves.Any(v => v.Suat_Chieu.Phong_Chieu.rap_id == x.RapId))
-                                .AsEnumerable()
-                                .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
-                    })
-                    .OrderByDescending(x => x.SoVe)
-                    .Take(5)
-                    .ToList()
-                    .Select(x => new
-                    {
-                        Rap = db.Raps.FirstOrDefault(r => r.rap_id == x.RapId),
-                        SoVe = x.SoVe,
-                        DoanhThu = x.DoanhThu
-                    })
-                    .Where(x => x.Rap != null)
-                    .Take(5)
-                    .ToList();
+                // Dữ liệu cho biểu đồ
+                ViewBag.ChartData = GetRevenueChartData(currentMonth, currentYear);
 
-                // ✅ NEW: Rạp có doanh thu cao nhất - Tính cả đồ ăn
-                var topCinemasByRevenue = paidBookingsQuery
-                    .SelectMany(d => d.Ves)
-                    .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phong_Chieu != null && v.Suat_Chieu.Phong_Chieu.Rap != null)
-                    .GroupBy(v => v.Suat_Chieu.Phong_Chieu.rap_id)
-                    .Select(g => new
-                    {
-                        RapId = g.Key,
-                        SoVe = g.Count(),
-                        TicketRevenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
-                    })
-                    .AsEnumerable()
-                    .Select(x => new
-                    {
-                        RapId = x.RapId,
-                        SoVe = x.SoVe,
-                        DoanhThu = x.TicketRevenue +
-                            paidBookingsQuery
-                                .Where(d => d.Ves.Any(v => v.Suat_Chieu.Phong_Chieu.rap_id == x.RapId))
-                                .AsEnumerable()
-                                .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
-                    })
-                    .OrderByDescending(x => x.DoanhThu)
-                    .Take(5)
-                    .ToList()
-                    .Select(x => new
-                    {
-                        Rap = db.Raps.FirstOrDefault(r => r.rap_id == x.RapId),
-                        SoVe = x.SoVe,
-                        DoanhThu = x.DoanhThu
-                    })
-                    .Where(x => x.Rap != null)
-                    .Take(5)
-                    .ToList();
-
-                // ✅ NEW: Đồ ăn được đặt nhiều nhất (Chỉ xét đơn "Đã Thanh toán")
-                var topFoodItems = paidBookingsQuery
-                    .SelectMany(d => d.DonHang_DoAns)
-                    .Where(dda => dda.Do_An != null)
-                    .GroupBy(dda => dda.Do_An_id)
-                    .Select(g => new
-                    {
-                        DoAnId = g.Key,
-                        SoLuong = g.Sum(dda => (int?)dda.so_luong) ?? 0,
-                        DoanhThu = g.SelectMany(dda => dda.Dat_Ve.Ves).Sum(v => (decimal?)v.gia_ve) ?? 0m
-                    })
-                    .OrderByDescending(x => x.SoLuong)
-                    .Take(5)
-                    .ToList()
-                    .Select(x => new
-                    {
-                        DoAn = db.Do_Ans.FirstOrDefault(da => da.Do_An_id == x.DoAnId),
-                        SoLuong = x.SoLuong,
-                        TienFood = paidBookingsQuery
-                            .SelectMany(d => d.DonHang_DoAns)
-                            .Where(dda => dda.Do_An_id == x.DoAnId)
-                            .Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0m
-                    })
-                    .Where(x => x.DoAn != null)
-                    .Take(5)
-                    .ToList();
-
-                // ✅ Daily revenue for selected period - Chỉ xét đơn "Đã Thanh toán" (tính cả đồ ăn)
-                var dailyRevenue = selectedMonth.HasValue
-                    ? Enumerable.Range(1, DateTime.DaysInMonth(selectedYear, selectedMonth.Value))
-                        .Select(day => new
-                        {
-                            Date = new DateTime(selectedYear, selectedMonth.Value, day),
-                            Revenue = db.Dat_Ves
-                                .Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán"
-                                    && d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Date == new DateTime(selectedYear, selectedMonth.Value, day)))
-                                .AsEnumerable()
-                                .Sum(d =>
-                                    (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
-                                    (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0)
-                                )
-                        }).ToList()
-                    : Enumerable.Range(1, 12)
-                        .Select(m => new
-                        {
-                            Date = new DateTime(selectedYear, m, 1),
-                            Revenue = db.Dat_Ves
-                                .Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán"
-                                    && d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == selectedYear && v.Suat_Chieu.ngay_chieu.Month == m))
-                                .AsEnumerable()
-                                .Sum(d =>
-                                    (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
-                                    (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0)
-                                )
-                        }).ToList();
-
-                // ✅ NEW: Chi tiết bán vé theo rạp - ngày/tháng/phim (tính cả đồ ăn)
-                var cinemaTicketDetails = paidBookingsQuery
-                    .SelectMany(d => d.Ves)
-                    .Where(v => v.Suat_Chieu != null 
-                            && v.Suat_Chieu.Phong_Chieu != null 
-                            && v.Suat_Chieu.Phong_Chieu.Rap != null
-                            && v.Suat_Chieu.Phim != null)
-                    .GroupBy(v => new { 
-                        RapId = v.Suat_Chieu.Phong_Chieu.rap_id,
-                        NgayChieu = v.Suat_Chieu.ngay_chieu,
-                        PhimId = v.Suat_Chieu.phim_id,
-                        DatVeId = v.Dat_Ve_id
-                    })
-                    .Select(g => new
-                    {
-                        RapId = g.Key.RapId,
-                        NgayChieu = g.Key.NgayChieu,
-                        PhimId = g.Key.PhimId,
-                        DatVeId = g.Key.DatVeId,
-                        SoVe = g.Count(),
-                        TicketRevenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
-                    })
-                    .AsEnumerable()
-                    .Select(x => new
-                    {
-                        Rap = db.Raps.FirstOrDefault(r => r.rap_id == x.RapId),
-                        NgayChieu = x.NgayChieu,
-                        Phim = db.Phims.FirstOrDefault(p => p.phim_id == x.PhimId),
-                        SoVe = x.SoVe,
-                        DoanhThu = x.TicketRevenue +
-                            (x.DatVeId.HasValue 
-                                ? db.Dat_Ves
-                                    .Where(d => d.Dat_Ve_id == x.DatVeId)
-                                    .AsEnumerable()
-                                    .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
-                                : 0m)
-                    })
-                    .Where(x => x.Rap != null && x.Phim != null)
-                    .OrderByDescending(x => x.NgayChieu)
-                    .ThenByDescending(x => x.SoVe)
-                    .Take(50)
-                    .ToList();
-
-                ViewBag.TotalMovies = totalMovies;
-                ViewBag.TotalUsers = totalUsers;
-                ViewBag.TotalBookings = totalBookings;
-                ViewBag.TotalRevenue = totalRevenue;
-                ViewBag.MonthlyRevenue = monthlyRevenue;
-                ViewBag.MonthlyBookings = monthlyBookings;
-                ViewBag.TopMovies = topMovies;
-                ViewBag.TopBookingMovies = topBookingMovies;
-                ViewBag.TopCinemasByBookings = topCinemasByBookings;
-                ViewBag.TopCinemasByRevenue = topCinemasByRevenue;
-                ViewBag.TopFoodItems = topFoodItems;
-                ViewBag.DailyRevenue = dailyRevenue;
-                ViewBag.CinemaTicketDetails = cinemaTicketDetails;
-                ViewBag.PeriodLabel = selectedMonth.HasValue ? $"Tháng {selectedMonth}/{selectedYear}" : $"Năm {selectedYear}";
-
-                return View();
+                return View(model);
             }
             catch (Exception ex)
             {
                 LoggingHelper.LogError(ex);
                 TempData["ErrorMessage"] = "Có lỗi xảy ra khi thực hiện thống kê.";
-                return View();
+                return View(new AdminDashboardViewModel());
             }
         }
+
+        #region 1.1. Dashboard Tổng Hợp
+
+        private DashboardSummaryViewModel GetDashboardSummary(DateTime today, int? month, int year)
+        {
+            var summary = new DashboardSummaryViewModel();
+
+            // Chỉ lấy đơn đã thanh toán
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // --- HÔM NAY ---
+            var todayBookings = paidBookings.Where(d => 
+                d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Date == today));
+
+            summary.TongVeBanHomNay = todayBookings.SelectMany(d => d.Ves).Count();
+            summary.TongDoanhThuHomNay = todayBookings.AsEnumerable().Sum(d =>
+                (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+            summary.TongDoanhThuComboHomNay = todayBookings.AsEnumerable()
+                .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+            summary.SoSuatChieuHomNay = db.Suat_Chieus.Count(s => s.ngay_chieu.Date == today);
+            summary.SoKhachMoiDangKyHomNay = db.Khach_Hangs.Count(k => k.ngay_dang_ky.HasValue && k.ngay_dang_ky.Value.Date == today);
+
+            // Vé hủy hôm nay
+            var cancelledToday = db.Dat_Ves.Where(d => 
+                d.trang_thai_Dat_Ve == "Đã Hủy" && 
+                d.ngay_tao.HasValue && 
+                d.ngay_tao.Value.Date == today);
+            summary.TongVeHuyHomNay = cancelledToday.SelectMany(d => d.Ves).Count();
+
+            // --- TỔNG HỆ THỐNG (theo filter) ---
+            var filteredBookings = paidBookings;
+            if (month.HasValue)
+            {
+                filteredBookings = filteredBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && 
+                        v.Suat_Chieu.ngay_chieu.Year == year && 
+                        v.Suat_Chieu.ngay_chieu.Month == month.Value));
+            }
+            else
+            {
+                filteredBookings = filteredBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == year));
+            }
+
+            summary.TongVeBanHeThong = filteredBookings.SelectMany(d => d.Ves).Count();
+            summary.TongDoanhThuHeThong = filteredBookings.AsEnumerable().Sum(d =>
+                (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+
+            summary.TongKhachHang = db.Khach_Hangs.Count();
+            summary.TongPhim = db.Phims.Count();
+            summary.TongRap = db.Raps.Count();
+
+            return summary;
+        }
+
+        #endregion
+
+        #region 1.2. Thống Kê Theo Rạp
+
+        private List<CinemaStatisticViewModel> GetCinemaStatistics(int? month, int year)
+        {
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // Filter theo tháng/năm
+            if (month.HasValue)
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null &&
+                        v.Suat_Chieu.ngay_chieu.Year == year &&
+                        v.Suat_Chieu.ngay_chieu.Month == month.Value));
+            }
+            else
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == year));
+            }
+
+            var cinemaStats = new List<CinemaStatisticViewModel>();
+
+            foreach (var rap in db.Raps.ToList())
+            {
+                var rapBookings = paidBookings.Where(d => 
+                    d.Ves.Any(v => v.Suat_Chieu != null && 
+                        v.Suat_Chieu.Phong_Chieu != null && 
+                        v.Suat_Chieu.Phong_Chieu.rap_id == rap.rap_id));
+
+                var tickets = rapBookings.SelectMany(d => d.Ves).ToList();
+                var doanhThuVe = tickets.Sum(v => (decimal?)v.gia_ve) ?? 0m;
+                var doanhThuDoAn = rapBookings.AsEnumerable()
+                    .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+
+                // Tổng số ghế trong rạp - sử dụng suc_chua
+                var tongSoGhe = db.Phong_Chieus.Where(p => p.rap_id == rap.rap_id)
+                    .Sum(p => (int?)p.suc_chua) ?? 0;
+
+                // Suất chiếu
+                var suatChieuQuery = db.Suat_Chieus.Where(s => s.Phong_Chieu.rap_id == rap.rap_id);
+                if (month.HasValue)
+                {
+                    suatChieuQuery = suatChieuQuery.Where(s => 
+                        s.ngay_chieu.Year == year && s.ngay_chieu.Month == month.Value);
+                }
+                else
+                {
+                    suatChieuQuery = suatChieuQuery.Where(s => s.ngay_chieu.Year == year);
+                }
+                var soSuatChieu = suatChieuQuery.Count();
+
+                // Vé hủy
+                var cancelledBookings = db.Dat_Ves.Where(d => 
+                    d.trang_thai_Dat_Ve == "Đã Hủy" &&
+                    d.Ves.Any(v => v.Suat_Chieu != null && 
+                        v.Suat_Chieu.Phong_Chieu != null && 
+                        v.Suat_Chieu.Phong_Chieu.rap_id == rap.rap_id));
+                
+                if (month.HasValue)
+                {
+                    cancelledBookings = cancelledBookings.Where(d =>
+                        d.Ves.Any(v => v.Suat_Chieu.ngay_chieu.Year == year && 
+                            v.Suat_Chieu.ngay_chieu.Month == month.Value));
+                }
+                else
+                {
+                    cancelledBookings = cancelledBookings.Where(d =>
+                        d.Ves.Any(v => v.Suat_Chieu.ngay_chieu.Year == year));
+                }
+
+                var soVeHuy = cancelledBookings.SelectMany(d => d.Ves).Count();
+
+                var stat = new CinemaStatisticViewModel
+                {
+                    RapId = rap.rap_id,
+                    TenRap = rap.ten_rap,
+                    DiaChi = rap.dia_chi,
+                    DoanhThuVe = doanhThuVe,
+                    DoanhThuDoAn = doanhThuDoAn,
+                    TongDoanhThu = doanhThuVe + doanhThuDoAn,
+                    SoVeBan = tickets.Count,
+                    SoVeHuy = soVeHuy,
+                    TongSoGhe = tongSoGhe,
+                    SoGheDaBan = tickets.Count,
+                    TyLeLapDay = tongSoGhe > 0 ? (decimal)tickets.Count / tongSoGhe * 100 : 0,
+                    SoSuatChieu = soSuatChieu
+                };
+
+                cinemaStats.Add(stat);
+            }
+
+            // Xếp hạng
+            var sortedByRevenue = cinemaStats.OrderByDescending(c => c.TongDoanhThu).ToList();
+            var sortedByTickets = cinemaStats.OrderByDescending(c => c.SoVeBan).ToList();
+
+            for (int i = 0; i < sortedByRevenue.Count; i++)
+            {
+                sortedByRevenue[i].XepHangDoanhThu = i + 1;
+            }
+            for (int i = 0; i < sortedByTickets.Count; i++)
+            {
+                sortedByTickets[i].XepHangSoVe = i + 1;
+            }
+
+            return cinemaStats.OrderByDescending(c => c.TongDoanhThu).ToList();
+        }
+
+        #endregion
+
+        #region 1.3. Thống Kê Theo Phim
+
+        private MovieStatisticsViewModel GetMovieStatistics(int? month, int year)
+        {
+            var stats = new MovieStatisticsViewModel();
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // Filter
+            if (month.HasValue)
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null &&
+                        v.Suat_Chieu.ngay_chieu.Year == year &&
+                        v.Suat_Chieu.ngay_chieu.Month == month.Value));
+            }
+            else
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == year));
+            }
+
+            // Top phim theo doanh thu
+            var movieRevenues = paidBookings.SelectMany(d => d.Ves)
+                .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phim != null)
+                .GroupBy(v => v.Suat_Chieu.phim_id)
+                .Select(g => new
+                {
+                    PhimId = g.Key,
+                    SoVe = g.Count(),
+                    DoanhThuVe = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
+                })
+                .AsEnumerable()
+                .Select(x => new MovieRevenueViewModel
+                {
+                    PhimId = x.PhimId,
+                    SoVeBan = x.SoVe,
+                    DoanhThuVe = x.DoanhThuVe,
+                    DoanhThuDoAn = paidBookings
+                        .Where(d => d.Ves.Any(v => v.Suat_Chieu.phim_id == x.PhimId))
+                        .AsEnumerable()
+                        .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
+                })
+                .ToList();
+
+            // Gán thông tin phim
+            foreach (var item in movieRevenues)
+            {
+                var phim = db.Phims.FirstOrDefault(p => p.phim_id == item.PhimId);
+                if (phim != null)
+                {
+                    item.TenPhim = phim.ten_phim;
+                    item.AnhBia = phim.hinh_anh; // Sử dụng hinh_anh thay vì anh_bia
+                    item.TongDoanhThu = item.DoanhThuVe + item.DoanhThuDoAn;
+
+                    // Số suất chiếu
+                    var suatChieuQuery = db.Suat_Chieus.Where(s => s.phim_id == item.PhimId);
+                    if (month.HasValue)
+                    {
+                        suatChieuQuery = suatChieuQuery.Where(s => 
+                            s.ngay_chieu.Year == year && s.ngay_chieu.Month == month.Value);
+                    }
+                    else
+                    {
+                        suatChieuQuery = suatChieuQuery.Where(s => s.ngay_chieu.Year == year);
+                    }
+                    item.SoSuatChieu = suatChieuQuery.Count();
+                }
+            }
+
+            // Loại bỏ phim null
+            movieRevenues = movieRevenues.Where(m => !string.IsNullOrEmpty(m.TenPhim)).ToList();
+
+            stats.TopPhimDoanhThuCao = movieRevenues.OrderByDescending(m => m.TongDoanhThu).Take(10).ToList();
+            stats.TopPhimBanChay = movieRevenues.OrderByDescending(m => m.SoVeBan).Take(10).ToList();
+            stats.PhimBiE = movieRevenues.OrderBy(m => m.TongDoanhThu).Take(5).ToList();
+
+            // Suất chiếu tốt nhất
+            stats.SuatChieuTotNhat = GetTopShowtimes(month, year);
+
+            // So sánh phim theo rạp
+            stats.SoSanhPhimTheoRap = GetMovieCinemaComparison(month, year);
+
+            return stats;
+        }
+
+        private List<ShowtimePerformanceViewModel> GetTopShowtimes(int? month, int year)
+        {
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            var showtimeStats = paidBookings.SelectMany(d => d.Ves)
+                .Where(v => v.Suat_Chieu != null)
+                .GroupBy(v => v.suat_chieu_id)
+                .Select(g => new
+                {
+                    SuatChieuId = g.Key,
+                    SoVe = g.Count(),
+                    DoanhThu = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
+                })
+                .ToList()
+                .Select(x =>
+                {
+                    var sc = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == x.SuatChieuId);
+                    if (sc == null) return null;
+
+                    // Filter theo tháng/năm
+                    if (month.HasValue && (sc.ngay_chieu.Year != year || sc.ngay_chieu.Month != month.Value))
+                        return null;
+                    if (!month.HasValue && sc.ngay_chieu.Year != year)
+                        return null;
+
+                    var tongGhe = sc.Phong_Chieu.suc_chua; // Sử dụng suc_chua
+                    return new ShowtimePerformanceViewModel
+                    {
+                        SuatChieuId = sc.suat_chieu_id,
+                        TenPhim = sc.Phim?.ten_phim,
+                        TenRap = sc.Phong_Chieu?.Rap?.ten_rap,
+                        TenPhong = sc.Phong_Chieu?.ten_phong,
+                        NgayChieu = sc.ngay_chieu,
+                        GioChieu = sc.Ca_Chieu.gio_bat_dau, // Sử dụng Ca_Chieu.gio_bat_dau thay vì gio_chieu
+                        SoVeBan = x.SoVe,
+                        TongSoGhe = tongGhe,
+                        TyLeLapDay = tongGhe > 0 ? (decimal)x.SoVe / tongGhe * 100 : 0,
+                        DoanhThu = x.DoanhThu
+                    };
+                })
+                .Where(x => x != null)
+                .OrderByDescending(x => x.TyLeLapDay)
+                .Take(10)
+                .ToList();
+
+            return showtimeStats;
+        }
+
+        private List<MovieCinemaComparisonViewModel> GetMovieCinemaComparison(int? month, int year)
+        {
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // Filter
+            if (month.HasValue)
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null &&
+                        v.Suat_Chieu.ngay_chieu.Year == year &&
+                        v.Suat_Chieu.ngay_chieu.Month == month.Value));
+            }
+            else
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == year));
+            }
+
+            // Lấy top 5 phim bán chạy
+            var topMovies = paidBookings.SelectMany(d => d.Ves)
+                .Where(v => v.Suat_Chieu != null && v.Suat_Chieu.Phim != null)
+                .GroupBy(v => v.Suat_Chieu.phim_id)
+                .Select(g => new { PhimId = g.Key, SoVe = g.Count() })
+                .OrderByDescending(x => x.SoVe)
+                .Take(5)
+                .ToList();
+
+            var result = new List<MovieCinemaComparisonViewModel>();
+
+            foreach (var movie in topMovies)
+            {
+                var phim = db.Phims.FirstOrDefault(p => p.phim_id == movie.PhimId);
+                if (phim == null) continue;
+
+                var chiTiet = db.Raps.ToList().Select(rap =>
+                {
+                    var rapBookings = paidBookings.Where(d =>
+                        d.Ves.Any(v => v.Suat_Chieu.phim_id == movie.PhimId &&
+                            v.Suat_Chieu.Phong_Chieu.rap_id == rap.rap_id));
+
+                    var tickets = rapBookings.SelectMany(d => d.Ves).Count();
+                    var doanhThu = rapBookings.AsEnumerable().Sum(d =>
+                        (decimal)(d.Ves.Where(v => v.Suat_Chieu.phim_id == movie.PhimId).Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                        (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+
+                    var suatChieu = db.Suat_Chieus.Count(s => 
+                        s.phim_id == movie.PhimId && s.Phong_Chieu.rap_id == rap.rap_id);
+
+                    return new CinemaRevenueDetail
+                    {
+                        RapId = rap.rap_id,
+                        TenRap = rap.ten_rap,
+                        SoVeBan = tickets,
+                        DoanhThu = doanhThu,
+                        SoSuatChieu = suatChieu
+                    };
+                }).Where(x => x.SoVeBan > 0).ToList();
+
+                result.Add(new MovieCinemaComparisonViewModel
+                {
+                    PhimId = movie.PhimId,
+                    TenPhim = phim.ten_phim,
+                    ChiTietTheoRap = chiTiet
+                });
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region 1.4. Thống Kê Đồ Ăn & Combo
+
+        private FoodStatisticsViewModel GetFoodStatistics(int? month, int year)
+        {
+            var stats = new FoodStatisticsViewModel();
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // Filter
+            if (month.HasValue)
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null &&
+                        v.Suat_Chieu.ngay_chieu.Year == year &&
+                        v.Suat_Chieu.ngay_chieu.Month == month.Value));
+            }
+            else
+            {
+                paidBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Year == year));
+            }
+
+            // Món bán chạy nhất
+            var foodStats = paidBookings.SelectMany(d => d.DonHang_DoAns)
+                .Where(dda => dda.Do_An != null)
+                .GroupBy(dda => dda.Do_An_id)
+                .Select(g => new FoodItemStatViewModel
+                {
+                    DoAnId = g.Key,
+                    SoLuongBan = g.Sum(dda => dda.so_luong),
+                    TongDoanhThu = g.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0m
+                })
+                .ToList();
+
+            foreach (var item in foodStats)
+            {
+                var doAn = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == item.DoAnId);
+                if (doAn != null)
+                {
+                    item.TenSanPham = doAn.ten_san_pham;
+                    // Kiểm tra property hinh_anh có tồn tại không
+                    try 
+                    { 
+                        var hinhAnhProp = doAn.GetType().GetProperty("hinh_anh");
+                        item.HinhAnh = hinhAnhProp?.GetValue(doAn) as string;
+                    } 
+                    catch { item.HinhAnh = null; }
+                    
+                    item.Gia = doAn.gia ?? 0;
+                    item.LoaiDoAn = doAn.loai; // Sử dụng loai thay vì loai_do_an
+                }
+            }
+
+            stats.MonBanChayNhat = foodStats.Where(f => !string.IsNullOrEmpty(f.TenSanPham))
+                .OrderByDescending(f => f.SoLuongBan).Take(10).ToList();
+
+            // Doanh thu đồ ăn theo rạp
+            stats.DoanhThuDoAnTheoRap = GetFoodRevenueByCinema(paidBookings);
+
+            // Tỷ lệ khách mua combo
+            stats.TongKhachMuaVe = paidBookings.Count();
+            stats.SoKhachMuaCombo = paidBookings.Count(d => d.DonHang_DoAns.Any());
+            stats.TyLeKhachMuaCombo = stats.TongKhachMuaVe > 0 
+                ? (decimal)stats.SoKhachMuaCombo / stats.TongKhachMuaVe * 100 : 0;
+
+            // Tổng tiền giảm qua khuyến mãi - tính từ Khuyen_Mai
+            var promotionUsage = paidBookings.Where(d => d.ma_giam_gia_id.HasValue).ToList();
+            stats.SoLuotSuDungKhuyenMai = promotionUsage.Count;
+            // Tính tổng tiền giảm dựa trên giá trị khuyến mãi
+            stats.TongTienGiamKhuyenMai = promotionUsage.Sum(d => 
+            {
+                var promo = db.Khuyen_Mais.FirstOrDefault(k => k.ma_giam_gia_id == d.ma_giam_gia_id);
+                if (promo == null) return 0m;
+                
+                bool isPercent = !string.IsNullOrEmpty(promo.loai_giam_gia) && 
+                    (promo.loai_giam_gia.Contains("%") || promo.loai_giam_gia.IndexOf("Phần", StringComparison.OrdinalIgnoreCase) >= 0);
+                
+                if (isPercent)
+                {
+                    var pct = promo.gia_tri_giam;
+                    if (pct < 0) pct = 0;
+                    if (pct > 100) pct = 100;
+                    return (d.tong_tien / (1 - pct / 100m)) * (pct / 100m);
+                }
+                return promo.gia_tri_giam;
+            });
+
+            return stats;
+        }
+
+        private List<FoodRevenueByCinemaViewModel> GetFoodRevenueByCinema(IQueryable<Dat_Ve> paidBookings)
+        {
+            var result = new List<FoodRevenueByCinemaViewModel>();
+
+            foreach (var rap in db.Raps.ToList())
+            {
+                var rapBookings = paidBookings.Where(d =>
+                    d.Ves.Any(v => v.Suat_Chieu != null &&
+                        v.Suat_Chieu.Phong_Chieu != null &&
+                        v.Suat_Chieu.Phong_Chieu.rap_id == rap.rap_id));
+
+                var foodItems = rapBookings.SelectMany(d => d.DonHang_DoAns)
+                    .Where(dda => dda.Do_An != null)
+                    .GroupBy(dda => dda.Do_An_id)
+                    .Select(g => new FoodItemStatViewModel
+                    {
+                        DoAnId = g.Key,
+                        SoLuongBan = g.Sum(dda => dda.so_luong),
+                        TongDoanhThu = g.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0m
+                    })
+                    .ToList();
+
+                foreach (var item in foodItems)
+                {
+                    var doAn = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == item.DoAnId);
+                    if (doAn != null)
+                    {
+                        item.TenSanPham = doAn.ten_san_pham;
+                        item.Gia = doAn.gia ?? 0;
+                    }
+                }
+
+                if (foodItems.Any())
+                {
+                    result.Add(new FoodRevenueByCinemaViewModel
+                    {
+                        RapId = rap.rap_id,
+                        TenRap = rap.ten_rap,
+                        TongDoanhThuDoAn = foodItems.Sum(f => f.TongDoanhThu),
+                        SoLuongMonBan = foodItems.Sum(f => f.SoLuongBan),
+                        TopMonBanChay = foodItems.OrderByDescending(f => f.SoLuongBan).Take(3).ToList()
+                    });
+                }
+            }
+
+            return result.OrderByDescending(r => r.TongDoanhThuDoAn).ToList();
+        }
+
+        #endregion
+
+        #region 1.5. Thống Kê Khách Hàng
+
+        private CustomerStatisticsViewModel GetCustomerStatistics(int? month, int year)
+        {
+            var stats = new CustomerStatisticsViewModel();
+
+            stats.TongKhachDangKy = db.Khach_Hangs.Count();
+
+            // Khách mới trong tháng - sử dụng ngay_dang_ky
+            var currentMonth = month ?? DateTime.Now.Month;
+            stats.KhachMoiTrongThang = db.Khach_Hangs.Count(k =>
+                k.ngay_dang_ky.HasValue &&
+                k.ngay_dang_ky.Value.Year == year &&
+                k.ngay_dang_ky.Value.Month == currentMonth);
+
+            // Khách VIP (điểm > 100)
+            stats.KhachVIP = db.Khach_Hangs.Count(k => (k.diem_tich_luy ?? 0) >= 100);
+
+            // Top khách mua nhiều
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            var customerStats = paidBookings
+                .GroupBy(d => d.khach_hang_id)
+                .Select(g => new
+                {
+                    KhachHangId = g.Key,
+                    SoDon = g.Count(),
+                    SoVe = g.SelectMany(d => d.Ves).Count(),
+                    TongTien = g.AsEnumerable().Sum(d =>
+                        (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                        (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
+                })
+                .OrderByDescending(x => x.TongTien)
+                .Take(10)
+                .ToList();
+
+            stats.TopKhachMuaNhieu = customerStats.Select(x =>
+            {
+                var kh = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == x.KhachHangId);
+                return kh != null ? new TopCustomerViewModel
+                {
+                    KhachHangId = kh.khach_hang_id,
+                    HoTen = kh.ho_ten,
+                    Email = kh.email,
+                    SoDienThoai = kh.so_dien_thoai,
+                    SoDonDat = x.SoDon,
+                    SoVeMua = x.SoVe,
+                    TongChiTieu = x.TongTien,
+                    DiemTichLuy = kh.diem_tich_luy ?? 0
+                } : null;
+            }).Where(x => x != null).ToList();
+
+            // Số tiền trung bình
+            var totalOrders = paidBookings.Count();
+            if (totalOrders > 0)
+            {
+                var totalRevenue = paidBookings.AsEnumerable().Sum(d =>
+                    (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                    (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+                stats.SoTienTrungBinhMoiDon = totalRevenue / totalOrders;
+
+                var totalTickets = paidBookings.SelectMany(d => d.Ves).Count();
+                var totalCustomers = paidBookings.Select(d => d.khach_hang_id).Distinct().Count();
+                stats.SoVeTrungBinhMoiKhach = totalCustomers > 0 ? (decimal)totalTickets / totalCustomers : 0;
+            }
+
+            return stats;
+        }
+
+        #endregion
+
+        #region 1.6. Thống Kê Nhân Viên
+
+        private StaffStatisticsViewModel GetStaffStatistics(int? month, int year)
+        {
+            var stats = new StaffStatisticsViewModel();
+
+            stats.TongNhanVien = db.Nhan_Viens.Count();
+            stats.NhanVienDangLamViec = db.Nhan_Viens.Count(n => n.trang_thai == "Đang làm việc");
+
+            // Hoạt động nhân viên (chỉ lấy đơn do nhân viên tạo)
+            var staffBookings = db.Dat_Ves.Where(d => 
+                d.nhan_vien_id.HasValue && 
+                d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            // Filter
+            if (month.HasValue)
+            {
+                staffBookings = staffBookings.Where(d =>
+                    d.ngay_tao.HasValue &&
+                    d.ngay_tao.Value.Year == year &&
+                    d.ngay_tao.Value.Month == month.Value);
+            }
+            else
+            {
+                staffBookings = staffBookings.Where(d =>
+                    d.ngay_tao.HasValue && d.ngay_tao.Value.Year == year);
+            }
+
+            var staffActivities = staffBookings
+                .GroupBy(d => d.nhan_vien_id)
+                .Select(g => new
+                {
+                    NhanVienId = g.Key.Value,
+                    SoDon = g.Count(),
+                    SoVe = g.SelectMany(d => d.Ves).Count(),
+                    DoanhThu = g.AsEnumerable().Sum(d =>
+                        (decimal)(d.Ves.Sum(v => (decimal?)v.gia_ve) ?? 0) +
+                        (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0))
+                })
+                .OrderByDescending(x => x.DoanhThu)
+                .ToList();
+
+            stats.HoatDongNhanVien = staffActivities.Select(x =>
+            {
+                var nv = db.Nhan_Viens.FirstOrDefault(n => n.nhanvien_id == x.NhanVienId);
+                if (nv == null) return null;
+
+                // Đếm giao dịch thất bại (Đã Hủy)
+                var failedCount = db.Dat_Ves.Count(d =>
+                    d.nhan_vien_id == x.NhanVienId &&
+                    d.trang_thai_Dat_Ve == "Đã Hủy");
+
+                return new StaffActivityViewModel
+                {
+                    NhanVienId = nv.nhanvien_id,
+                    HoTen = nv.ho_ten,
+                    TenRap = nv.Rap?.ten_rap,
+                    ChucVu = nv.Role?.ten_role, // Sử dụng Role.ten_role thay vì chuc_vu
+                    SoVeBan = x.SoVe,
+                    DoanhThuBanVe = x.DoanhThu,
+                    SoGiaoDichThanhCong = x.SoDon,
+                    SoGiaoDichThatBai = failedCount,
+                    SoKhachDuocHoTro = x.SoDon, // Giả định mỗi đơn = 1 khách
+                    //SoLoiThaoTac = 0 // Cần tracking riêng nếu có
+                };
+            }).Where(x => x != null).ToList();
+
+            return stats;
+        }
+
+        #endregion
+
+        #region Biểu Đồ
+
+        private RevenueChartDataViewModel GetRevenueChartData(int? month, int year)
+        {
+            var chartData = new RevenueChartDataViewModel
+            {
+                Labels = new List<string>(),
+                DoanhThuVe = new List<decimal>(),
+                DoanhThuDoAn = new List<decimal>(),
+                TongDoanhThu = new List<decimal>()
+            };
+
+            var paidBookings = db.Dat_Ves.Where(d => d.trang_thai_Dat_Ve == "Đã Thanh toán");
+
+            if (month.HasValue)
+            {
+                // Theo ngày trong tháng
+                int daysInMonth = DateTime.DaysInMonth(year, month.Value);
+                for (int day = 1; day <= daysInMonth; day++)
+                {
+                    var date = new DateTime(year, month.Value, day);
+                    var dayBookings = paidBookings.Where(d =>
+                        d.Ves.Any(v => v.Suat_Chieu != null && v.Suat_Chieu.ngay_chieu.Date == date));
+
+                    var doanhThuVe = dayBookings.SelectMany(d => d.Ves).Sum(v => (decimal?)v.gia_ve) ?? 0m;
+                    var doanhThuDoAn = dayBookings.AsEnumerable()
+                        .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+
+                    chartData.Labels.Add($"{day}/{month}");
+                    chartData.DoanhThuVe.Add(doanhThuVe);
+                    chartData.DoanhThuDoAn.Add(doanhThuDoAn);
+                    chartData.TongDoanhThu.Add(doanhThuVe + doanhThuDoAn);
+                }
+            }
+            else
+            {
+                // Theo tháng trong năm
+                for (int m = 1; m <= 12; m++)
+                {
+                    var monthBookings = paidBookings.Where(d =>
+                        d.Ves.Any(v => v.Suat_Chieu != null &&
+                            v.Suat_Chieu.ngay_chieu.Year == year &&
+                            v.Suat_Chieu.ngay_chieu.Month == m));
+
+                    var doanhThuVe = monthBookings.SelectMany(d => d.Ves).Sum(v => (decimal?)v.gia_ve) ?? 0m;
+                    var doanhThuDoAn = monthBookings.AsEnumerable()
+                        .Sum(d => (decimal)(d.DonHang_DoAns.Sum(dda => (decimal?)(dda.Do_An.gia ?? 0) * dda.so_luong) ?? 0));
+
+                    chartData.Labels.Add($"T{m}");
+                    chartData.DoanhThuVe.Add(doanhThuVe);
+                    chartData.DoanhThuDoAn.Add(doanhThuDoAn);
+                    chartData.TongDoanhThu.Add(doanhThuVe + doanhThuDoAn);
+                }
+            }
+
+            return chartData;
+        }
+
+        #endregion
 
         protected override void Dispose(bool disposing)
         {

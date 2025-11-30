@@ -1,590 +1,1391 @@
-﻿@model WebCinema.Models.CSDLDataContext
+﻿@model WebCinema.Models.AdminDashboardViewModel
 
 @{
-    ViewBag.Title = "Dashboard";
+    ViewBag.Title = "Dashboard Quản Trị";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+@{
+    var rapVeHuyCao = Model.CinemaStatistics
+        .Where(r => r.SoVeHuy > 0)
+        .OrderByDescending(r => (decimal)r.SoVeHuy / (r.SoVeBan + r.SoVeHuy) * 100)
+        .Take(5)
+        .ToList();
 }
 
 
+<style>
+    /* ==================== GLOBAL STYLES ==================== */
+    :root {
+        --primary-orange: #ff6b35;
+        --secondary-orange: #ff8c42;
+        --light-orange: #ffb84d;
+        --dark-orange: #e55525;
+        --accent-orange: #ffa726;
+        --bg-light: #fff8f3;
+        --text-dark: #2c3e50;
+        --text-muted: #6c757d;
+        --success: #28a745;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --info: #17a2b8;
+        --white: #ffffff;
+        --shadow: rgba(255, 107, 53, 0.15);
+        --shadow-hover: rgba(255, 107, 53, 0.25);
+    }
 
-<!-- Stats Cards -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-info">
-            <h3>@ViewBag.TotalMovies</h3>
-            <p>Tổng Số Phim</p>
+    body {
+        background: linear-gradient(135deg, #fff8f3 0%, #ffe8d9 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* ==================== HEADER ==================== */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-orange) 50%, var(--light-orange) 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 40px var(--shadow-hover);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .dashboard-header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        50% {
+            transform: translateY(-20px) rotate(5deg);
+        }
+    }
+
+    .dashboard-header h1 {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 0.5rem 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-header p {
+        position: relative;
+        z-index: 1;
+        margin: 0;
+        opacity: 0.95;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* ==================== STATS GRID ==================== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--white);
+        padding: 1.8rem 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px var(--shadow);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 5px solid var(--primary-orange);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 140px;
+    }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary-orange) 0%, transparent 70%);
+            opacity: 0.1;
+            border-radius: 0 16px 0 100%;
+            transition: all 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 35px var(--shadow-hover);
+        }
+
+            .stat-card:hover::before {
+                width: 150px;
+                height: 150px;
+                opacity: 0.15;
+            }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-dark);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-orange), var(--light-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .stat-card p {
+            margin: 0;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .stat-card small {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info);
+        }
+
+    /* ==================== SECTION TITLE ==================== */
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin: 3rem 0 1.5rem;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-left: 1rem;
+        border-left: 5px solid var(--primary-orange);
+    }
+
+        .section-title i {
+            color: var(--primary-orange);
+            font-size: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    /* ==================== CONTENT CARD ==================== */
+    .content-card {
+        background: var(--white);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px var(--shadow);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+        .content-card:hover {
+            box-shadow: 0 8px 30px var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .content-card h3 {
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--bg-light);
+        }
+
+    /* ==================== DATA TABLE ==================== */
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+        .data-table thead {
+            background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+            color: white;
+        }
+
+        .data-table th {
+            padding: 1.2rem 1rem;
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: none;
+            white-space: nowrap;
+        }
+
+            .data-table th:first-child {
+                border-radius: 12px 0 0 0;
+            }
+
+            .data-table th:last-child {
+                border-radius: 0 12px 0 0;
+            }
+
+        .data-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--bg-light);
+            color: var(--text-dark);
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+
+            .data-table tbody tr:hover {
+                background: var(--bg-light);
+                transform: scale(1.01);
+                box-shadow: 0 4px 12px var(--shadow);
+            }
+
+            .data-table tbody tr:last-child td:first-child {
+                border-radius: 0 0 0 12px;
+            }
+
+            .data-table tbody tr:last-child td:last-child {
+                border-radius: 0 0 12px 0;
+            }
+
+    /* ==================== BADGES ==================== */
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+        .badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .badge-success {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, #ffc107, #ff9800);
+        color: white;
+    }
+
+    .badge-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+
+    .badge-info {
+        background: linear-gradient(135deg, var(--primary-orange), var(--light-orange));
+        color: white;
+    }
+
+    /* ==================== FILTER CARD ==================== */
+    .filter-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px var(--shadow);
+        border: 2px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .filter-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.9rem 1.2rem;
+        border: 2px solid var(--bg-light);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--white);
+        color: var(--text-dark);
+        font-weight: 500;
+        height: 50px;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-orange);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+            transform: translateY(-2px);
+        }
+
+    /* ==================== BUTTON ==================== */
+    .btn {
+        padding: 0.9rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+        height: 50px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-orange), var(--primary-orange));
+            box-shadow: 0 6px 25px rgba(255, 107, 53, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+    /* ==================== MOVIE COMPARISON SECTION ==================== */
+    .movie-comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .movie-comparison-card {
+        background: var(--bg-light);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+        .movie-comparison-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .movie-comparison-card h4 {
+            color: var(--primary-orange);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-orange);
+        }
+
+        .movie-comparison-card .data-table {
+            font-size: 0.9rem;
+        }
+
+            .movie-comparison-card .data-table th,
+            .movie-comparison-card .data-table td {
+                padding: 0.8rem;
+            }
+
+    /* ==================== FOOD BY CINEMA SECTION ==================== */
+    .food-cinema-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .food-cinema-card {
+        background: linear-gradient(135deg, #fff 0%, var(--bg-light) 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 2px solid rgba(255, 107, 53, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .food-cinema-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px var(--shadow);
+            border-color: var(--primary-orange);
+        }
+
+        .food-cinema-card h4 {
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--primary-orange);
+        }
+
+    .food-stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .food-stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .food-stat-value {
+        display: block;
+        font-size: 1.3rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+    }
+
+        .food-stat-value.revenue {
+            color: var(--success);
+        }
+
+        .food-stat-value.quantity {
+            color: var(--info);
+        }
+
+    .food-stat-label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .food-top-items {
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+        .food-top-items strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .food-top-items ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            list-style: none;
+        }
+
+        .food-top-items li {
+            color: var(--text-dark);
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--bg-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .food-top-items li:last-child {
+                border-bottom: none;
+            }
+
+            .food-top-items li::before {
+                content: '🍿';
+                margin-right: 0.5rem;
+            }
+
+    .food-item-quantity {
+        font-weight: 700;
+        color: var(--primary-orange);
+        background: var(--bg-light);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @@media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .movie-comparison-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .food-cinema-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card h3 {
+            font-size: 1.8rem;
+        }
+
+        .stat-card p {
+            font-size: 0.8rem;
+        }
+
+        .filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            width: 100%;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+        }
+
+        .data-table {
+            font-size: 0.85rem;
+        }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.8rem 0.5rem;
+            }
+
+        .food-stats-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Header -->
+<div class="dashboard-header">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 2.5rem;">
+        <i class="fas fa-chart-line"></i> Dashboard Quản Trị Hệ Thống
+    </h1>
+    <p style="margin: 0; opacity: 0.9; font-size: 1.1rem;">
+        @if (Model.FilterMonth.HasValue)
+        {
+            <text>Thống kê tháng @Model.FilterMonth/@Model.FilterYear</text>
+        }
+        else
+        {
+            <text>Thống kê năm @Model.FilterYear</text>
+        }
+    </p>
+</div>
+
+<!-- Filter -->
+<div class="filter-card">
+    @using (Html.BeginForm("Index", "Dashboard", FormMethod.Get,
+            new { @class = "filter-form d-flex align-items-end gap-3" }))
+    {
+        <div class="form-group">
+            <label class="form-label">Chọn Tháng</label>
+            <select name="filterMonth" class="form-control">
+                <option value="">-- Cả năm --</option>
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i" @(Model.FilterMonth == i ? "selected" : "")>Tháng @i</option>
+                }
+            </select>
         </div>
-        <div class="stat-icon orange">
-            <i class="fas fa-film"></i>
+
+        <div class="form-group">
+            <label class="form-label">Chọn Năm</label>
+            <select name="filterYear" class="form-control">
+                @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                {
+                    <option value="@i" @(Model.FilterYear == i ? "selected" : "")>Năm @i</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary filter-btn">
+                <i class="fas fa-filter"></i> Lọc
+            </button>
+        </div>
+    }
+</div>
+
+
+
+<!-- Biểu Đồ Doanh Thu -->
+@if (ViewBag.ChartData != null)
+{
+    <div class="section-title">
+        <i class="fas fa-chart-area"></i> Biểu Đồ Doanh Thu
+    </div>
+
+    <div class="content-card">
+        <canvas id="revenueChart" height="80"></canvas>
+    </div>
+}
+
+@if (Model.Summary != null)
+{
+    <!-- 1.1. Dashboard Tổng Hợp - HÔM NAY -->
+    <div class="section-title">
+        <i class="fas fa-calendar-day"></i> Thống Kê Hôm Nay (@DateTime.Now.ToString("dd/MM/yyyy"))
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <h3>@Model.Summary.TongDoanhThuHomNay.ToString("N0") đ</h3>
+            <p>Tổng Doanh Thu Hôm Nay</p>
+        </div>
+        <div class="stat-card info">
+            <h3>@Model.Summary.TongVeBanHomNay</h3>
+            <p>Tổng Vé Bán Hôm Nay</p>
+        </div>
+        <div class="stat-card danger">
+            <h3>@Model.Summary.TongVeHuyHomNay</h3>
+            <p>Tổng Vé Hủy Hôm Nay</p>
+        </div>
+        <div class="stat-card warning">
+                <h3>@Model.Summary.TongDoanhThuComboHomNay.ToString("N0") đ</h3>
+                <p>Doanh Thu Đồ Ăn</p>
+            </div>
+        <div class="stat-card info">
+            <h3>@Model.Summary.SoKhachMoiDangKyHomNay</h3>
+            <p>Khách Mới Đăng Ký Hôm Nay</p>
+        </div>
+        <div class="stat-card">
+            <h3>@Model.Summary.SoSuatChieuHomNay</h3>
+            <p>Suất Chiếu Hôm Nay</p>
         </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-info">
-            <h3>@ViewBag.TotalUsers</h3>
-            <p>Tổng Người Dùng</p>
-        </div>
-        <div class="stat-icon blue">
-            <i class="fas fa-users"></i>
-        </div>
+    <!-- Tổng Hệ Thống -->
+    <div class="section-title">
+        <i class="fas fa-globe"></i> Tổng Hệ Thống
     </div>
 
-    <div class="stat-card">
-        <div class="stat-info">
-            <h3>@ViewBag.TotalBookings</h3>
-            <p>Tổng Đơn Đặt</p>
-        </div>
-        <div class="stat-icon green">
-            <i class="fas fa-ticket-alt"></i>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-info">
-            <h3>@((ViewBag.TotalRevenue ?? 0m).ToString("N0")) VNĐ</h3>
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <h3>@Model.Summary.TongDoanhThuHeThong.ToString("N0") đ</h3>
             <p>Tổng Doanh Thu</p>
         </div>
-        <div class="stat-icon purple">
-            <i class="fas fa-money-bill-wave"></i>
+        <div class="stat-card info">
+            <h3>@Model.Summary.TongVeBanHeThong</h3>
+            <p>Tổng Vé Đã Bán</p>
         </div>
-    </div>
-</div>
-
-<!-- Monthly Stats -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Thống Kê Tháng Này</h2>
-    </div>
-    <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-info">
-                <h3>@((ViewBag.MonthlyRevenue ?? 0m).ToString("N0")) VNĐ</h3>
-                <p>Doanh Thu Trong Tháng</p>
-            </div>
-            <div class="stat-icon orange">
-                <i class="fas fa-chart-line"></i>
-            </div>
+            <h3>@Model.Summary.TongKhachHang</h3>
+            <p>Tổng Khách Hàng</p>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-info">
-                <h3>@(ViewBag.MonthlyBookings ?? 0)</h3>
-                <p>Đơn Đặt Trong Tháng</p>
-            </div>
-            <div class="stat-icon blue">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
+        <div class="stat-card warning">
+            <h3>@Model.Summary.TongPhim</h3>
+            <p>Tổng Số Phim</p>
+        </div>
+        <div class="stat-card info">
+            <h3>@Model.Summary.TongRap</h3>
+            <p>Tổng Số Rạp</p>
         </div>
     </div>
-</div>
-<!-- Filter Section -->
-<div class="content-card" style="margin-bottom: 2rem;">
-    <div style="padding: 1.5rem;">
-        @using (Html.BeginForm("Index", "Dashboard", FormMethod.Get))
-        {
-            <div style="display: flex; gap: 1rem; align-items: end;">
-                <div class="form-group" style="margin: 0; flex: 1;">
-                    <label class="form-label">Chọn Tháng</label>
-                    <select name="month" class="form-control">
-                        <option value="">-- Tất cả tháng --</option>
-                        @for (int i = 1; i <= 12; i++)
-                        {
-                            <option value="@i" @(ViewBag.SelectedMonth == i ? "selected" : "")>Tháng @i</option>
-                        }
-                    </select>
-                </div>
-                <div class="form-group" style="margin: 0; flex: 1;">
-                    <label class="form-label">Chọn Năm</label>
-                    <select name="year" class="form-control">
-                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
-                        {
-                            <option value="@i" @(ViewBag.SelectedYear == i ? "selected" : "")>Năm @i</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter"></i> Lọc
-                </button>
-            </div>
-        }
-    </div>
-</div>
-<!-- Revenue Chart -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-chart-bar"></i> Doanh Thu </h2>
-    </div>
-    <canvas id="revenueChart" height="80"></canvas>
-</div>
+}
 
-<!-- Top Movies by Revenue -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-trophy"></i> Top 5 Phim Có Doanh Thu Cao Nhất</h2>
+<!-- 1.2. Thống Kê Theo Rạp -->
+@if (Model.CinemaStatistics != null && Model.CinemaStatistics.Any())
+{
+    <div class="section-title">
+        <i class="fas fa-building"></i> Thống Kê Theo Rạp
     </div>
 
-    @if (ViewBag.TopMovies != null && ((System.Collections.IList)ViewBag.TopMovies).Count > 0)
-    {
+    <div class="content-card">
+        <h3 style="margin: 0 0 1rem 0;">Top Rạp Doanh Thu Cao Nhất</h3>
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Tên Phim</th>
-                    <th>Số Vé Bán</th>
-                    <th>Doanh Thu</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int index = 1;
-                    var db = new WebCinema.Models.CSDLDataContext();
-                    // Use non-dynamic iteration and reflection to safely read anonymous projection properties
-                    var topMoviesObj = ViewBag.TopMovies as System.Collections.IEnumerable;
-                    if (topMoviesObj != null)
-                    {
-                        foreach (var item in topMoviesObj)
-                        {
-                            // safe reflection access (works for anonymous types across assemblies)
-                            object movieProp = item != null ? (item.GetType().GetProperty("Movie") != null ? item.GetType().GetProperty("Movie").GetValue(item, null) : null) : null;
-                            object soVeObj = item != null ? (item.GetType().GetProperty("TotalTickets") != null ? item.GetType().GetProperty("TotalTickets").GetValue(item, null) : null) : null;
-                            object tongDoanhThuObj = item != null ? (item.GetType().GetProperty("Revenue") != null ? item.GetType().GetProperty("Revenue").GetValue(item, null) : null) : null;
-
-                            var phim = movieProp as WebCinema.Models.Phim;
-                            int soVe = soVeObj != null ? Convert.ToInt32(soVeObj) : 0;
-                            decimal tongDoanhThu = tongDoanhThuObj != null ? Convert.ToDecimal(tongDoanhThuObj) : 0m;
-
-                            <tr>
-                                <td><strong>@index</strong></td>
-                                <td>@(phim != null ? phim.ten_phim : "N/A")</td>
-                                <td>@soVe</td>
-                                <td><strong style="color: #27ae60;">@(tongDoanhThu.ToString("N0")) VNĐ</strong></td>
-                            </tr>
-                            index++;
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê.</p>
-    }
-</div>
-
-<!-- Top Movies by Booking Count -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-fire"></i> Top 5 Phim Được Đặt Vé Nhiều Nhất</h2>
-    </div>
-
-    @if (ViewBag.TopBookingMovies != null && ((System.Collections.IList)ViewBag.TopBookingMovies).Count > 0)
-    {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Tên Phim</th>
-                    <th>Số Vé Đã Đặt</th>
-                    <th>Doanh Thu Từ Vé Này</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int bookingIndex = 1;
-                    var topBookingMoviesObj = ViewBag.TopBookingMovies as System.Collections.IEnumerable;
-                    if (topBookingMoviesObj != null)
-                    {
-                        foreach (var item in topBookingMoviesObj)
-                        {
-                            // Reflection để lấy dữ liệu từ anonymous object
-                            var soVeDatProp = item.GetType().GetProperty("SoVeDat");
-                            var tongDoanhThuProp = item.GetType().GetProperty("TongDoanhThu");
-                            var phimProp = item.GetType().GetProperty("Phim");
-
-                            int soVeDat = soVeDatProp != null ? Convert.ToInt32(soVeDatProp.GetValue(item, null)) : 0;
-                            decimal tongDoanhThu = tongDoanhThuProp != null ? Convert.ToDecimal(tongDoanhThuProp.GetValue(item, null)) : 0m;
-                            var phim = phimProp != null ? (WebCinema.Models.Phim)phimProp.GetValue(item, null) : null;
-
-                            <tr style="background: #f9f9f9;">
-                                <td><strong>@bookingIndex</strong></td>
-                                <td>
-                                    <strong style="color: #ff6b35;">@(phim != null ? phim.ten_phim : "N/A")</strong>
-                                </td>
-                                <td>
-                                    <span style="background: #e8f4f8; padding: 0.4rem 0.8rem; border-radius: 6px; color: #0066cc; font-weight: 600;">
-                                        @soVeDat vé
-                                    </span>
-                                </td>
-                                <td>
-                                    <strong style="color: #27ae60;">@(tongDoanhThu.ToString("N0")) VNĐ</strong>
-                                </td>
-                            </tr>
-                            bookingIndex++;
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê.</p>
-    }
-</div>
-
-<!-- Top Cinemas by Bookings -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-building"></i> Top 5 Rạp Có Nhiều Lượt Đặt Vé Nhất</h2>
-    </div>
-
-    @if (ViewBag.TopCinemasByBookings != null && ((System.Collections.IList)ViewBag.TopCinemasByBookings).Count > 0)
-    {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
+                    <th>Xếp Hạng</th>
                     <th>Tên Rạp</th>
-                    <th>Số Vé Bán</th>
-                    <th>Doanh Thu</th>
+                    <th>Doanh Thu Vé</th>
+                    <th>Doanh Thu Đồ Ăn</th>
+                    <th>Tổng Doanh Thu</th>
+                    <th>Vé Bán / Vé Hủy</th>
+                    <th>Tỷ Lệ Lấp Đầy</th>
+                    <th>Suất Chiếu</th>
                 </tr>
             </thead>
             <tbody>
-                @{
-                    int cinemaIndex = 1;
-                    var topCinemasByBookingsObj = ViewBag.TopCinemasByBookings as System.Collections.IEnumerable;
-                    if (topCinemasByBookingsObj != null)
-                    {
-                        foreach (var item in topCinemasByBookingsObj)
-                        {
-                            var soVeProp = item.GetType().GetProperty("SoVe");
-                            var doanhThuProp = item.GetType().GetProperty("DoanhThu");
-                            var rapProp = item.GetType().GetProperty("Rap");
-
-                            int soVe = soVeProp != null ? Convert.ToInt32(soVeProp.GetValue(item, null)) : 0;
-                            decimal doanhThu = doanhThuProp != null ? Convert.ToDecimal(doanhThuProp.GetValue(item, null)) : 0m;
-                            var rap = rapProp != null ? (WebCinema.Models.Rap)rapProp.GetValue(item, null) : null;
-
-                            <tr>
-                                <td><strong>@cinemaIndex</strong></td>
-                                <td><strong style="color: #3498db;">@(rap != null ? rap.ten_rap : "N/A")</strong></td>
-                                <td>
-                                    <span style="background: #fff3cd; padding: 0.4rem 0.8rem; border-radius: 6px; color: #856404; font-weight: 600;">
-                                        @soVe vé
-                                    </span>
-                                </td>
-                                <td><strong style="color: #27ae60;">@(doanhThu.ToString("N0")) VNĐ</strong></td>
-                            </tr>
-                            cinemaIndex++;
-                        }
-                    }
+                @foreach (var rap in Model.CinemaStatistics.Take(10))
+                {
+                    var rankClass = rap.XepHangDoanhThu == 1 ? "rank-1" :
+                                  rap.XepHangDoanhThu == 2 ? "rank-2" :
+                                  rap.XepHangDoanhThu == 3 ? "rank-3" : "rank-other";
+                    <tr>
+                        <td>
+                            <span class="rank-badge @rankClass">@rap.XepHangDoanhThu</span>
+                        </td>
+                        <td>
+                            <strong style="color: #2c3e50;">@rap.TenRap</strong>
+                            <br />
+                            <small style="color: #7f8c8d;">@rap.DiaChi</small>
+                        </td>
+                        <td>@rap.DoanhThuVe.ToString("N0") đ</td>
+                        <td>@rap.DoanhThuDoAn.ToString("N0") đ</td>
+                        <td>
+                            <strong style="color: #27ae60; font-size: 1.1rem;">
+                                @rap.TongDoanhThu.ToString("N0") đ
+                            </strong>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">@rap.SoVeBan</span> /
+                            <span class="badge badge-danger">@rap.SoVeHuy</span>
+                        </td>
+                        <td>
+                            <strong style="color: @(rap.TyLeLapDay > 70 ? "#27ae60" : rap.TyLeLapDay > 50 ? "#f39c12" : "#e74c3c");">
+                                @rap.TyLeLapDay.ToString("F1")%
+                            </strong>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: @(rap.TyLeLapDay)%"></div>
+                            </div>
+                        </td>
+                        <td>@rap.SoSuatChieu</td>
+                    </tr>
                 }
             </tbody>
         </table>
-    }
-    else
-    {
-        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê.</p>
-    }
-</div>
-
-<!-- Top Cinemas by Revenue -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-chart-line"></i> Top 5 Rạp Có Doanh Thu Cao Nhất</h2>
     </div>
 
-    @if (ViewBag.TopCinemasByRevenue != null && ((System.Collections.IList)ViewBag.TopCinemasByRevenue).Count > 0)
+    <!-- Rạp Có Tỷ Lệ Vé Hủy Cao (Cảnh Báo) -->
+
+
+    if (rapVeHuyCao.Any())
     {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Tên Rạp</th>
-                    <th>Số Vé Bán</th>
-                    <th>Doanh Thu</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int revenueIndex = 1;
-                    var topCinemasByRevenueObj = ViewBag.TopCinemasByRevenue as System.Collections.IEnumerable;
-                    if (topCinemasByRevenueObj != null)
-                    {
-                        foreach (var item in topCinemasByRevenueObj)
-                        {
-                            var soVeProp = item.GetType().GetProperty("SoVe");
-                            var doanhThuProp = item.GetType().GetProperty("DoanhThu");
-                            var rapProp = item.GetType().GetProperty("Rap");
-
-                            int soVe = soVeProp != null ? Convert.ToInt32(soVeProp.GetValue(item, null)) : 0;
-                            decimal doanhThu = doanhThuProp != null ? Convert.ToDecimal(doanhThuProp.GetValue(item, null)) : 0m;
-                            var rap = rapProp != null ? (WebCinema.Models.Rap)rapProp.GetValue(item, null) : null;
-
-                            <tr style="background: #f9f9f9;">
-                                <td><strong>@revenueIndex</strong></td>
-                                <td><strong style="color: #3498db;">@(rap != null ? rap.ten_rap : "N/A")</strong></td>
-                                <td>@soVe vé</td>
-                                <td><strong style="color: #27ae60;">@(doanhThu.ToString("N0")) VNĐ</strong></td>
-                            </tr>
-                            revenueIndex++;
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê.</p>
-    }
-</div>
-
-<!-- Top Food Items -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-utensils"></i> Top 5 Đồ Ăn Được Đặt Nhiều Nhất</h2>
-    </div>
-
-    @if (ViewBag.TopFoodItems != null && ((System.Collections.IList)ViewBag.TopFoodItems).Count > 0)
-    {
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Tên Đồ Ăn</th>
-                    <th>Số Lượng Đã Đặt</th>
-                    <th>Doanh Thu Từ Đồ Ăn</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{
-                    int foodIndex = 1;
-                    var topFoodItemsObj = ViewBag.TopFoodItems as System.Collections.IEnumerable;
-                    if (topFoodItemsObj != null)
-                    {
-                        foreach (var item in topFoodItemsObj)
-                        {
-                            var soLuongProp = item.GetType().GetProperty("SoLuong");
-                            var tienFoodProp = item.GetType().GetProperty("TienFood");
-                            var doAnProp = item.GetType().GetProperty("DoAn");
-
-                            int soLuong = soLuongProp != null ? Convert.ToInt32(soLuongProp.GetValue(item, null)) : 0;
-                            decimal tienFood = tienFoodProp != null ? Convert.ToDecimal(tienFoodProp.GetValue(item, null)) : 0m;
-                            var doAn = doAnProp != null ? (WebCinema.Models.Do_An)doAnProp.GetValue(item, null) : null;
-
-                            <tr>
-                                <td><strong>@foodIndex</strong></td>
-                                <td><strong style="color: #e67e22;">@(doAn != null ? doAn.ten_san_pham : "N/A")</strong></td>
-                                <td>
-                                    <span style="background: #fde4e4; padding: 0.4rem 0.8rem; border-radius: 6px; color: #c0392b; font-weight: 600;">
-                                        @soLuong cái
-                                    </span>
-                                </td>
-                                <td><strong style="color: #27ae60;">@(tienFood.ToString("N0")) VNĐ</strong></td>
-                            </tr>
-                            foodIndex++;
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê.</p>
-    }
-</div>
-
-<!-- Chi Tiết Bán Vé Theo Rạp/Ngày/Phim -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Chi Tiết Bán Vé Theo Rạp - Ngày - Phim</h2>
-        <span class="badge badge-primary">Hiển thị 50 mục gần nhất</span>
-    </div>
-
-    @if (ViewBag.CinemaTicketDetails != null && ((System.Collections.IList)ViewBag.CinemaTicketDetails).Count > 0)
-    {
-        <div style="overflow-x: auto;">
+        <div class="content-card" style="border-left: 4px solid #e74c3c;">
+            <h3 style="margin: 0 0 1rem 0; color: #e74c3c;">
+                <i class="fas fa-exclamation-triangle"></i> Cảnh Báo: Rạp Có Tỷ Lệ Vé Hủy Cao
+            </h3>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 20%;">Rạp Chiếu</th>
-                        <th style="width: 15%;">Ngày Chiếu</th>
-                        <th style="width: 35%;">Phim</th>
-                        <th style="width: 10%;">Số Vé</th>
-                        <th style="width: 20%;">Doanh Thu</th>
+                        <th>Tên Rạp</th>
+                        <th>Vé Bán</th>
+                        <th>Vé Hủy</th>
+                        <th>Tỷ Lệ Hủy</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @{
-                        var cinemaDetails = ViewBag.CinemaTicketDetails as System.Collections.IEnumerable;
-                        if (cinemaDetails != null)
-                        {
-                            foreach (var item in cinemaDetails)
-                            {
-                                var rapProp = item.GetType().GetProperty("Rap");
-                                var ngayChieuProp = item.GetType().GetProperty("NgayChieu");
-                                var phimProp = item.GetType().GetProperty("Phim");
-                                var soVeProp = item.GetType().GetProperty("SoVe");
-                                var doanhThuProp = item.GetType().GetProperty("DoanhThu");
-
-                                var rap = rapProp != null ? (WebCinema.Models.Rap)rapProp.GetValue(item, null) : null;
-                                var ngayChieu = ngayChieuProp != null ? (DateTime)ngayChieuProp.GetValue(item, null) : DateTime.Now;
-                                var phim = phimProp != null ? (WebCinema.Models.Phim)phimProp.GetValue(item, null) : null;
-                                int soVe = soVeProp != null ? Convert.ToInt32(soVeProp.GetValue(item, null)) : 0;
-                                decimal doanhThu = doanhThuProp != null ? Convert.ToDecimal(doanhThuProp.GetValue(item, null)) : 0m;
-
-                                <tr style="border-left: 4px solid @(soVe > 100 ? "#27ae60" : soVe > 50 ? "#f39c12" : "#e74c3c");">
-                                    <td>
-                                        <strong style="color: #2c3e50;">@(rap != null ? rap.ten_rap : "N/A")</strong>
-                                    </td>
-                                    <td>
-                                        <span style="background: #ecf0f1; padding: 0.4rem 0.8rem; border-radius: 4px;">
-                                            @ngayChieu.ToString("dd/MM/yyyy")
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span style="color: #3498db; font-weight: 600;">@(phim != null ? phim.ten_phim : "N/A")</span>
-                                    </td>
-                                    <td>
-                                        <span style="background: #e8f4f8; padding: 0.4rem 0.8rem; border-radius: 4px; color: #0066cc; font-weight: 600; display: inline-block;">
-                                            @soVe vé
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <strong style="color: #27ae60; font-size: 1.05rem;">@(doanhThu.ToString("N0")) VNĐ</strong>
-                                    </td>
-                                </tr>
-                            }
-                        }
+                    @foreach (var rap in rapVeHuyCao)
+                    {
+                        var tyLeHuy = (decimal)rap.SoVeHuy / (rap.SoVeBan + rap.SoVeHuy) * 100;
+                        <tr>
+                            <td><strong>@rap.TenRap</strong></td>
+                            <td>@rap.SoVeBan</td>
+                            <td><span class="badge badge-danger">@rap.SoVeHuy</span></td>
+                            <td>
+                                <strong style="color: #e74c3c;">@tyLeHuy.ToString("F1")%</strong>
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
         </div>
     }
-    else
+}
+
+<!-- 1.3. Thống Kê Theo Phim -->
+@if (Model.MovieStatistics != null)
+{
+    <div class="section-title">
+        <i class="fas fa-film"></i> Thống Kê Theo Phim
+    </div>
+
+    <!-- Top Phim Doanh Thu Cao -->
+    if (Model.MovieStatistics.TopPhimDoanhThuCao != null && Model.MovieStatistics.TopPhimDoanhThuCao.Any())
     {
-        <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 8px;">
-            <i class="fas fa-inbox" style="font-size: 3rem; color: #bdc3c7; margin-bottom: 1rem;"></i>
-            <p style="color: #999; font-size: 1.1rem;">Chưa có dữ liệu bán vé</p>
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">🏆 Top Phim Doanh Thu Cao Nhất</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Xếp Hạng</th>
+                        <th>Tên Phim</th>
+                        <th>Số Vé Bán</th>
+                        <th>Doanh Thu Vé</th>
+                        <th>Doanh Thu Đồ Ăn</th>
+                        <th>Tổng Doanh Thu</th>
+                        <th>Số Suất Chiếu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.MovieStatistics.TopPhimDoanhThuCao.Count; i++)
+                    {
+                        var phim = Model.MovieStatistics.TopPhimDoanhThuCao[i];
+                        var rankClass = i == 0 ? "rank-1" : i == 1 ? "rank-2" : i == 2 ? "rank-3" : "rank-other";
+                        <tr>
+                            <td><span class="rank-badge @rankClass">@(i + 1)</span></td>
+                            <td><strong style="color: #3498db;">@phim.TenPhim</strong></td>
+                            <td>@phim.SoVeBan</td>
+                            <td>@phim.DoanhThuVe.ToString("N0") đ</td>
+                            <td>@phim.DoanhThuDoAn.ToString("N0") đ</td>
+                            <td>
+                                <strong style="color: #27ae60; font-size: 1.1rem;">
+                                    @phim.TongDoanhThu.ToString("N0") đ
+                                </strong>
+                            </td>
+                            <td>@phim.SoSuatChieu</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     }
 
-    <!-- Legend -->
-    <div style="display: flex; gap: 2rem; margin-top: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="width: 4px; height: 20px; background: #27ae60;"></span>
-            <span style="font-size: 0.9rem; color: #666;">Bán chạy (> 100 vé)</span>
+    <!-- Phim Bị Ế -->
+    if (Model.MovieStatistics.PhimBiE != null && Model.MovieStatistics.PhimBiE.Any())
+    {
+        <div class="content-card" style="border-left: 4px solid #f39c12;">
+            <h3 style="margin: 0 0 1rem 0; color: #f39c12;">
+                <i class="fas fa-exclamation-circle"></i> Phim Doanh Thu Thấp
+            </h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên Phim</th>
+                        <th>Số Vé Bán</th>
+                        <th>Tổng Doanh Thu</th>
+                        <th>Số Suất Chiếu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var phim in Model.MovieStatistics.PhimBiE)
+                    {
+                        <tr>
+                            <td><strong>@phim.TenPhim</strong></td>
+                            <td><span class="badge badge-warning">@phim.SoVeBan</span></td>
+                            <td>@phim.TongDoanhThu.ToString("N0") đ</td>
+                            <td>@phim.SoSuatChieu</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="width: 4px; height: 20px; background: #f39c12;"></span>
-            <span style="font-size: 0.9rem; color: #666;">Bán vừa phải (50-100 vé)</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="width: 4px; height: 20px; background: #e74c3c;"></span>
-            <span style="font-size: 0.9rem; color: #666;">Bán chậm (< 50 vé)</span>
-        </div>
-    </div>
-</div>
+    }
 
-<!-- Quick Actions -->
-<div class="content-card">
-    <div class="card-header">
-        <h2 class="card-title"><i class="fas fa-bolt"></i> Thao Tác Nhanh</h2>
+    <!-- Suất Chiếu Hoạt Động Tốt -->
+    if (Model.MovieStatistics.SuatChieuTotNhat != null && Model.MovieStatistics.SuatChieuTotNhat.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">⭐ Top Suất Chiếu Hoạt Động Tốt Nhất</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Phim</th>
+                        <th>Rạp / Phòng</th>
+                        <th>Ngày Chiếu</th>
+                        <th>Giờ Chiếu</th>
+                        <th>Vé Bán / Tổng Ghế</th>
+                        <th>Tỷ Lệ Lấp Đầy</th>
+                        <th>Doanh Thu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sc in Model.MovieStatistics.SuatChieuTotNhat)
+                    {
+                        <tr>
+                            <td><strong>@sc.TenPhim</strong></td>
+                            <td>
+                                @sc.TenRap
+                                <br />
+                                <small style="color: #7f8c8d;">@sc.TenPhong</small>
+                            </td>
+                            <td>@sc.NgayChieu.ToString("dd/MM/yyyy")</td>
+                            <td>@sc.GioChieu.ToString(@"hh\:mm")</td>
+                            <td>@sc.SoVeBan / @sc.TongSoGhe</td>
+                            <td>
+                                <strong style="color: #27ae60;">@sc.TyLeLapDay.ToString("F1")%</strong>
+                            </td>
+                            <td>@sc.DoanhThu.ToString("N0") đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- So Sánh Phim Theo Rạp -->
+    if (Model.MovieStatistics.SoSanhPhimTheoRap != null && Model.MovieStatistics.SoSanhPhimTheoRap.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">📊 So Sánh Doanh Thu Phim Giữa Các Rạp</h3>
+            <div class="movie-comparison-grid">
+                @foreach (var phim in Model.MovieStatistics.SoSanhPhimTheoRap)
+                {
+                    <div class="movie-comparison-card">
+                        <h4>@phim.TenPhim</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Rạp</th>
+                                    <th>Số Vé</th>
+                                    <th>Doanh Thu</th>
+                                    <th>Suất Chiếu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var rap in phim.ChiTietTheoRap.OrderByDescending(r => r.DoanhThu))
+                                {
+                                    <tr>
+                                        <td><strong>@rap.TenRap</strong></td>
+                                        <td>@rap.SoVeBan</td>
+                                        <td>@rap.DoanhThu.ToString("N0") đ</td>
+                                        <td>@rap.SoSuatChieu</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+<!-- 1.4. Thống Kê Đồ Ăn & Combo -->
+@if (Model.FoodStatistics != null)
+{
+    <div class="section-title">
+        <i class="fas fa-utensils"></i> Thống Kê Đồ Ăn & Combo
     </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-        <a href="@Url.Action("Create", "MovieManagement")" class="btn btn-primary" style="text-align: center;">
-            <i class="fas fa-plus"></i> Thêm Phim Mới
-        </a>
-        <a href="@Url.Action("Index", "BookingManagement")" class="btn btn-success" style="text-align: center;">
-            <i class="fas fa-list"></i> Xem Đơn Đặt
-        </a>
-        <a href="@Url.Action("Index", "UserManagement")" class="btn btn-secondary" style="text-align: center;">
-            <i class="fas fa-users"></i> Quản Lý User
-        </a>
-        <a href="@Url.Action("Index", "CinemaManagement")" class="btn btn-primary" style="text-align: center;">
-            <i class="fas fa-building"></i> Quản Lý Rạp
-        </a>
+
+    <div class="stats-grid">
+        <div class="stat-card info">
+            <h3>@Model.FoodStatistics.TyLeKhachMuaCombo.ToString("F1")%</h3>
+            <p>Tỷ Lệ Khách Mua Combo</p>
+            <small>
+                @Model.FoodStatistics.SoKhachMuaCombo / @Model.FoodStatistics.TongKhachMuaVe khách
+            </small>
+        </div>
+        <div class="stat-card warning">
+            <h3>@Model.FoodStatistics.TongTienGiamKhuyenMai.ToString("N0") đ</h3>
+            <p>Tổng Tiền Giảm Qua Khuyến Mãi</p>
+            <small>
+                @Model.FoodStatistics.SoLuotSuDungKhuyenMai lượt sử dụng
+            </small>
+        </div>
     </div>
-</div>
+
+    <!-- Món Bán Chạy Nhất -->
+    if (Model.FoodStatistics.MonBanChayNhat != null && Model.FoodStatistics.MonBanChayNhat.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">🍿 Top Món Bán Chạy Nhất Toàn Hệ Thống</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Xếp Hạng</th>
+                        <th>Tên Món</th>
+                        <th>Loại</th>
+                        <th>Giá</th>
+                        <th>Số Lượng Bán</th>
+                        <th>Tổng Doanh Thu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.FoodStatistics.MonBanChayNhat.Count; i++)
+                    {
+                        var mon = Model.FoodStatistics.MonBanChayNhat[i];
+                        var rankClass = i == 0 ? "rank-1" : i == 1 ? "rank-2" : i == 2 ? "rank-3" : "rank-other";
+                        <tr>
+                            <td><span class="rank-badge @rankClass">@(i + 1)</span></td>
+                            <td><strong style="color: #e67e22;">@mon.TenSanPham</strong></td>
+                            <td><span class="badge badge-info">@mon.LoaiDoAn</span></td>
+                            <td>@mon.Gia.ToString("N0") đ</td>
+                            <td>
+                                <span class="badge badge-success">@mon.SoLuongBan</span>
+                            </td>
+                            <td>
+                                <strong style="color: #27ae60;">
+                                    @mon.TongDoanhThu.ToString("N0") đ
+                                </strong>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- Doanh Thu Đồ Ăn Theo Rạp -->
+    if (Model.FoodStatistics.DoanhThuDoAnTheoRap != null && Model.FoodStatistics.DoanhThuDoAnTheoRap.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">📍 Doanh Thu Đồ Ăn Theo Rạp</h3>
+            <div class="food-cinema-grid">
+                @foreach (var rap in Model.FoodStatistics.DoanhThuDoAnTheoRap.Take(10))
+                {
+                    <div class="food-cinema-card">
+                        <h4>@rap.TenRap</h4>
+                        <div class="food-stats-row">
+                            <div class="food-stat-item">
+                                <span class="food-stat-value revenue">@rap.TongDoanhThuDoAn.ToString("N0") đ</span>
+                                <span class="food-stat-label">Tổng Doanh Thu</span>
+                            </div>
+                            <div class="food-stat-item">
+                                <span class="food-stat-value quantity">@rap.SoLuongMonBan</span>
+                                <span class="food-stat-label">Số Lượng Món Bán</span>
+                            </div>
+                        </div>
+                        @if (rap.TopMonBanChay != null && rap.TopMonBanChay.Any())
+                        {
+                            <div class="food-top-items">
+                                <strong>Top 3 món bán chạy:</strong>
+                                <ul>
+                                    @foreach (var mon in rap.TopMonBanChay)
+                                    {
+                                        <li>
+                                            <span>@mon.TenSanPham</span>
+                                            <span class="food-item-quantity">@mon.SoLuongBan món</span>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
+<!-- 1.5. Thống Kê Khách Hàng -->
+@if (Model.CustomerStatistics != null)
+{
+    <div class="section-title">
+        <i class="fas fa-users"></i> Thống Kê Khách Hàng
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>@Model.CustomerStatistics.TongKhachDangKy</h3>
+            <p>Tổng Khách Đăng Ký</p>
+        </div>
+        <div class="stat-card success">
+            <h3>@Model.CustomerStatistics.KhachMoiTrongThang</h3>
+            <p>Khách Mới Trong Tháng</p>
+        </div>
+        <div class="stat-card warning">
+            <h3>@Model.CustomerStatistics.KhachVIP</h3>
+            <p>Khách VIP (≥100 điểm)</p>
+        </div>
+        <div class="stat-card info">
+            <h3>@Model.CustomerStatistics.SoTienTrungBinhMoiDon.ToString("N0") đ</h3>
+            <p>Trung Bình Mỗi Đơn</p>
+        </div>
+        <div class="stat-card">
+            <h3>@Model.CustomerStatistics.SoVeTrungBinhMoiKhach.ToString("F1")</h3>
+            <p>Vé Trung Bình Mỗi Khách</p>
+        </div>
+    </div>
+
+    <!-- Top Khách Hàng -->
+    if (Model.CustomerStatistics.TopKhachMuaNhieu != null && Model.CustomerStatistics.TopKhachMuaNhieu.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">👑 Top Khách Hàng Mua Nhiều Nhất</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Xếp Hạng</th>
+                        <th>Họ Tên</th>
+                        <th>Email / SĐT</th>
+                        <th>Số Đơn</th>
+                        <th>Số Vé</th>
+                        <th>Tổng Chi Tiêu</th>
+                        <th>Điểm Tích Lũy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.CustomerStatistics.TopKhachMuaNhieu.Count; i++)
+                    {
+                        var kh = Model.CustomerStatistics.TopKhachMuaNhieu[i];
+                        var rankClass = i == 0 ? "rank-1" : i == 1 ? "rank-2" : i == 2 ? "rank-3" : "rank-other";
+                        <tr>
+                            <td><span class="rank-badge @rankClass">@(i + 1)</span></td>
+                            <td><strong>@kh.HoTen</strong></td>
+                            <td>
+                                @kh.Email
+                                <br />
+                                <small style="color: #7f8c8d;">@kh.SoDienThoai</small>
+                            </td>
+                            <td>@kh.SoDonDat</td>
+                            <td>@kh.SoVeMua</td>
+                            <td>
+                                <strong style="color: #27ae60;">
+                                    @kh.TongChiTieu.ToString("N0") đ
+                                </strong>
+                            </td>
+                            <td>
+                                <span class="badge @(kh.DiemTichLuy >= 100 ? "badge-warning" : "badge-info")">
+                                    @kh.DiemTichLuy điểm
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+<!-- 1.6. Thống Kê Nhân Viên -->
+@if (Model.StaffStatistics != null)
+{
+    <div class="section-title">
+        <i class="fas fa-user-tie"></i> Thống Kê Hoạt Động Nhân Viên
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>@Model.StaffStatistics.TongNhanVien</h3>
+            <p>Tổng Nhân Viên</p>
+        </div>
+        <div class="stat-card success">
+            <h3>@Model.StaffStatistics.NhanVienDangLamViec</h3>
+            <p>Đang Làm Việc</p>
+        </div>
+    </div>
+
+    if (Model.StaffStatistics.HoatDongNhanVien != null && Model.StaffStatistics.HoatDongNhanVien.Any())
+    {
+        <div class="content-card">
+            <h3 style="margin: 0 0 1rem 0;">📊 Hoạt Động Nhân Viên</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <th>Rạp</th>
+                        <th>Chức Vụ</th>
+                        <th>Vé Bán</th>
+                        <th>Doanh Thu</th>
+                        <th>GD Thành Công</th>
+                        <th>GD Thất Bại</th>
+                        <th>Khách Hỗ Trợ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var nv in Model.StaffStatistics.HoatDongNhanVien.OrderByDescending(n => n.DoanhThuBanVe).Take(20))
+                    {
+                        <tr>
+                            <td><strong>@nv.HoTen</strong></td>
+                            <td>@nv.TenRap</td>
+                            <td><span class="badge badge-info">@nv.ChucVu</span></td>
+                            <td>@nv.SoVeBan</td>
+                            <td>
+                                <strong style="color: #27ae60;">
+                                    @nv.DoanhThuBanVe.ToString("N0") đ
+                                </strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-success">@nv.SoGiaoDichThanhCong</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-danger">@nv.SoGiaoDichThatBai</span>
+                            </td>
+                            <td>@nv.SoKhachDuocHoTro</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+
 
 @section scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Revenue Chart
-        var ctx = document.getElementById('revenueChart').getContext('2d');
-        var dailyRevenue = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.DailyRevenue));
+        var chartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ChartData));
 
-        var labels = dailyRevenue.map(function(item) {
-            var date = new Date(item.Date);
-            return date.getDate() + '/' + (date.getMonth() + 1);
-        });
-
-        var data = dailyRevenue.map(function(item) {
-            return item.Revenue;
-        });
-
-        var revenueChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Doanh Thu (VNĐ)',
-                    data: data,
-                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
-                    borderColor: '#ff6b35',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#ff6b35',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top'
+        if (chartData) {
+            var ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.Labels,
+                    datasets: [
+                        {
+                            label: 'Doanh Thu Vé',
+                            data: chartData.DoanhThuVe,
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: '#3498db',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Doanh Thu Đồ Ăn',
+                            data: chartData.DoanhThuDoAn,
+                            backgroundColor: 'rgba(230, 126, 34, 0.2)',
+                            borderColor: '#e67e22',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Tổng Doanh Thu',
+                            data: chartData.TongDoanhThu,
+                            backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                            borderColor: '#27ae60',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' +
+                                           context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                                }
+                            }
+                        }
                     },
-                    tooltip: {
-                        enabled: true,
-                        callbacks: {
-                            label: function(context) {
-                                return 'Doanh thu: ' + context.parsed.y.toLocaleString('vi-VN') + ' VNĐ';
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('vi-VN') + ' đ';
+                                }
                             }
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            // show default tick labels on Y axis
-                            display: true,
-                            callback: function(value) { return value.toLocaleString('vi-VN') + ' VNĐ'; }
-                        },
-                        grid: { color: '#eee' }
-                    }
                 }
-            }
-        });
-
-        // Keep original behavior: show value on click (point)
-        document.getElementById('revenueChart').onclick = function(evt) {
-            const points = revenueChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
-            if (points && points.length) {
-                const firstPoint = points[0];
-                const value = revenueChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
-                alert('Doanh thu: ' + value.toLocaleString('vi-VN') + ' VNĐ');
-            }
-        };
+            });
+        }
     </script>
 }
 

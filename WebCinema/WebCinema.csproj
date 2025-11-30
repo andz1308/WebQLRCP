@@ -285,6 +285,7 @@
     <Compile Include="Areas\Admin\Controllers\ShowtimeTicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffBookingManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffDashboardController.cs" />
+    <Compile Include="Areas\Admin\Controllers\StaffDashboardNewController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffInventoryManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffOfflineBookingController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffPromotionController.cs" />
@@ -322,6 +323,7 @@
     </Compile>
     <Compile Include="Models\CSDLDataContextExtensions.cs" />
     <Compile Include="Models\CustomerBookingViewModel.cs" />
+    <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\FoodBookingViewModel.cs" />
     <Compile Include="Models\FoodItemViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
@@ -457,6 +459,7 @@
     <Content Include="Areas\Admin\Views\StaffPromotion\Details.cshtml" />
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\Promotions.cshtml" />
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\PromotionDetails.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffDashboardNew\Index.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
