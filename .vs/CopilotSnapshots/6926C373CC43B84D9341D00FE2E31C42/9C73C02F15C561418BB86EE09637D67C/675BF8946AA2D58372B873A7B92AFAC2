@@ -1,0 +1,1090 @@
+﻿@{
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Vé Của Tôi - DAV Cinema";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // ✅ Lấy parameters từ URL
+    int page = Request.QueryString["page"] != null ? int.Parse(Request.QueryString["page"]) : 1;
+    string status = Request.QueryString["status"] ?? "all";
+    string sortBy = Request.QueryString["sortBy"] ?? "date_desc";
+    string searchName = Request.QueryString["searchName"] ?? "";
+    string searchDate = Request.QueryString["searchDate"] ?? "";
+    string searchStatus = Request.QueryString["searchStatus"] ?? "";
+    
+    // ✅ CHỈ LẤY CÁC ĐƠN ĐÃ THANH TOÁN - QUAN TRỌNG!
+    var paidBookings = Model != null ? Model.Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán").ToList() : new List<WebCinema.Models.Dat_Ve>();
+    
+    // ✅ Thống kê
+    var totalSpent = paidBookings.Sum(b => b.tong_tien);
+    var totalTickets = paidBookings.SelectMany(b => b.Ves).Count();
+    var upcomingBookings = paidBookings.Where(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null && b.Ves.First().Suat_Chieu.ngay_chieu >= DateTime.Now).ToList();
+    var pastBookings = paidBookings.Where(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null && b.Ves.First().Suat_Chieu.ngay_chieu < DateTime.Now).ToList();
+    
+    // ✅ Lọc theo tab (CHỈ VÉ ĐÃ THANH TOÁN)
+    IEnumerable<WebCinema.Models.Dat_Ve> filteredBookings = paidBookings;
+    switch (status)
+    {
+        case "upcoming":
+            filteredBookings = upcomingBookings;
+            break;
+        case "past":
+            filteredBookings = pastBookings;
+            break;
+        case "used":
+            filteredBookings = paidBookings.Where(b => b.Ves.Any(v => v.trang_thai_ve == "Đã sử dụng"));
+            break;
+        case "cancelled":
+            filteredBookings = paidBookings.Where(b => b.Ves.Any(v => v.trang_thai_ve == "Đã Hủy"));
+            break;
+        default: // "all"
+            filteredBookings = paidBookings;
+            break;
+    }
+    
+    // ✅ Lọc theo tên phim
+    if (!string.IsNullOrEmpty(searchName))
+    {
+        filteredBookings = filteredBookings.Where(b => 
+            b.Ves.Any() && 
+            b.Ves.First().Suat_Chieu != null && 
+            b.Ves.First().Suat_Chieu.Phim != null &&
+            b.Ves.First().Suat_Chieu.Phim.ten_phim.ToLower().Contains(searchName.ToLower())
+        );
+    }
+    
+    // ✅ Lọc theo ngày
+    if (!string.IsNullOrEmpty(searchDate))
+    {
+        DateTime filterDate;
+        if (DateTime.TryParse(searchDate, out filterDate))
+        {
+            filteredBookings = filteredBookings.Where(b => 
+                b.Ves.Any() && 
+                b.Ves.First().Suat_Chieu != null &&
+                b.Ves.First().Suat_Chieu.ngay_chieu.Date == filterDate.Date
+            );
+        }
+    }
+    
+    // ✅ Lọc theo trạng thái vé
+    if (!string.IsNullOrEmpty(searchStatus))
+    {
+        filteredBookings = filteredBookings.Where(b => 
+            b.Ves.Any(v => v.trang_thai_ve == searchStatus)
+        );
+    }
+    
+    // ✅ Sắp xếp
+    switch (sortBy)
+    {
+        case "date_asc":
+            filteredBookings = filteredBookings.OrderBy(b => b.ngay_tao);
+            break;
+        case "date_desc":
+            filteredBookings = filteredBookings.OrderByDescending(b => b.ngay_tao);
+            break;
+        case "price_asc":
+            filteredBookings = filteredBookings.OrderBy(b => b.tong_tien);
+            break;
+        case "price_desc":
+            filteredBookings = filteredBookings.OrderByDescending(b => b.tong_tien);
+            break;
+        case "showtime_asc":
+            filteredBookings = filteredBookings.OrderBy(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null ? b.Ves.First().Suat_Chieu.ngay_chieu : DateTime.MaxValue);
+            break;
+        case "showtime_desc":
+            filteredBookings = filteredBookings.OrderByDescending(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null ? b.Ves.First().Suat_Chieu.ngay_chieu : DateTime.MinValue);
+            break;
+        default:
+            filteredBookings = filteredBookings.OrderByDescending(b => b.ngay_tao);
+            break;
+    }
+    
+    // ✅ Phân trang
+    int pageSize = 10;
+    int totalItems = filteredBookings.Count();
+    int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+    page = Math.Max(1, Math.Min(page, totalPages == 0 ? 1 : totalPages));
+    
+    var pagedBookings = filteredBookings.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .tickets-page {
+        background: #f5f5f5;
+        min-height: 100vh;
+        padding: 2rem 0 4rem;
+    }
+
+    .tickets-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Header Section */
+    .tickets-hero {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 40px rgba(255, 107, 53, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tickets-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .tickets-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .tickets-hero h1 {
+        font-size: 2rem;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .tickets-hero p {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-card-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card-icon i {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-card-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0.5rem 0;
+    }
+
+    .stat-card-label {
+        color: #999;
+        font-size: 0.9rem;
+    }
+
+    /* Tabs */
+    .tickets-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        padding: 0.8rem 1.5rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #666;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .tab-button.active {
+        color: #ff6b35;
+        border-bottom-color: #ff6b35;
+    }
+
+    .tab-button:hover {
+        color: #ff6b35;
+    }
+
+    .tab-badge {
+        background: #ff6b35;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Ticket Card - COMPACT VERSION */
+    .ticket-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .ticket-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        transform: translateX(5px);
+    }
+
+    .ticket-card-header {
+        background: linear-gradient(135deg, #fff 0%, #fff3f0 100%);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px dashed #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+    }
+
+    .ticket-booking-id {
+        font-size: 0.85rem;
+        color: #999;
+        font-weight: 600;
+    }
+
+    .ticket-booking-id span {
+        color: #ff6b35;
+        font-size: 1rem;
+    }
+
+    .ticket-status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .status-paid {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-used {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .ticket-card-body {
+        padding: 1.5rem;
+    }
+
+    /* COMPACT Main Info */
+    .ticket-main-info {
+        display: grid;
+        grid-template-columns: 100px 1fr auto;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .ticket-poster {
+        width: 100px;
+        height: 140px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .ticket-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .ticket-details h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin: 0 0 0.8rem 0;
+        font-weight: 700;
+    }
+
+    .ticket-info-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0.5rem 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .ticket-info-row i {
+        color: #ff6b35;
+        width: 16px;
+        font-size: 0.95rem;
+    }
+
+    .ticket-info-row strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .ticket-price-section {
+        text-align: right;
+    }
+
+    .ticket-total-label {
+        color: #999;
+        font-size: 0.85rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .ticket-total-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ff6b35;
+        line-height: 1;
+    }
+
+    .ticket-seats {
+        background: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .seats-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.6rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+    }
+
+    .seats-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .seat-badge {
+        background: white;
+        border: 2px solid #ff6b35;
+        color: #ff6b35;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .ticket-actions {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-ticket {
+        padding: 0.7rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+
+    .btn-outline {
+        background: white;
+        color: #666;
+        border: 2px solid #e0e0e0;
+    }
+
+    .btn-outline:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 0.8rem;
+    }
+
+    .empty-state p {
+        color: #999;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+
+    .pagination-button {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        color: #666;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-button:hover {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .pagination-info {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .tickets-hero {
+            padding: 1.5rem;
+        }
+
+        .tickets-hero h1 {
+            font-size: 1.5rem;
+        }
+
+        .ticket-main-info {
+            grid-template-columns: 1fr;
+        }
+
+        .ticket-poster {
+            width: 100%;
+            height: 180px;
+        }
+
+        .ticket-price-section {
+            text-align: left;
+        }
+
+        .ticket-actions {
+            flex-direction: column;
+        }
+
+        .btn-ticket {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* ✅ Filter Bar */
+    .filter-bar {
+        background: white;
+        padding: 1.2rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .filter-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-label i {
+        color: #ff6b35;
+    }
+
+    .filter-select {
+        padding: 0.6rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #333;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 180px;
+    }
+
+    .filter-select:hover,
+    .filter-select:focus {
+        border-color: #ff6b35;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .filter-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .result-count {
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .result-count strong {
+        color: #ff6b35;
+        font-weight: 700;
+    }
+
+    /* ✅ Pagination */
+    .pagination-container {
+        margin: 2rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-btn,
+    .page-number {
+        min-width: 40px;
+        height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background: white;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .page-btn:hover,
+    .page-number:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+    }
+
+    .page-number.active {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border-color: #ff6b35;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+    .page-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .page-dots {
+        color: #999;
+        font-weight: 600;
+        padding: 0 0.5rem;
+    }
+
+    .page-info {
+        color: #666;
+        font-size: 0.95rem;
+        text-align: center;
+    }
+
+    .page-info strong {
+        color: #ff6b35;
+        font-weight: 700;
+    }
+
+    /* ✅ Tickets List */
+    .tickets-list {
+        min-height: 400px;
+    }
+
+    /* ✅ Advanced Filter Bar */
+    .advanced-filter-bar {
+        background: white;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        flex: 1;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .filter-input,
+    .filter-select {
+        padding: 0.6rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #333;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 40px;
+    }
+
+    .filter-input:focus,
+    .filter-select:hover,
+    .filter-select:focus {
+        border-color: #ff6b35;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-filter {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-search {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .btn-search:hover {
+        background: #e65c20;
+    }
+
+    .btn-reset {
+        background: #f1f1f1;
+        color: #333;
+    }
+
+    .btn-reset:hover {
+        background: #e0e0e0;
+    }
+</style>
+
+<div class="tickets-page">
+    <div class="tickets-container">
+        <!-- Hero Section -->
+        <div class="tickets-hero">
+            <div class="tickets-hero-content">
+                <h1>
+                    <i class="fas fa-ticket-alt"></i>
+                    Vé Của Tôi
+                </h1>
+            </div>
+        </div>
+
+        <!-- Stats Section - CHỈ ĐƠN ĐÃ THANH TOÁN -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-value">@totalTickets</div>
+                <div class="stat-card-label">Tổng số vé đã đặt</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-value">@paidBookings.Count</div>
+                <div class="stat-card-label">Tổng số đơn đặt</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-value">@totalSpent.ToString("N0") ₫</div>
+                <div class="stat-card-label">Tổng chi tiêu</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-value">@upcomingBookings.Count</div>
+                <div class="stat-card-label">Vé sắp tới</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tickets-tabs">
+            <button class="tab-button @(status == "all" ? "active" : "")" onclick="location.href='@Url.Action("MyTickets", new { status = "all", page = 1, sortBy, searchName, searchDate, searchStatus })'">
+                <i class="fas fa-list"></i> Tất cả
+                <span class="tab-badge">@paidBookings.Count</span>
+            </button>
+            <button class="tab-button @(status == "upcoming" ? "active" : "")" onclick="location.href='@Url.Action("MyTickets", new { status = "upcoming", page = 1, sortBy, searchName, searchDate, searchStatus })'">
+                <i class="fas fa-clock"></i> Sắp tới
+                <span class="tab-badge">@upcomingBookings.Count</span>
+            </button>
+            <button class="tab-button @(status == "past" ? "active" : "")" onclick="location.href='@Url.Action("MyTickets", new { status = "past", page = 1, sortBy, searchName, searchDate, searchStatus })'">
+                <i class="fas fa-history"></i> Đã xem
+                <span class="tab-badge">@pastBookings.Count</span>
+            </button>
+            <button class="tab-button @(status == "used" ? "active" : "")" onclick="location.href='@Url.Action("MyTickets", new { status = "used", page = 1, sortBy, searchName, searchDate, searchStatus })'">
+                <i class="fas fa-check-circle"></i> Đã sử dụng
+                <span class="tab-badge">@paidBookings.Count(b => b.Ves.Any(v => v.trang_thai_ve == "Đã sử dụng"))</span>
+            </button>
+            <button class="tab-button @(status == "cancelled" ? "active" : "")" onclick="location.href='@Url.Action("MyTickets", new { status = "cancelled", page = 1, sortBy, searchName, searchDate, searchStatus })'">
+                <i class="fas fa-times-circle"></i> Đã hủy
+                <span class="tab-badge">@paidBookings.Count(b => b.Ves.Any(v => v.trang_thai_ve == "Đã Hủy"))</span>
+            </button>
+        </div>
+
+        <!-- ✅ Advanced Filter Bar -->
+        <div class="advanced-filter-bar">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i> Tìm theo tên phim:
+                    </label>
+                    <input 
+                        type="text" 
+                        id="searchName" 
+                        class="filter-input" 
+                        placeholder="Nhập tên phim..."
+                        value="@searchName" />
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar"></i> Ngày chiếu:
+                    </label>
+                    <input 
+                        type="date" 
+                        id="searchDate" 
+                        class="filter-input" 
+                        value="@searchDate" />
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-tag"></i> Trạng thái vé:
+                    </label>
+                    <select id="searchStatus" class="filter-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="Chưa sử dụng" @(searchStatus == "Chưa sử dụng" ? "selected" : "")>Chưa sử dụng</option>
+                        <option value="Đã sử dụng" @(searchStatus == "Đã sử dụng" ? "selected" : "")>Đã sử dụng</option>
+                        <option value="Đã Hủy" @(searchStatus == "Đã Hủy" ? "selected" : "")>Đã hủy</option>
+                    </select>
+                </div>
+                
+                <div class="filter-actions">
+                    <button class="btn-filter btn-search" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <button class="btn-filter btn-reset" onclick="resetFilters()">
+                        <i class="fas fa-redo"></i> Đặt lại
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Sort Bar -->
+        <div class="filter-bar">
+            <div class="filter-left">
+                <span class="filter-label">
+                    <i class="fas fa-sort"></i> Sắp xếp theo:
+                </span>
+                <select class="filter-select" onchange="location.href='@Url.Action("MyTickets", new { status, page = 1, searchName, searchDate, searchStatus })' + '&sortBy=' + this.value">
+                    <option value="date_desc" @(sortBy == "date_desc" ? "selected" : "")>Ngày đặt: Mới nhất</option>
+                    <option value="date_asc" @(sortBy == "date_asc" ? "selected" : "")>Ngày đặt: Cũ nhất</option>
+                    <option value="showtime_desc" @(sortBy == "showtime_desc" ? "selected" : "")>Ngày chiếu: Mới nhất</option>
+                    <option value="showtime_asc" @(sortBy == "showtime_asc" ? "selected" : "")>Ngày chiếu: Cũ nhất</option>
+                    <option value="price_desc" @(sortBy == "price_desc" ? "selected" : "")>Giá: Cao → Thấp</option>
+                    <option value="price_asc" @(sortBy == "price_asc" ? "selected" : "")>Giá: Thấp → Cao</option>
+                </select>
+            </div>
+            
+            <div class="filter-right">
+                <span class="result-count">
+                    <i class="fas fa-ticket-alt"></i>
+                    Hiển thị <strong>@pagedBookings.Count</strong> / <strong>@totalItems</strong> vé
+                </span>
+            </div>
+        </div>
+
+        <!-- Tickets List -->
+        <div class="tickets-list">
+            @if (pagedBookings.Any())
+            {
+                foreach (var booking in pagedBookings)
+                {
+                    @Html.Partial("_TicketCard", booking)
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🎬</div>
+                    <h3>Không tìm thấy vé nào</h3>
+                    <p>Không có vé phù hợp với bộ lọc của bạn</p>
+                    <a href="@Url.Action("MyTickets")" class="btn-ticket btn-primary">
+                        <i class="fas fa-redo"></i> Xem tất cả
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- ✅ Pagination -->
+        @if (totalPages > 1)
+        {
+            <div class="pagination-container">
+                <div class="pagination">
+                    <!-- Previous -->
+                    @if (page > 1)
+                    {
+                        <a href="@Url.Action("MyTickets", new { status, page = page - 1, sortBy })" class="page-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-btn disabled">
+                            <i class="fas fa-chevron-left"></i>
+                        </span>
+                    }
+
+                    <!-- Page Numbers -->
+                    @{
+                        int startPage = Math.Max(1, page - 2);
+                        int endPage = Math.Min(totalPages, page + 2);
+                        
+                        if (startPage > 1)
+                        {
+                            <a href="@Url.Action("MyTickets", new { status, page = 1, sortBy })" class="page-number">1</a>
+                            if (startPage > 2)
+                            {
+                                <span class="page-dots">...</span>
+                            }
+                        }
+                        
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == page)
+                            {
+                                <span class="page-number active">@i</span>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("MyTickets", new { status, page = i, sortBy })" class="page-number">@i</a>
+                            }
+                        }
+                        
+                        if (endPage < totalPages)
+                        {
+                            if (endPage < totalPages - 1)
+                            {
+                                <span class="page-dots">...</span>
+                            }
+                            <a href="@Url.Action("MyTickets", new { status, page = totalPages, sortBy })" class="page-number">@totalPages</a>
+                        }
+                    }
+
+                    <!-- Next -->
+                    @if (page < totalPages)
+                    {
+                        <a href="@Url.Action("MyTickets", new { status, page = page + 1, sortBy })" class="page-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="page-btn disabled">
+                            <i class="fas fa-chevron-right"></i>
+                        </span>
+                    }
+                </div>
+                
+                <div class="page-info">
+                    Trang <strong>@page</strong> / <strong>@totalPages</strong>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function applyFilters() {
+        const name = document.getElementById('searchName').value;
+        const date = document.getElementById('searchDate').value;
+        const status = document.getElementById('searchStatus').value;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('searchName', name);
+        url.searchParams.set('searchDate', date);
+        url.searchParams.set('searchStatus', status);
+        url.searchParams.set('page', 1); // Reset to first page
+
+        window.location.href = url.toString();
+    }
+
+    function resetFilters() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('searchName');
+        url.searchParams.delete('searchDate');
+        url.searchParams.delete('searchStatus');
+        url.searchParams.set('page', 1); // Reset to first page
+
+        window.location.href = url.toString();
+    }
+</script>

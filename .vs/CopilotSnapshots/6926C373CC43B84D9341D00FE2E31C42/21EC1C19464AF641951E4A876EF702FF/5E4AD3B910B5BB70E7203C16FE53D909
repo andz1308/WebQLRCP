@@ -1,0 +1,265 @@
+﻿@model WebCinema.Models.Dao_Dien
+
+@{
+    ViewBag.Title = Model.ho_ten;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --primary: #ff6b35; /* Màu nhấn chính */
+        --secondary: #f093fb;
+        --gradient: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%);
+        --text-dark: #1a1a1a;
+        --text-light: #555;
+        --card-bg: #fff;
+        --shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background: #fafafa;
+        color: var(--text-dark);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .person-detail-container {
+        max-width: 1200px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    /* Nút quay lại */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gradient);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    .back-button:hover {
+        transform: translateX(-6px);
+        opacity: 0.9;
+    }
+
+    /* Header thông tin */
+    .person-header {
+        background: var(--gradient);
+        color: white;
+        padding: 3rem 2.5rem;
+        border-radius: 20px;
+        margin-bottom: 3rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        align-items: center;
+        box-shadow: var(--shadow);
+    }
+
+    .person-avatar {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 6px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        flex-shrink: 0;
+    }
+
+    .person-info h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .person-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 1rem;
+        opacity: 0.95;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .person-meta i {
+        margin-right: 0.5rem;
+    }
+
+    .director-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    /* Phần Tiểu sử */
+    .bio-section {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        margin-bottom: 3rem;
+        line-height: 1.8;
+        color: var(--text-light);
+        transition: all 0.3s ease;
+    }
+    .bio-section:hover {
+        transform: translateY(-3px);
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 5px;
+        height: 30px;
+        background: var(--gradient);
+        border-radius: 2px;
+    }
+
+    /* Phần danh sách phim */
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 2rem;
+    }
+
+    .movie-card {
+        background: var(--card-bg);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .movie-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .movie-card-content {
+        padding: 1rem;
+    }
+
+    .movie-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--text-dark);
+    }
+
+    .movie-year {
+        font-size: 0.9rem;
+        color: #888;
+    }
+
+    @@media (max-width: 768px) {
+        .person-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .person-avatar {
+            width: 160px;
+            height: 160px;
+        }
+    }
+</style>
+
+
+<div class="person-detail-container">
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Quay Lại
+    </a>
+
+    <div class="person-header">
+        <div>
+            @if (!string.IsNullOrEmpty(Model.hinh_anh))
+            {
+                <img src="@Url.Content(Model.hinh_anh)" alt="@Model.ho_ten" class="person-avatar" />
+            }
+            else
+            {
+                <div class="person-avatar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; font-size: 4rem; font-weight: bold;">
+                    @Model.ho_ten.Substring(0, 1).ToUpper()
+                </div>
+            }
+        </div>
+        <div class="person-info">
+            <h1>@Model.ho_ten</h1>
+            <div class="director-badge">
+                <i class="fas fa-video"></i>
+                Đạo Diễn
+            </div>
+            <br />
+            <div class="person-meta">
+                @if (Model.ngay_sinh.HasValue)
+                {
+                    <span><i class="fas fa-calendar"></i> @Model.ngay_sinh.Value.ToString("dd/MM/yyyy")</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.quoc_tich))
+                {
+                    <span>Quốc Tịch:<i class="fas fa-flag"></i>@Model.quoc_tich</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.tieu_su))
+    {
+        <div class="bio-section">
+            <h2 class="section-title">Tiểu Sử</h2>
+            <p>@Model.tieu_su</p>
+        </div>
+    }
+
+    @*<h2 class="section-title">Phim Đã Đạo Diễn</h2>
+        <div class="movies-grid">
+            @foreach (var movie in ViewBag.Movies)
+            {
+                <a href="@Url.Action("Detail", "Home", new { id = movie.phim_id })" class="movie-card">
+                    @if (!string.IsNullOrEmpty(movie.hinh_anh))
+                    {
+                        <img src="@Url.Content(movie.hinh_anh)" alt="@movie.ten_phim" />
+                    }
+                    <div class="movie-card-content">
+                        <div class="movie-title">@movie.ten_phim</div>
+                        @if (movie.ngay_khoi_chieu.HasValue)
+                        {
+                            <div class="movie-year">@movie.ngay_khoi_chieu.Value.Year</div>
+                        }
+                    </div>
+                </a>
+            }
+        </div>*@
+</div>

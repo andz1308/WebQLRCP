@@ -958,3 +958,24 @@
 [2025-12-01 17:22:21] ? BookingExpirationService started
 [2025-12-01 17:27:37] ? BookingExpirationService started
 [2025-12-01 17:31:15] ? BookingExpirationService started
+[2025-12-01 18:16:52] ? BookingExpirationService started
+[2025-12-01 18:28:30] Actor 10: Found 1 movies
+[2025-12-01 18:28:40] Actor 10: Found 1 movies
+[2025-12-01 18:30:01] SelectSeats (Fresh DB): showtime=39, paidBookings=63, bookedCount=1
+[2025-12-01 18:30:01] Booked seat ids: 102
+[2025-12-01 18:30:20] ✅ Tạo Dat_Ve mới: ID=1192, Trạng thái=Chưa thanh toán
+[2025-12-01 18:30:21] ✅ Sinh QR code: DAVCINEMA-1192-1556-639002106209475526 -> qr_DAVCINEMA-1192-1556-639002106209475526.png
+[2025-12-01 18:30:21] ✅ Cập nhật Dat_Ve: ID=1192, Tổng tiền=90000,00, Vé=1, Đồ ăn=0
+[2025-12-01 18:30:21] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=90000&addInfo=DatVe1192
+[2025-12-01 18:38:49] ✅ Customer 1 reviewed movie 5 with ticket 197, rating: 5
+[2025-12-01 18:40:52] ? Found 1 expired bookings to cancel
+[2025-12-01 18:40:52] ? Cancelled expired booking ID=1192, Customer=1, Released 1 seats
+[2025-12-01 18:40:52] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-01 18:57:03] Actor 10: Found 1 movies
+[2025-12-01 19:05:04] Actor 10: Found 1 movies
+[2025-12-01 19:05:25] Actor 10: Found 1 movies
+[2025-12-01 19:05:41] Actor 10: Found 1 movies
+[2025-12-01 19:11:44] Actor 10: Found 1 movies
+[2025-12-01 20:38:32] ? BookingExpirationService started
+[2025-12-01 21:00:36] ? BookingExpirationService started
+[2025-12-01 21:10:28] ? BookingExpirationService started

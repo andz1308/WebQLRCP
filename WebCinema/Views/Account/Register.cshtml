@@ -10,10 +10,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký - DAV Cinema</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <title>DAV Cinema - Đăng Ký</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
 
-    <style>
+<style>
     * {
         margin: 0;
         padding: 0;
@@ -21,101 +25,239 @@
     }
 
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8d6 100%);
         min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: relative;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden;
         padding: 2rem 0;
     }
 
-    body::before {
-        content: '';
-        position: absolute;
-        width: 500px;
-        height: 500px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        top: -250px;
-        right: -250px;
-        animation: float 6s ease-in-out infinite;
+    .auth-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
     }
 
-    body::after {
+    .auth-background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(1.1) contrast(1.05) saturate(1.3);
+        opacity: 0.25;
+    }
+
+    .auth-background::after {
         content: '';
         position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at top right, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
+    }
+
+    .deco-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 152, 0, 0.1));
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .deco-circle:nth-child(1) {
         width: 400px;
         height: 400px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        bottom: -200px;
-        left: -200px;
-        animation: float 8s ease-in-out infinite;
+        top: -200px;
+        right: -100px;
+        animation-delay: 0s;
+    }
+
+    .deco-circle:nth-child(2) {
+        width: 300px;
+        height: 300px;
+        bottom: -150px;
+        left: -100px;
+        animation-delay: 2s;
     }
 
     @@keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(20px); }
+        0%, 100% { transform: translateY(0) translateX(0); }
+        50% { transform: translateY(-30px) translateX(30px); }
     }
 
-    .home-button {
+    .brand-logo {
         position: fixed;
-        top: 2rem;
-        left: 2rem;
+        top: 2.5rem;
+        left: 2.5rem;
         z-index: 1000;
-    }
-
-    .btn-home {
-        display: inline-flex;
+        display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.8rem 1.5rem;
-        background: rgba(255, 255, 255, 0.95);
-        color: #ff6b35;
-        border: 2px solid rgba(255, 107, 53, 0.3);
-        border-radius: 12px;
+        gap: 1rem;
         text-decoration: none;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .btn-home:hover {
-        background: white;
-        border-color: #ff6b35;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    .brand-logo-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 
+            0 10px 30px rgba(255, 107, 53, 0.3),
+            0 0 0 3px rgba(255, 255, 255, 0.5);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .btn-home i {
-        font-size: 1.1rem;
+    .brand-logo:hover .brand-logo-icon {
+        transform: scale(1.1) rotate(-5deg);
+        box-shadow: 
+            0 15px 40px rgba(255, 107, 53, 0.5),
+            0 0 0 3px rgba(255, 107, 53, 0.3);
+    }
+
+    .brand-logo-icon i {
+        font-size: 2.2rem;
+        color: white;
+    }
+
+    .brand-logo-text {
+        color: #ff6b35;
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: -1px;
     }
 
     .auth-container {
-        max-width: 500px;
+        max-width: 1200px;
         width: 100%;
-        margin: 2rem auto;
         padding: 0 2rem;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        display: flex;
+        gap: 0;
+        align-items: stretch;
+    }
+
+    .auth-image-section {
+        flex: 1;
+        min-height: 800px;
+        border-radius: 32px 0 0 32px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+    }
+
+    .auth-image-section img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.9);
+    }
+
+    .auth-image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.4) 0%, rgba(255, 133, 85, 0.6) 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        color: white;
+        text-align: center;
+    }
+
+    .auth-image-overlay h2 {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-image-overlay p {
+        font-size: 1.2rem;
+        font-weight: 400;
+        opacity: 0.95;
+        max-width: 400px;
+        line-height: 1.6;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-image-overlay .cinema-icon {
+        font-size: 5rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.05); opacity: 1; }
+    }
+
+    .auth-form-section {
+        flex: 1;
     }
 
     .auth-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 3rem 2.5rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        animation: slideIn 0.5s ease-out;
+        background: white;
+        border-radius: 0 32px 32px 0;
+        padding: 4rem 3.5rem;
+        box-shadow: 
+            0 20px 60px rgba(255, 107, 53, 0.15),
+            0 0 0 1px rgba(255, 107, 53, 0.05);
+        border: 2px solid rgba(255, 107, 53, 0.1);
+        border-left: none;
+        animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        min-height: 800px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
-    @@keyframes slideIn {
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, 
+            #ff6b35 0%, 
+            #ff8555 25%, 
+            #ff9966 50%, 
+            #ff8555 75%, 
+            #ff6b35 100%);
+        background-size: 200% 100%;
+        animation: borderSlide 3s linear infinite;
+    }
+
+    @@keyframes borderSlide {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 200% 0%; }
+    }
+
+    @@keyframes slideUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
         to {
             opacity: 1;
@@ -125,180 +267,142 @@
 
     .auth-header {
         text-align: center;
-        margin-bottom: 2rem;
-    }
-
-    .auth-logo {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
-    }
-
-    .auth-logo i {
-        font-size: 2.5rem;
-        color: white;
+        margin-bottom: 2.5rem;
     }
 
     .auth-title {
-        font-size: 2rem;
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.5rem;
-        font-weight: 700;
+        font-size: 2.8rem;
+        color: #ff6b35;
+        margin-bottom: 0.8rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        line-height: 1;
     }
 
     .auth-subtitle {
-        color: #666;
-        font-size: 0.95rem;
+        color: #999;
+        font-size: 1.05rem;
+        font-weight: 400;
     }
 
     .auth-form {
         display: flex;
         flex-direction: column;
-        gap: 1.2rem;
+        gap: 1.3rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.3rem;
     }
 
     .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #333;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .form-label i {
-        color: #ff6b35;
+        position: relative;
     }
 
     .form-input {
         width: 100%;
-        padding: 0.9rem 1rem;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
+        padding: 1.2rem 1.2rem 0.8rem;
+        background: #fafafa;
+        border: 2px solid #f0f0f0;
+        border-radius: 14px;
         font-size: 1rem;
+        color: #333;
         transition: all 0.3s ease;
-        background: #f9f9f9;
-        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
     }
 
     .form-input:focus {
         outline: none;
         border-color: #ff6b35;
         background: white;
-        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 
+            0 0 0 4px rgba(255, 107, 53, 0.1),
+            0 8px 24px rgba(255, 107, 53, 0.15);
     }
 
-    .error-message {
-        color: #e74c3c;
-        font-size: 0.85rem;
-        margin-top: 0.3rem;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
+    .form-input::placeholder {
+        color: transparent;
     }
 
-    .error-message::before {
-        content: '⚠';
+    .form-label {
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #333;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        font-weight: 500;
     }
 
-    /* === Ô mật khẩu và icon con mắt === */
+    .form-input:focus + .form-label,
+    .form-input:not(:placeholder-shown) + .form-label {
+        top: 0.7rem;
+        font-size: 0.75rem;
+        color: #ff6b35;
+        font-weight: 700;
+    }
+
     .password-wrapper {
         position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .password-wrapper .form-input {
-        width: 100%;
-        padding-right: 42px;
-        box-sizing: border-box;
     }
 
     .password-toggle {
         position: absolute;
-        right: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        background: transparent;
-        border: none;
+        background: white;
+        border: 2px solid #f0f0f0;
         cursor: pointer;
         color: #999;
+        padding: 0.6rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.5rem;
         transition: all 0.3s ease;
-        border-radius: 8px;
+        border-radius: 10px;
     }
 
     .password-toggle:hover {
         color: #ff6b35;
-        background: rgba(255, 107, 53, 0.1);
+        border-color: #ff6b35;
+        background: #fff5f0;
     }
 
     .password-toggle i {
         font-size: 1rem;
     }
 
-    /* === Thanh đo độ mạnh mật khẩu === */
-    .password-strength {
-        height: 4px;
-        background: #e0e0e0;
-        border-radius: 2px;
-        overflow: hidden;
-        margin-top: 0.5rem;
+    select.form-input {
+        cursor: pointer;
+        color: #999;
     }
 
-    .password-strength-bar {
-        height: 100%;
-        width: 0%;
-        transition: all 0.3s ease;
-        background: #e74c3c;
+    select.form-input:valid {
+        color: #333;
     }
 
-    .password-strength-bar.weak {
-        width: 33%;
-        background: #e74c3c;
-    }
-
-    .password-strength-bar.medium {
-        width: 66%;
-        background: #f39c12;
-    }
-
-    .password-strength-bar.strong {
-        width: 100%;
-        background: #27ae60;
-    }
-
-    /* === Nút đăng ký === */
     .btn-submit {
-        padding: 1rem;
+        padding: 1.2rem;
         background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
         color: white;
         border: none;
-        border-radius: 12px;
+        border-radius: 14px;
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 0.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 0.8rem;
+        letter-spacing: 1px;
+        font-family: 'Poppins', sans-serif;
+        text-transform: uppercase;
+        box-shadow: 
+            0 8px 24px rgba(255, 107, 53, 0.3),
+            0 0 0 3px rgba(255, 107, 53, 0.1);
         position: relative;
         overflow: hidden;
     }
@@ -310,8 +414,8 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+        transition: left 0.6s;
     }
 
     .btn-submit:hover::before {
@@ -320,44 +424,29 @@
 
     .btn-submit:hover {
         transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(255, 107, 53, 0.4);
+        box-shadow: 
+            0 15px 40px rgba(255, 107, 53, 0.4),
+            0 0 0 3px rgba(255, 107, 53, 0.2);
     }
 
     .btn-submit:active {
         transform: translateY(-1px);
     }
 
-    /* === Điều khoản === */
-    .terms-text {
-        font-size: 0.85rem;
-        color: #666;
-        text-align: center;
-        line-height: 1.6;
-    }
-
-    .terms-text a {
-        color: #ff6b35;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .terms-text a:hover {
-        text-decoration: underline;
-    }
-
-    /* === Footer === */
     .auth-footer {
         text-align: center;
-        margin-top: 2rem;
+        margin-top: 2.5rem;
         padding-top: 2rem;
-        border-top: 1px solid #e0e0e0;
+        border-top: 2px solid #f5f5f5;
         color: #666;
+        font-weight: 500;
+        font-size: 1rem;
     }
 
     .auth-footer a {
         color: #ff6b35;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 800;
         transition: all 0.3s ease;
     }
 
@@ -366,193 +455,279 @@
         text-decoration: underline;
     }
 
-    /* === Thông báo lỗi === */
+    .success-message,
     .alert-error {
-        padding: 1rem;
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        border: 2px solid #dc3545;
-        border-radius: 12px;
-        color: #721c24;
-        margin-bottom: 1.5rem;
+        padding: 1.1rem 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
         text-align: center;
-        animation: shake 0.5s;
+        animation: slideUp 0.6s ease-out;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
+        font-weight: 700;
+        font-size: 0.95rem;
     }
 
-    .alert-error::before {
-        content: '✕';
-        font-size: 1.5rem;
+    .success-message {
+        background: #d1f4e0;
+        border: 2px solid #10b981;
+        color: #047857;
+    }
+
+    .alert-error {
+        background: #ffe8d6;
+        border: 2px solid #ff6b35;
+        color: #dc2626;
+    }
+
+    .success-message::before {
+        content: '✓';
+        font-size: 1.4rem;
         font-weight: bold;
     }
 
-    @@keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        75% { transform: translateX(10px); }
+    .alert-error::before {
+        content: '!';
+        font-size: 1.4rem;
+        font-weight: bold;
     }
 
-    /* === Responsive === */
-    @@media (max-width: 576px) {
-        .home-button {
-            top: 1rem;
-            left: 1rem;
+    @@media (max-width: 1024px) {
+        .auth-container {
+            flex-direction: column;
+            max-width: 550px;
         }
 
-        .btn-home {
-            padding: 0.6rem 1rem;
-            font-size: 0.85rem;
+        .auth-image-section {
+            display: none;
+        }
+
+        .auth-form-section {
+            width: 100%;
         }
 
         .auth-card {
-            padding: 2rem 1.5rem;
+            border-radius: 32px;
+            border: 2px solid rgba(255, 107, 53, 0.1);
+            min-height: auto;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .brand-logo {
+            top: 2rem;
+            left: 2rem;
+        }
+
+        .brand-logo-text {
+            display: none;
+        }
+
+        .auth-card {
+            padding: 3.5rem 2.5rem;
         }
 
         .auth-title {
-            font-size: 1.6rem;
+            font-size: 2.3rem;
         }
 
-        body::before,
-        body::after {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .deco-circle {
             display: none;
         }
     }
-    </style>
 
-</head>
+    @@media (max-width: 480px) {
+        .auth-container {
+            padding: 0 1rem;
+        }
+
+        .auth-card {
+            padding: 3rem 1.8rem;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+        }
+
+        body {
+            padding: 1rem 0;
+        }
+    }
+</style>
+
 <body>
-    <div class="home-button">
-        <a href="@Url.Action("Index", "Home")" class="btn-home">
-            <i class="fas fa-home"></i>
-            <span>Trang chủ</span>
-        </a>
+    <div class="auth-background">
+        <div class="deco-circle"></div>
+        <div class="deco-circle"></div>
+        <img src="https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?w=1920&q=85" 
+             alt="Cinema Background"
+             loading="eager" />
     </div>
 
+    <a href="@Url.Action("Index", "Home")" class="brand-logo">
+        <div class="brand-logo-icon">
+            <i class="fas fa-film"></i>
+        </div>
+        <span class="brand-logo-text">DAV Cinema</span>
+    </a>
+
     <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="fas fa-user-plus"></i>
+        <div class="auth-image-section">
+            <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=85" 
+                 alt="Cinema Experience"
+                 loading="eager" />
+            <div class="auth-image-overlay">
+                <div class="cinema-icon">
+                    <i class="fas fa-ticket-alt"></i>
                 </div>
-                <h1 class="auth-title">Đăng Ký</h1>
-                <p class="auth-subtitle">Tạo tài khoản để trải nghiệm dịch vụ tốt nhất</p>
+                <h2>Tham Gia Cùng<br/>DAV Cinema</h2>
+                <p>Đăng ký ngay để trải nghiệm điện ảnh đẳng cấp và nhận nhiều ưu đãi hấp dẫn</p>
             </div>
+        </div>
 
-            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "auth-form" }))
-            {
-                @Html.AntiForgeryToken()
-                @*@Html.ValidationSummary(true, "", new { @class = "alert-error" })*@
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-user"></i>
-                        Họ và tên
-                    </label>
-                    @Html.TextBoxFor(m => m.FullName, new { @class = "form-input", placeholder = "Nguyễn Văn A" })
-                    @*@Html.ValidationMessageFor(m => m.FullName, "", new { @class = "error-message" })*@
+        <div class="auth-form-section">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="auth-title">Đăng Ký</h1>
+                    <p class="auth-subtitle">Tạo tài khoản mới để bắt đầu</p>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-envelope"></i>
-                        Email
-                    </label>
-                    @Html.TextBoxFor(m => m.Email, new { @class = "form-input", placeholder = "example@gmail.com", type = "email" })
-                    @*@Html.ValidationMessageFor(m => m.Email, "", new { @class = "error-message" })*@
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-phone"></i>
-                        Số điện thoại
-                    </label>
-                    @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-input", placeholder = "0912345678" })
-                    @*@Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "error-message" })*@
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-calendar"></i>
-                        Ngày sinh
-                    </label>
-                    @Html.TextBoxFor(m => m.NgaySinh, "{0:yyyy-MM-dd}", new { @class = "form-input", type = "date" })
-                    @*@Html.ValidationMessageFor(m => m.NgaySinh, "", new { @class = "error-message" })*@
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-venus-mars"></i>
-                        Giới tính
-                    </label>
-                    @Html.DropDownListFor(m => m.GioiTinh,
-                        new SelectList(new[] { "Nam", "Nữ", "Khác" }, "Nam"),
-                        "-- Chọn giới tính --",
-                        new { @class = "form-input" })
-                    @*@Html.ValidationMessageFor(m => m.GioiTinh, "", new { @class = "error-message" })*@
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-map-marker-alt"></i>
-                        Địa chỉ
-                    </label>
-                    @Html.TextBoxFor(m => m.DiaChi, new { @class = "form-input", placeholder = "Nhập địa chỉ của bạn" })
-                    @*@Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "error-message" })*@
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-lock"></i>
-                        Mật khẩu
-                    </label>
-                    <div class="password-wrapper">
-                        @Html.PasswordFor(m => m.Password, new { @class = "form-input", placeholder = "••••••••", id = "password" })
-                        <button type="button" id="togglePassword" class="password-toggle">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="success-message">
+                        @TempData["SuccessMessage"]
                     </div>
-                    <div class="password-strength">
-                        <div class="password-strength-bar" id="strengthBar"></div>
+                }
+
+                @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+                {
+                    <div class="alert-error">
+                        @ViewBag.ErrorMessage
                     </div>
-                    @*@Html.ValidationMessageFor(m => m.Password, "", new { @class = "error-message" })*@
-                </div>
+                }
 
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-lock"></i>
-                        Xác nhận mật khẩu
-                    </label>
-                    <div class="password-wrapper">
-                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-input", placeholder = "••••••••", id = "confirmPassword" })
-                        <button type="button" id="toggleConfirmPassword" class="password-toggle">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "auth-form" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.FullName, new { 
+                            @class = "form-input", 
+                            placeholder = " ",
+                            autocomplete = "name"
+                        })
+                        <label class="form-label">Họ và tên</label>
                     </div>
-                    @*@Html.ValidationMessageFor(m => m.ConfirmPassword, "", new { @class = "error-message" })*@
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            @Html.TextBoxFor(m => m.Email, new { 
+                                @class = "form-input", 
+                                placeholder = " ",
+                                type = "email",
+                                autocomplete = "email"
+                            })
+                            <label class="form-label">Email</label>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.TextBoxFor(m => m.PhoneNumber, new { 
+                                @class = "form-input", 
+                                placeholder = " ",
+                                type = "tel",
+                                autocomplete = "tel"
+                            })
+                            <label class="form-label">Số điện thoại</label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            @Html.TextBoxFor(m => m.NgaySinh, new { 
+                                @class = "form-input", 
+                                placeholder = " ",
+                                type = "date"
+                            })
+                            <label class="form-label">Ngày sinh</label>
+                        </div>
+
+                        <div class="form-group">
+                            <select name="GioiTinh" id="gioiTinhSelect" class="form-input" required>
+                                <option value="" disabled selected></option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                            <label class="form-label" for="gioiTinhSelect">Giới tính</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.TextBoxFor(m => m.DiaChi, new { 
+                            @class = "form-input", 
+                            placeholder = " ",
+                            autocomplete = "street-address"
+                        })
+                        <label class="form-label">Địa chỉ</label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="password-wrapper">
+                                @Html.PasswordFor(m => m.Password, new
+                                {
+                                    @class = "form-input",
+                                    placeholder = " ",
+                                    id = "password",
+                                    autocomplete = "new-password"
+                                })
+                                <label class="form-label">Mật khẩu</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('password', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="password-wrapper">
+                                @Html.PasswordFor(m => m.ConfirmPassword, new
+                                {
+                                    @class = "form-input",
+                                    placeholder = " ",
+                                    id = "confirmPassword",
+                                    autocomplete = "new-password"
+                                })
+                                <label class="form-label">Xác nhận mật khẩu</label>
+                                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Đăng Ký Ngay
+                    </button>
+                }
+
+                <div class="auth-footer">
+                    Đã có tài khoản? <a href="@Url.Action("Login", "Account")">Đăng nhập ngay</a>
                 </div>
-
-                <div class="terms-text">
-                    Bằng việc đăng ký, bạn đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của DAV Cinema.
-                </div>
-
-                <button type="submit" class="btn-submit">
-                    <i class="fas fa-user-plus"></i> Đăng Ký Ngay
-                </button>
-            }
-
-            <div class="auth-footer">
-                Đã có tài khoản? <a href="@Url.Action("Login", "Account")">Đăng nhập</a>
             </div>
         </div>
     </div>
 
     <script>
-        function togglePasswordVisibility(fieldId, buttonId) {
-            var field = document.getElementById(fieldId);
-            var button = document.getElementById(buttonId);
-            var icon = button.querySelector('i');
+        function togglePassword(fieldId, button) {
+            const field = document.getElementById(fieldId);
+            const icon = button.querySelector('i');
+            
             if (field.type === 'password') {
                 field.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -565,31 +740,55 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('togglePassword').addEventListener('click', function () {
-                togglePasswordVisibility('password', 'togglePassword');
+            // ✅ Form inputs auto-fill detection
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                if (input.value) {
+                    input.setAttribute('placeholder', ' ');
+                }
+                
+                input.addEventListener('change', function() {
+                    if (this.value) {
+                        this.setAttribute('placeholder', ' ');
+                    }
+                });
             });
-            document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
-                togglePasswordVisibility('confirmPassword', 'toggleConfirmPassword');
-            });
-        });
 
-        document.getElementById('password').addEventListener('input', function () {
-            const password = this.value;
-            const strengthBar = document.getElementById('strengthBar');
-            let strength = 0;
-            if (password.length >= 6) strength++;
-            if (password.length >= 10) strength++;
-            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
-            if (/\d/.test(password)) strength++;
-            if (/[^a-zA-Z0-9]/.test(password)) strength++;
-
-            strengthBar.className = 'password-strength-bar';
-            if (strength <= 2) {
-                strengthBar.classList.add('weak');
-            } else if (strength <= 4) {
-                strengthBar.classList.add('medium');
-            } else {
-                strengthBar.classList.add('strong');
+            // ✅ FIX: Handle select gender dropdown
+            const genderSelect = document.getElementById('gioiTinhSelect');
+            if (genderSelect) {
+                // Add has-value class when a value is selected
+                function updateSelectState() {
+                    const label = genderSelect.nextElementSibling;
+                    if (genderSelect.value && genderSelect.value !== '') {
+                        genderSelect.classList.add('has-value');
+                        if (label && label.classList.contains('form-label')) {
+                            label.style.color = '#ff6b35';
+                        }
+                    } else {
+                        genderSelect.classList.remove('has-value');
+                        if (label && label.classList.contains('form-label')) {
+                            label.style.color = '#999';
+                        }
+                    }
+                }
+                
+                updateSelectState(); // Initial check
+                genderSelect.addEventListener('change', updateSelectState);
+                genderSelect.addEventListener('focus', function() {
+                    const label = this.nextElementSibling;
+                    if (label && label.classList.contains('form-label')) {
+                        label.style.color = '#ff6b35';
+                    }
+                });
+                genderSelect.addEventListener('blur', function() {
+                    if (!this.value || this.value === '') {
+                        const label = this.nextElementSibling;
+                        if (label && label.classList.contains('form-label')) {
+                            label.style.color = '#999';
+                        }
+                    }
+                });
             }
         });
     </script>
