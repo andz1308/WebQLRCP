@@ -325,6 +325,7 @@
     <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\FoodBookingViewModel.cs" />
     <Compile Include="Models\FoodItemViewModel.cs" />
+    <Compile Include="Models\ForgotPasswordViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\ManagerInventoryViewModel.cs" />
     <Compile Include="Models\MovieDetailViewModel.cs" />
@@ -509,6 +510,8 @@
     <Content Include="Views\Account\ChangePassword.cshtml" />
     <Content Include="Views\TicketRefund\MyTickets.cshtml" />
     <Content Include="Views\TicketRefund\Details.cshtml" />
+    <Content Include="Views\Account\ForgotPassword.cshtml" />
+    <Content Include="Views\TicketRefund\_TicketCard.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

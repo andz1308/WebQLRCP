@@ -899,60 +899,37 @@
 
     <!-- Reviews Section -->
     <div class="section-detail">
-        <h2>Đánh Giá Từ Khán Giả</h2>
+        <h2>Đánh Giá Từ Khách Hàng</h2>
         
-        <!-- Review Form for Logged-in Users -->
-        @if (Session["CustomerId"] != null)
-        {
-            <div id="reviewFormContainer" style="background: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
-                <h3 style="color: #2c3e50; margin-bottom: 1rem;">
-                    <i class="fas fa-star" style="color: #ffc107;"></i> Đánh Giá Của Bạn
-                </h3>
-                <div id="reviewFormContent">
-                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label style="font-weight: 600; margin-bottom: 1rem; display: block;">Chọn số sao</label>
-                        <div class="star-rating-buttons" id="starRating" style="display: flex; gap: 1rem; margin-bottom: 1rem; justify-content: center;">
-                            <button type="button" class="star-button" data-rating="1" title="Rất tệ">
-                                ⭐
-                            </button>
-                            <button type="button" class="star-button" data-rating="2" title="Tệ">
-                                ⭐
-                            </button>
-                            <button type="button" class="star-button" data-rating="3" title="Bình thường">
-                                ⭐
-                            </button>
-                            <button type="button" class="star-button" data-rating="4" title="Tốt">
-                                ⭐
-                            </button>
-                            <button type="button" class="star-button" data-rating="5" title="Rất tốt">
-                                ⭐
-                            </button>
-                        </div>
-                        <input type="hidden" id="selectedRating" value="0" />
-                        <p id="ratingText" style="color: #666; font-size: 0.9rem; margin: 0; text-align: center;">Chưa chọn đánh giá</p>
+        <!-- ✅ NÚT ĐÁNH GIÁ - Click để mở form -->
+        <div style="margin-bottom: 2rem;">
+            @*<button 
+                onclick="toggleReviewInfo()" 
+                style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: space-between; font-size: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-info-circle" style="color: #2196f3; font-size: 1.5rem;"></i>
+                    <div style="text-align: left;">
+                        <strong style="color: #1565c0; font-size: 1.1rem; display: block;">Đánh giá sau khi xem phim</strong>
+                        <span style="color: #1976d2; font-size: 0.9rem;">Nhấn để xem hướng dẫn</span>
                     </div>
-                    <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Nhận xét của bạn</label>
-                        <textarea id="reviewContent" class="form-control" rows="4" placeholder="Chia sẻ cảm nhận của bạn về bộ phim..." style="width: 100%; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem;"></textarea>
-                    </div>
-                    <button id="submitReviewBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                        <i class="fas fa-paper-plane"></i> Gửi Đánh Giá
-                    </button>
                 </div>
-                <div id="reviewFormMessage" style="display: none; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724; margin-top: 1rem;">
-                    <i class="fas fa-check-circle"></i> <span id="messageText">Bạn đã đánh giá phim này rồi!</span>
-                </div>
+                <i class="fas fa-chevron-down" id="reviewInfoIcon" style="color: #2196f3; transition: transform 0.3s ease;"></i>
+            </button>*@
+            
+            <!-- Nội dung mở rộng -->
+            <div id="reviewInfoContent" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f5f5f5; border-radius: 12px; border-left: 4px solid #2196f3; animation: slideDown 0.3s ease;">
+                <p style="margin: 0; color: #1976d2; line-height: 1.6;">
+                    <i class="fas fa-star" style="color: #ffc107;"></i>
+                    Bạn có thể đánh giá phim này <strong>sau khi xem phim</strong>.<br/>
+                    <i class="fas fa-arrow-right" style="color: #2196f3; margin-top: 0.5rem;"></i>
+                    Vui lòng vào <strong>"Vé của tôi"</strong> → Chọn vé đã xem → Nhấn <strong>"Đánh giá"</strong>
+                </p>
+                <a href="@Url.Action("MyTickets", "TicketRefund")" 
+                   style="display: inline-block; margin-top: 1rem; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-ticket-alt"></i> Đến trang Vé của tôi
+                </a>
             </div>
-        }
-        else
-        {
-            <div style="background: #fff3cd; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #ffc107;">
-                <i class="fas fa-info-circle" style="color: #856404;"></i>
-                <span style="color: #856404; font-weight: 600;">
-                    Vui lòng đăng nhập để đánh giá phim này.
-                </span>
-            </div>
-        }
+        </div>
 
         @{
             var allReviews = movie.Danh_Gias.ToList();
@@ -1092,7 +1069,7 @@
         else
         {
             <p style="text-align: center; color: #999; padding: 2rem;">
-                Chưa có đánh giá nào cho phim này.
+                Chưa có đánh giá nào cho phim này. Hãy là người đầu tiên đánh giá!
             </p>
         }
     </div>
@@ -1263,133 +1240,21 @@
             }
         }
     });
-</script>
 
-@if (Session["CustomerId"] != null)
-{
-    <script>
-    // Wait for jQuery to be available
-    function initializeReviewForm() {
-        if (typeof jQuery === 'undefined') {
-            // jQuery not loaded yet, try again
-            setTimeout(initializeReviewForm, 100);
-            return;
+    // ✅ Toggle thông tin đánh giá
+    function toggleReviewInfo() {
+        const content = document.getElementById('reviewInfoContent');
+        const icon = document.getElementById('reviewInfoIcon');
+        
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            content.style.display = 'none';
+            icon.style.transform = 'rotate(0deg)';
         }
-
-        var $ = jQuery;
-        var selectedRating = 0;
-        var movieId = @Model.Movie.phim_id;
-
-        // Check if user has already reviewed
-        $.ajax({
-            url: '@Url.Action("CheckUserReview", "Evaluate")',
-            type: 'POST',
-            data: { phim_id: movieId },
-            success: function(response) {
-                if (response.hasReviewed) {
-                    $('#reviewFormContent').hide();
-                    $('#reviewFormMessage').show();
-                    $('#messageText').text('Bạn đã đánh giá phim này rồi!');
-                }
-            },
-            error: function() {
-                console.log('Error checking review');
-            }
-        });
-
-        // Star button click handlers
-        $('.star-button').on('click', function(e) {
-            e.preventDefault();
-            selectedRating = parseInt($(this).data('rating'));
-            $('#selectedRating').val(selectedRating);
-
-            // Update button styling
-            $('.star-button').removeClass('selected');
-            $('.star-button').each(function() {
-                var rating = parseInt($(this).data('rating'));
-                if (rating <= selectedRating) {
-                    $(this).addClass('selected');
-                } else {
-                    $(this).removeClass('selected');
-                }
-            });
-
-            // Update rating text
-            var ratingTexts = ['', 'Rất tệ 😞', 'Tệ 😐', 'Bình thường 😊', 'Tốt 😄', 'Rất tốt 🤩'];
-            $('#ratingText').text('Đánh giá: ' + ratingTexts[selectedRating] + ' (' + selectedRating + '/5)');
-        });
-
-        // Star button hover effect
-        $('.star-button').on('mouseenter', function() {
-            var hoverRating = parseInt($(this).data('rating'));
-            $('.star-button').each(function() {
-                var rating = parseInt($(this).data('rating'));
-                if (rating <= hoverRating) {
-                    $(this).css('color', '#ffc107').css('opacity', '1');
-                } else {
-                    $(this).css('color', '#ddd').css('opacity', '0.5');
-                }
-            });
-        });
-
-        // Reset on mouse leave
-        $('#starRating').on('mouseleave', function() {
-            $('.star-button').each(function() {
-                var rating = parseInt($(this).data('rating'));
-                if (rating <= selectedRating) {
-                    $(this).css('color', 'white').css('opacity', '1');
-                } else {
-                    $(this).css('color', '#ddd').css('opacity', '1');
-                }
-            });
-        });
-
-        // Submit review
-        $('#submitReviewBtn').click(function() {
-            var rating = $('#selectedRating').val();
-            var content = $('#reviewContent').val().trim();
-
-            if (rating == 0 || rating == '') {
-                alert('Vui lòng chọn số sao đánh giá!');
-                return;
-            }
-
-            if (content == '') {
-                alert('Vui lòng nhập nhận xét của bạn!');
-                return;
-            }
-
-            $.ajax({
-                url: '@Url.Action("SubmitReview", "Evaluate")',
-                type: 'POST',
-                data: {
-                    phim_id: movieId,
-                    diem_rating: rating,
-                    noi_dung: content
-                },
-                success: function(response) {
-                    if (response.success) {
-                        alert(response.message);
-                        location.reload();
-                    } else {
-                        alert(response.message);
-                    }
-                },
-                error: function() {
-                    alert('Có lỗi xảy ra. Vui lòng thử lại!');
-                }
-            });
-        });
     }
-
-    // Initialize when document is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeReviewForm);
-    } else {
-        initializeReviewForm();
-    }
-    </script>
-}
+</script>
 
 
 

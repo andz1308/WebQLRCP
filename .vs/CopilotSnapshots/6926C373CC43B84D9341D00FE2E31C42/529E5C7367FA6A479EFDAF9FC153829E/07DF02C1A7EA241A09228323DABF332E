@@ -1,0 +1,296 @@
+﻿@{
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Vé Của Tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .my-tickets-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .page-header p {
+        margin: 0;
+        opacity: 0.95;
+    }
+
+    .ticket-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        border-left: 4px solid #ff6b35;
+        transition: all 0.3s ease;
+    }
+
+    .ticket-card:hover {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+
+    .ticket-header {
+        display: grid;
+        grid-template-columns: 2fr 1fr auto;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    .ticket-movie-info h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin: 0 0 0.8rem 0;
+        font-weight: 600;
+    }
+
+    .ticket-detail-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #666;
+        margin: 0.4rem 0;
+        font-size: 0.95rem;
+    }
+
+    .ticket-detail-row strong {
+        color: #333;
+        margin-left: 0.3rem;
+    }
+
+    .ticket-price {
+        font-size: 1.3rem;
+        color: #ff6b35;
+        font-weight: 600;
+    }
+
+    .ticket-status {
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        background: #fff3cd;
+        color: #856404;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .ticket-actions {
+        display: flex;
+        gap: 0.8rem;
+        flex-direction: column;
+    }
+
+    .btn-ticket-action {
+        padding: 0.7rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: center;
+        font-size: 0.95rem;
+    }
+
+    .btn-view-detail {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-view-detail:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+    }
+
+    .btn-cancel-ticket {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-cancel-ticket:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #333;
+        font-size: 1.5rem;
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .empty-state p {
+        color: #999;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .btn-book-now {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-book-now:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .status-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        padding: 0.8rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        border-left: 3px solid #17a2b8;
+    }
+</style>
+
+<div class="my-tickets-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-ticket-alt"></i> Vé Của Tôi</h1>
+        <p>Quản lý vé của bạn và yêu cầu hủy</p>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        foreach (var booking in Model)
+        {
+            var firstTicket = booking.Ves.FirstOrDefault();
+            
+            // ✅ Bỏ qua nếu không có vé hoặc suất chiếu
+            if (firstTicket == null || firstTicket.Suat_Chieu == null)
+            {
+                continue;
+            }
+            
+            var showtime = firstTicket.Suat_Chieu;
+            var isShowtimePassed = showtime.ngay_chieu.Date < DateTime.Now.Date;
+            
+            // ✅ CHỈ HIỂN THỊ VÉ CHƯA HẾT HẠN
+            if (isShowtimePassed)
+            {
+                continue;
+            }
+            
+            // Kiểm tra vé đã sử dụng hay hủy
+            var hasUsedTickets = booking.Ves.Any(v => v.trang_thai_ve == "Đã sử dụng");
+            var hasCancelledTickets = booking.Ves.Any(v => v.trang_thai_ve == "Đã Hủy");
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <div class="ticket-movie-info">
+                        <h3>🎬 @(showtime.Phim.ten_phim ?? "N/A")</h3>
+                        <div class="ticket-detail-row">
+                            <i class="fas fa-calendar-alt"></i>
+                            <strong>@showtime.ngay_chieu.ToString("dd/MM/yyyy")</strong> 
+                            lúc <strong>@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</strong>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <i class="fas fa-building"></i>
+                            <strong>@(showtime.Phong_Chieu.Rap.ten_rap ?? "N/A")</strong> 
+                            - Phòng <strong>@(showtime.Phong_Chieu.ten_phong ?? "N/A")</strong>
+                        </div>
+                        <div class="ticket-detail-row">
+                            <i class="fas fa-chair"></i>
+                            <strong>@booking.Ves.Count vé</strong>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <div class="ticket-price">@booking.tong_tien.ToString("N0") ₫</div>
+                        @if (hasUsedTickets)
+                        {
+                            <span class="ticket-status" style="background: #d1ecf1; color: #0c5460;">✓ Đã sử dụng</span>
+                        }
+                        else if (hasCancelledTickets)
+                        {
+                            <span class="ticket-status" style="background: #f8d7da; color: #721c24;">✗ Đã hủy</span>
+                        }
+                        else
+                        {
+                            <span class="ticket-status">⏳ Chưa sử dụng</span>
+                        }
+                    </div>
+
+                    <div class="ticket-actions">
+                        <a href="@Url.Action("Details", new { id = booking.Dat_Ve_id })" class="btn-ticket-action btn-view-detail">
+                            <i class="fas fa-eye"></i> Chi Tiết
+                        </a>
+                        @if (!hasUsedTickets && !hasCancelledTickets)
+                        {
+                            <button class="btn-ticket-action btn-cancel-ticket" onclick="window.location.href='@Url.Action("Details", new { id = booking.Dat_Ve_id })'">
+                                <i class="fas fa-trash"></i> Hủy Vé
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🎬</div>
+            <h3>Bạn chưa có vé nào</h3>
+            <p>Đặt vé xem phim ngay hôm nay!</p>
+            <a href="@Url.Action("Index", "Home")" class="btn-book-now">
+                <i class="fas fa-film"></i> Xem Phim
+            </a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        // No additional scripts needed
+    </script>
+}
