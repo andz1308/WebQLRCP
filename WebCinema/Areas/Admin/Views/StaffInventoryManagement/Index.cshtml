@@ -56,23 +56,24 @@
                 <h5 class="text-center mb-3 text-muted font-weight-bold text-uppercase">
                     <i class="fas fa-magic"></i> Tác Vụ Tự Động Theo Tồn Kho
                 </h5>
-
+                <br />
                 <div class="input-group input-group-lg">
                     <div class="input-group-prepend">
                         <button class="btn btn-danger" onclick="autoImport()" type="button" title="Nhập các món thấp hơn mức này">
                             <i class="fas fa-ambulance"></i> Nhập Hàng (Tồn &le;)
                         </button>
                     </div>
-
+                    &nbsp;
                     <input type="number" id="txtAutoThreshold" class="form-control text-center font-weight-bold text-primary"
                            value="20" min="0" placeholder="Nhập số lượng...">
-
+                    &nbsp;
                     <div class="input-group-append">
                         <button class="btn btn-warning text-dark" onclick="autoPromo()" type="button" title="Sale các món cao hơn mức này">
                             Xả Hàng (Tồn &ge;) <i class="fas fa-tags"></i>
                         </button>
                     </div>
                 </div>
+                <br />
                 <div class="text-center mt-2">
                     <small class="text-muted">
                         <i class="fas fa-info-circle"></i> Nhập một con số để lọc danh sách sản phẩm tự động

@@ -15,60 +15,75 @@
 </div>
 
 <div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-clipboard-list"></i> Danh Sách Đề Xuất</h2>
+        <span class="badge badge-info">Tổng: @Model.Count() đề xuất</span>
+    </div>
     @if (Model != null && Model.Any())
     {
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Mã Phiếu</th>
-                    <th>Ngày Tạo</th>
+                    <th style="width: 100px;">Mã Phiếu</th>
+                    <th style="width: 150px;">Ngày Tạo</th>
                     <th>Lý Do</th>
-                    <th>Trạng Thái</th>
-                    <th>Phản Hồi (Admin)</th>
-                    <th>Thao Tác</th>
+                    <th style="width: 130px;">Trạng Thái</th>
+                    <th style="width: 200px;">Phản Hồi (Admin)</th>
+                    <th style="width: 100px;">Thao Tác</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td><strong>#DX-@item.de_xuat_id</strong></td>
-                        <td>@item.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><strong style="color: #ff6b35;">#DX-@item.de_xuat_id</strong></td>
+                        <td>
+                            <i class="far fa-calendar-alt" style="color: #ff8555;"></i>
+                            @item.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")
+                        </td>
                         <td>
                             @if (item.ly_do.Length > 50)
                             {
-                                <span title="@item.ly_do">@item.ly_do.Substring(0, 50)...</span>
+                                <span title="@item.ly_do" style="color: #666;">@item.ly_do.Substring(0, 50)...</span>
                             }
                             else
                             {
-                                <span>@item.ly_do</span>
+                                <span style="color: #666;">@item.ly_do</span>
                             }
                         </td>
                         <td>
                             @if (item.trang_thai == "Chờ duyệt")
                             {
-                                <span class="badge badge-warning">Chờ duyệt</span>
+                                <span class="badge badge-warning">
+                                    <i class="fas fa-clock"></i> Chờ duyệt
+                                </span>
                             }
                             else if (item.trang_thai == "Đã duyệt")
                             {
-                                <span class="badge badge-success">Đã duyệt</span>
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check-circle"></i> Đã duyệt
+                                </span>
                             }
                             else
                             {
-                                <span class="badge badge-danger">Từ chối</span>
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-times-circle"></i> Từ chối
+                                </span>
                             }
                         </td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.ghi_chu_quan_ly))
                             {
-                                <span class="text-info"><i class="fas fa-comment-dots"></i> @item.ghi_chu_quan_ly</span>
+                                <span style="color: #17a2b8;">
+                                    <i class="fas fa-comment-dots"></i> @item.ghi_chu_quan_ly
+                                </span>
                             }
                             else
                             {
-                                <span class="text-muted">-</span>
+                                <span style="color: #999; font-style: italic;">Chưa có phản hồi</span>
                             }
                         </td>
-                        <td>
+                        <td style="text-align: center;">
                             <a href="@Url.Action("Details", new { id = item.de_xuat_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i>
                             </a>
@@ -81,31 +96,250 @@
     else
     {
         <div style="text-align: center; padding: 3rem; color: #999;">
-            <i class="fas fa-folder-open" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; display: block;"></i>
             <p>Bạn chưa gửi đề xuất khuyến mãi nào.</p>
         </div>
     }
 </div>
 
 <style>
+    /* ============================
+       HEADER & LAYOUT
+       ============================ */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .content-header h1 {
+            font-size: 2rem;
+            color: black;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+            .content-header h1 i {
+                color: black;
+            }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* ============================
+       CARDS
+       ============================ */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    }
+
+    .card-title {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ============================
+       BUTTONS
+       ============================ */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+        }
+
+    .btn-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3);
+    }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(23, 162, 184, 0.4);
+            background: linear-gradient(135deg, #138496 0%, #17a2b8 100%);
+        }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    /* ============================
+       TABLE
+       ============================ */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #ff6b35;
+            border-bottom: 2px solid #ff6b35;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ffe5dc;
+            color: #333;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fffaf8;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+        }
+
+    /* ============================
+       BADGES
+       ============================ */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
     .badge-warning {
-        background-color: #ffc107;
-        color: #212529;
-        padding: 5px 10px;
-        border-radius: 4px;
+        background: linear-gradient(135deg, #ffb84d 0%, #ffc870 100%);
+        color: #333;
+    }
+
+    .badge-info {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
     }
 
     .badge-success {
-        background-color: #28a745;
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
         color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
     }
 
     .badge-danger {
-        background-color: #dc3545;
+        background: linear-gradient(135deg, #e74c3c 0%, #ec7063 100%);
         color: white;
-        padding: 5px 10px;
-        border-radius: 4px;
     }
+
+    /* ============================
+       UTILITIES
+       ============================ */
+    .text-muted {
+        color: #999 !important;
+    }
+
+    /* ============================
+       RESPONSIVE
+       ============================ */
+    @@media (max-width: 768px) {
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .data-table {
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    /* ============================
+       ACCENT & HIGHLIGHTS
+       ============================ */
+    ::selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    ::-moz-selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #fff5f0;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 5px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+        }
 </style>

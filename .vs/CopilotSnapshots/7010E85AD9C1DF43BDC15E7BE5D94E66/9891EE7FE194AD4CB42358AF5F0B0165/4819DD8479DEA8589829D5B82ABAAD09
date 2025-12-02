@@ -1,0 +1,425 @@
+﻿@{
+    ViewBag.Title = "Tạo Yêu Cầu Nhập Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+    var listFood = ViewBag.ListFood as List<WebCinema.Models.Do_An>;
+    var suppliers = ViewBag.Suppliers as List<WebCinema.Models.Nha_Cung_Cap>;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-cart-plus"></i> Tạo Phiếu Nhập Hàng</h1>
+    <div class="header-actions">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-file-alt"></i> Thông Tin Phiếu Nhập</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label">Nhà Cung Cấp (*):</label>
+            <select id="ddlSupplier" class="form-control">
+                <option value="">-- Chọn nhà cung cấp --</option>
+                @if (suppliers != null)
+                {
+                    foreach (var ncc in suppliers)
+                    {
+                        <option value="@ncc.id">@ncc.ten_nha_cung_cap</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Ghi chú nhập hàng:</label>
+            <textarea id="txtNote" class="form-control" rows="3" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Thêm Sản Phẩm</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Chọn món ăn:</label>
+                <select id="ddlFood" class="form-control">
+                    @foreach (var item in listFood)
+                    {
+                        <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
+                            @item.ten_san_pham (@item.loai)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Số lượng:</label>
+                <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
+            </div>
+            <button class="btn btn-success" onclick="addItem()">
+                <i class="fas fa-plus"></i> Thêm
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Nhập Hàng</h2>
+        <span class="badge badge-info" id="itemCount">0 mặt hàng</span>
+    </div>
+    <table class="data-table" id="tblImport">
+        <thead>
+            <tr>
+                <th style="width: 50px;">STT</th>
+                <th>Tên Sản Phẩm</th>
+                <th>Loại</th>
+                <th style="width: 150px;">Số Lượng</th>
+                <th style="width: 100px;">Thao Tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 3rem; color: #999;">
+                    <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Chưa có món nào được chọn</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="text-align: right; margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Hủy
+    </a>
+    <button class="btn btn-primary" onclick="submitOrder()">
+        <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+    </button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    var importList = [];
+
+    function addItem() {
+        var foodId = $('#ddlFood').val();
+        var foodName = $('#ddlFood option:selected').data('name');
+        var foodUnit = $('#ddlFood option:selected').data('unit');
+        var quantity = parseInt($('#numQuantity').val());
+
+        if (quantity <= 0) {
+            alert("Số lượng phải lớn hơn 0");
+            return;
+        }
+
+        // Kiểm tra xem món đã có trong list chưa
+        var exists = false;
+        for (var i = 0; i < importList.length; i++) {
+            if (importList[i].Id == foodId) {
+                importList[i].SoLuong += quantity;
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists) {
+            importList.push({ Id: foodId, Name: foodName, Unit: foodUnit, SoLuong: quantity });
+        }
+
+        renderTable();
+    }
+
+    function removeItem(index) {
+        importList.splice(index, 1);
+        renderTable();
+    }
+
+    function renderTable() {
+        var html = '';
+        if (importList.length === 0) {
+            html = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: #999;"><i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; display: block;"></i><p>Chưa có món nào được chọn</p></td></tr>';
+        } else {
+            for (var i = 0; i < importList.length; i++) {
+                html += `<tr>
+                            <td><strong>${i + 1}</strong></td>
+                            <td><strong style="color: #333; font-size: 1.05rem;">${importList[i].Name}</strong></td>
+                            <td><span class="badge badge-secondary">${importList[i].Unit}</span></td>
+                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" class="form-control" style="width: 100px; display: inline-block;" /></td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-danger" onclick="removeItem(${i})" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                         </tr>`;
+            }
+        }
+        $('#tblImport tbody').html(html);
+        $('#itemCount').text(importList.length + ' mặt hàng');
+    }
+
+    function updateQty(index, newVal) {
+        importList[index].SoLuong = parseInt(newVal);
+    }
+
+    function submitOrder() {
+        if (importList.length === 0) {
+            alert("Vui lòng chọn ít nhất 1 món ăn.");
+            return;
+        }
+
+        // Validate Nhà Cung Cấp
+        var supplierId = $('#ddlSupplier').val();
+        if (!supplierId) {
+            alert("Vui lòng chọn Nhà cung cấp.");
+            return;
+        }
+
+        if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu nhập hàng này?")) return;
+
+        var note = $('#txtNote').val();
+
+        $.ajax({
+            url: '@Url.Action("Create")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                items: importList,
+                ghiChu: note,
+                supplierId: supplierId
+            }),
+            success: function (res) {
+                if (res.success) {
+                    alert(res.message);
+                    window.location.href = '@Url.Action("Index")';
+                } else {
+                    alert(res.message);
+                }
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Lấy dữ liệu tự động từ Controller (nếu có)
+        var autoData = @Html.Raw(ViewBag.AutoImportList ?? "[]");
+
+        // Nếu có dữ liệu -> Đổ vào bảng ngay
+        if (autoData && autoData.length > 0) {
+            importList = [];
+
+            autoData.forEach(function(item) {
+                importList.push({
+                    Id: item.Id,
+                    Name: item.Name,
+                    Unit: item.Unit,
+                    SoLuong: item.SoLuong
+                });
+            });
+
+            renderTable();
+
+            var msg = '@Html.Raw(ViewBag.AutoMessage)';
+            if(msg) alert(msg);
+        }
+    });
+
+    // Init
+    renderTable();
+</script>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .content-header h1 {
+            font-size: 2rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #34ce57 100%);
+        color: white;
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+        }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table thead {
+            background: #f5f5f5;
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 15px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>

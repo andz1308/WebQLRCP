@@ -260,10 +260,6 @@
                 <div class="info-label">Số Điện Thoại</div>
                 <div class="info-value">@(customer != null ? (customer.so_dien_thoai ?? "") : "")</div>
             </div>
-            <div class="info-item">
-                <div class="info-label">Điểm Tích Lũy</div>
-                <div class="info-value">@(customer != null ? (customer.diem_tich_luy ?? 0) : 0) ⭐</div>
-            </div>
         </div>
     </div>
 
@@ -276,40 +272,6 @@
             Phí hủy 30%: @((booking != null && booking.tong_tien != null) ? Math.Round(booking.tong_tien * 0.3m, 0).ToString("N0") : "") ₫
         </div>
     </div>
-
-    <!-- Thông tin đơn đặt -->
-    <div class="info-section">
-        <h3><i class="fas fa-receipt"></i> Thông Tin Đơn Đặt</h3>
-        <div class="info-grid">
-            <div class="info-item">
-                <div class="info-label">Mã Đơn</div>
-                <div class="info-value">#@(booking != null ? booking.Dat_Ve_id : 0)</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Phim</div>
-                <div class="info-value">@((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "")</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Ngày Chiếu</div>
-                <div class="info-value">@((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "")</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Ca Chiếu</div>
-                <div class="info-value">@((timeSlot != null && timeSlot.gio_bat_dau != null) ? timeSlot.gio_bat_dau.ToString(@"hh\:mm") : "")</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Rạp / Phòng</div>
-                <div class="info-value">@((showtime != null && showtime.Phong_Chieu != null && showtime.Phong_Chieu.Rap != null) ? showtime.Phong_Chieu.Rap.ten_rap : "") / @((showtime != null && showtime.Phong_Chieu != null) ? showtime.Phong_Chieu.ten_phong : "")</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Tổng Tiền Gốc</div>
-                <div class="info-value">@((booking != null && booking.tong_tien != null) ? booking.tong_tien.ToString("N0") : "") ₫</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Số Vé</div>
-                <div class="info-value">@(tickets != null ? tickets.Count : 0) vé</div>
-            </div>
-        </div>
     </div>
 
     <!-- Danh sách vé -->

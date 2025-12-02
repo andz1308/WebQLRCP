@@ -1,0 +1,487 @@
+﻿@model IEnumerable<WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai>
+
+@{
+    ViewBag.Title = "Duyệt Đề Xuất Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    bool isAdmin = ViewBag.IsAdmin ?? false;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalItems = ViewBag.TotalItems ?? 0;
+}
+
+<style>
+    /* Copy all styles from Index.cshtml - Orange Theme */
+    .content-header {
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        border: 2px solid #ff9966;
+    }
+
+        .content-header h1 {
+            color: #ff6b35;
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .tab-navigation {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 3px solid #ffe8dc;
+        padding-bottom: 0;
+    }
+
+    .tab-link {
+        padding: 1rem 2rem;
+        background: white;
+        border: 2px solid #ffe8dc;
+        border-bottom: none;
+        border-radius: 12px 12px 0 0;
+        text-decoration: none;
+        color: #666;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .tab-link:hover {
+            background: #fff5f0;
+            color: #ff6b35;
+            border-color: #ff9966;
+        }
+
+        .tab-link.active {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            color: white;
+            border-color: #ff6b35;
+            transform: translateY(3px);
+        }
+
+    .filter-card, .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+        border: 2px solid #ffe8dc;
+    }
+
+    .filter-card {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .content-card {
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+        padding: 1.5rem;
+    }
+
+        .card-header h3 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+        }
+
+    .table thead th {
+        background: #fff5f0;
+        color: #ff6b35;
+        font-weight: 600;
+        border-bottom: 2px solid #ff9966;
+    }
+
+    .table tbody tr:hover {
+        background: #fff5f0;
+    }
+
+    .badge-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .badge-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 0.3rem;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+        color: white;
+    }
+
+        .btn-view:hover {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+    .btn-approve {
+        background: #28a745;
+        color: white;
+    }
+
+        .btn-approve:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+    .btn-reject {
+        background: #dc3545;
+        color: white;
+    }
+
+        .btn-reject:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        padding: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+        .pagination a, .pagination span {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ffe8dc;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+            .pagination a:hover {
+                background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+                color: white;
+                border-color: #ff6b35;
+                transform: translateY(-2px);
+            }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            color: white;
+            border-color: #ff6b35;
+            font-weight: 700;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    .pagination-info {
+        text-align: center;
+        color: #ff6b35;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .form-control {
+        border: 2px solid #ffe8dc;
+        border-radius: 8px;
+    }
+
+        .form-control:focus {
+            border-color: #ff9966;
+            box-shadow: 0 0 0 3px rgba(255, 153, 102, 0.1);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ffe8dc;
+            margin-bottom: 1rem;
+        }
+</style>
+
+<div class="content-header">
+    <h1><i class="fas fa-percent"></i> Duyệt Đề Xuất Khuyến Mãi @(isAdmin ? "(Toàn Hệ Thống)" : "")</h1>
+</div>
+
+<!-- Tab Navigation -->
+<div class="tab-navigation">
+    <a href="@Url.Action("Index", "ManagerPurchaseOrder")" class="tab-link">
+        <i class="fas fa-box-open"></i> Yêu Cầu Nhập Kho
+    </a>
+    <a href="@Url.Action("Promotions", "ManagerPurchaseOrder")" class="tab-link active">
+        <i class="fas fa-tags"></i> Đề Xuất Khuyến Mãi
+    </a>
+</div>
+
+<!-- Filter -->
+<div class="filter-card">
+    @using (Html.BeginForm("Promotions", "ManagerPurchaseOrder", FormMethod.Get))
+    {
+        <div class="row">
+            <div class="col-md-3">
+                <label style="color: #ff6b35; font-weight: 600;">
+                    <i class="fas fa-filter"></i> Lọc Trạng Thái:
+                </label>
+                <select name="status" class="form-control">
+                    <option value="">-- Tất cả --</option>
+                    <option value="Chờ duyệt" @(ViewBag.SelectedStatus == "Chờ duyệt" ? "selected" : "")>Chờ duyệt</option>
+                    <option value="Đã duyệt" @(ViewBag.SelectedStatus == "Đã duyệt" ? "selected" : "")>Đã duyệt</option>
+                    <option value="Từ chối" @(ViewBag.SelectedStatus == "Từ chối" ? "selected" : "")>Từ chối</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label style="color: #ff6b35; font-weight: 600;">
+                    <i class="fas fa-calendar"></i> Từ ngày:
+                </label>
+                <input type="date" name="fromDate" class="form-control" value="@(ViewBag.FromDate != null ? ((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="col-md-3">
+                <label style="color: #ff6b35; font-weight: 600;">
+                    <i class="fas fa-calendar-check"></i> Đến ngày:
+                </label>
+                <input type="date" name="toDate" class="form-control" value="@(ViewBag.ToDate != null ? ((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="col-md-3" style="display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%); border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; width: 100%;">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Content -->
+<div class="content-card">
+    <div class="card-header">
+        <h3><i class="fas fa-tags"></i> Đề Xuất Khuyến Mãi</h3>
+    </div>
+    <div style="overflow-x: auto;">
+        @if (Model != null && Model.Any())
+        {
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã Phiếu</th>
+                        <th>Rạp</th>
+                        <th>Nhân Viên</th>
+                        <th>Ngày Tạo</th>
+                        <th>Lý Do</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>#DX-@item.de_xuat_id</strong></td>
+                            <td>@(item.Rap != null ? item.Rap.ten_rap : "")</td>
+                            <td>@(item.Nhan_Vien != null ? item.Nhan_Vien.ho_ten : "")</td>
+                            <td>@item.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(item.ly_do.Length > 40 ? item.ly_do.Substring(0, 40) + "..." : item.ly_do)</td>
+                            <td>
+                                @if (item.trang_thai == "Chờ duyệt")
+                                {
+                                    <span class="badge-status badge-pending">⏳ Chờ duyệt</span>
+                                }
+                                else if (item.trang_thai == "Đã duyệt")
+                                {
+                                    <span class="badge-status badge-approved">✅ Đã duyệt</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-rejected">❌ Từ chối</span>
+                                }
+                            </td>
+                            <td>
+                                <a href="@Url.Action("PromotionDetails", new { id = item.de_xuat_id })" class="btn-action btn-view">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                                @if (item.trang_thai == "Chờ duyệt")
+                                {
+                                    <button onclick="approvePromo(@item.de_xuat_id)" class="btn-action btn-approve" title="Duyệt">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button onclick="rejectPromo(@item.de_xuat_id)" class="btn-action btn-reject" title="Từ chối">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            if (totalPages > 1)
+            {
+                <div class="pagination">
+                    @if (currentPage > 1)
+                    {
+                        <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = 1 })">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+                    }
+
+                    @if (currentPage > 1)
+                    {
+                        <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = currentPage - 1 })">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="disabled"><i class="fas fa-angle-left"></i></span>
+                    }
+
+                    @{
+                        int startPage = Math.Max(1, currentPage - 2);
+                        int endPage = Math.Min(totalPages, currentPage + 2);
+
+                        if (startPage > 1)
+                        {
+                            <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = 1 })">1</a>
+                            if (startPage > 2)
+                            {
+                                <span>...</span>
+                            }
+                        }
+
+                        for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i == currentPage)
+                            {
+                                <span class="active">@i</span>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = i })">@i</a>
+                            }
+                        }
+
+                        if (endPage < totalPages)
+                        {
+                            if (endPage < totalPages - 1)
+                            {
+                                <span>...</span>
+                            }
+                            <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = totalPages })">@totalPages</a>
+                        }
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = currentPage + 1 })">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="disabled"><i class="fas fa-angle-right"></i></span>
+                    }
+
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="@Url.Action("Promotions", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = totalPages })">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+                    }
+                </div>
+
+                <div class="pagination-info">
+                    Hiển thị @((currentPage - 1) * 10 + 1) - @Math.Min(currentPage * 10, totalItems) trong tổng số @totalItems đề xuất
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>Chưa có đề xuất khuyến mãi nào</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function approvePromo(id) {
+            if (confirm('Duyệt đề xuất giảm giá này?')) {
+                $.post('@Url.Action("ApprovePromotion")', { id: id }, function (res) {
+                    if (res.success) {
+                        if (res.isRedirect) {
+                            alert(res.message);
+                            window.location.href = res.redirectUrl;
+                        } else {
+                            alert(res.message);
+                            location.reload();
+                        }
+                    } else {
+                        alert(res.message);
+                    }
+                });
+            }
+        }
+
+        function rejectPromo(id) {
+            var reason = prompt("Nhập lý do từ chối:");
+            if (reason != null && reason.trim() != '') {
+                $.post('@Url.Action("RejectPromotion")', { id: id, reason: reason }, function (res) {
+                    if (res.success) {
+                        alert(res.message);
+                        location.reload();
+                    } else {
+                        alert(res.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

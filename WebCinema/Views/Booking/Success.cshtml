@@ -175,10 +175,27 @@
     }
 
     @@media print {
-        .actions-section, .info-notice {
-            display: none;
-        }
+    body * {
+        visibility: hidden; /* Ẩn tất cả */
     }
+
+    .success-container, .success-container * {
+        visibility: visible; /* Chỉ hiển thị container này */
+    }
+
+    .success-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    /* Ẩn các nút hoặc thông báo không cần in */
+    .actions-section, .info-notice {
+        display: none !important;
+    }
+}
+
 </style>
 
 <div class="success-container">
@@ -357,8 +374,5 @@
         <button onclick="window.print()" class="action-btn btn-secondary">
             <i class="fas fa-print"></i> In Vé
         </button>
-        <a href="@Url.Action("MyTickets", "Account")" class="action-btn btn-secondary">
-            <i class="fas fa-user"></i> Xem Lịch Sử
-        </a>
     </div>
 </div>

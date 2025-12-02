@@ -25,7 +25,7 @@ namespace WebCinema.Areas.Admin.Controllers
         }
 
         // GET: Admin/InventoryManagement
-        // Hiển thị danh sách món ăn và Tồn kho tại rạp của Quản lý
+        // Hiển thị danh sách món ăn
         public ActionResult Index(string searchTerm, string category)
         {
             Response.ContentEncoding = System.Text.Encoding.UTF8;
@@ -75,31 +75,13 @@ namespace WebCinema.Areas.Admin.Controllers
                 .OrderBy(c => c)
                 .ToList();
 
-            var cinemaStocks = db.Raps.Select(r => new CinemaStockViewModel
-            {
-                TenRap = r.ten_rap,
-                // Tính tổng số lượng các món trong kho rạp này
-                TongSoLuong = r.Kho_Do_Ans.Sum(k => (int?)k.so_luong_ton) ?? 0,
-
-                // Lấy chi tiết từng món
-                DanhSachMon = r.Kho_Do_Ans.Select(k => new StockItemViewModel
-                {
-                    TenMon = k.Do_An.ten_san_pham,
-                    SoLuong = k.so_luong_ton ?? 0,
-                    TrangThai = (k.so_luong_ton <= 0) ? "Hết hàng" :
-                                (k.so_luong_ton < 20) ? "Sắp hết" : "Ổn định"
-                }).OrderBy(m => m.SoLuong).ToList() // Sắp xếp món ít lên đầu để dễ thấy
-            }).ToList();
-
-            ViewBag.CinemaStocks = cinemaStocks;
-
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = category;
 
             return View(model);
         }
-        // Trong InventoryManagementController.cs
 
+        // Trong InventoryManagementController.cs
         [HttpGet]
         public ActionResult GetStockDetail(int id)
         {
@@ -115,6 +97,7 @@ namespace WebCinema.Areas.Admin.Controllers
 
             return Json(new { success = true, data = stocks }, JsonRequestBehavior.AllowGet);
         }
+
         // GET: Admin/InventoryManagement/Details/5
         public ActionResult Details(int id)
         {
@@ -193,6 +176,7 @@ namespace WebCinema.Areas.Admin.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // 1. Validate Giá
                     if (item.gia.HasValue && item.gia.Value < 0)
                     {
                         TempData["ErrorMessage"] = "Giá sản phẩm không được âm.";
@@ -200,22 +184,46 @@ namespace WebCinema.Areas.Admin.Controllers
                         return View(item);
                     }
 
-                    // Set mặc định trạng thái
-                    if (string.IsNullOrEmpty(item.trang_thai)) item.trang_thai = "Đang bán";
+                    // 2. Set mặc định trạng thái
+                    if (string.IsNullOrEmpty(item.trang_thai)) item.trang_thai = "Đang kinh doanh";
 
                     // Xử lý ảnh (nếu có logic upload ảnh)
                     // ...
 
+                    // 3. LƯU MÓN ĂN VÀO DB TRƯỚC
                     db.Do_Ans.InsertOnSubmit(item);
-                    db.SubmitChanges();
+                    db.SubmitChanges(); // Quan trọng: Phải Submit để lấy Do_An_id vừa sinh ra
 
-                    TempData["SuccessMessage"] = "Thêm món ăn vào Menu thành công!";
+                    // 4. TỰ ĐỘNG THÊM VÀO KHO CỦA TẤT CẢ CÁC RẠP (Số lượng = 0)
+                    var allCinemas = db.Raps.ToList(); // Lấy tất cả rạp
+                    var initialStocks = new List<Kho_Do_An>();
+
+                    foreach (var cinema in allCinemas)
+                    {
+                        var stock = new Kho_Do_An
+                        {
+                            rap_id = cinema.rap_id,
+                            Do_An_id = item.Do_An_id, // ID mới vừa tạo ở trên
+                            so_luong_ton = 0
+                        };
+                        initialStocks.Add(stock);
+                    }
+
+                    if (initialStocks.Count > 0)
+                    {
+                        db.Kho_Do_Ans.InsertAllOnSubmit(initialStocks);
+                        db.SubmitChanges(); // Lưu danh sách kho
+                    }
+
+                    TempData["SuccessMessage"] = "Thêm món ăn và khởi tạo kho cho tất cả rạp thành công!";
                     return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+                // Nếu lỗi ở bước tạo kho, có thể log lại nhưng món ăn vẫn đã được tạo
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
             }
 
             SetupCategoryViewBag(item.loai);
@@ -340,22 +348,10 @@ namespace WebCinema.Areas.Admin.Controllers
             base.Dispose(disposing);
         }
     }
+
     public class StockDetailViewModel
     {
         public string TenRap { get; set; }
         public int SoLuongTon { get; set; }
-    }
-    public class CinemaStockViewModel
-    {
-        public string TenRap { get; set; }
-        public int TongSoLuong { get; set; }
-        public List<StockItemViewModel> DanhSachMon { get; set; }
-    }
-
-    public class StockItemViewModel
-    {
-        public string TenMon { get; set; }
-        public int SoLuong { get; set; }
-        public string TrangThai { get; set; } // "Hết hàng", "Sắp hết", "OK"
     }
 }

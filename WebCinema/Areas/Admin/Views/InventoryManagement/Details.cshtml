@@ -33,7 +33,7 @@
             </div>
             <div class="detail-item">
                 <label>Tên Sản Phẩm:</label>
-                <span><strong style="color: #ff6b35; font-size: 1.1rem;">@Model.ten_san_pham</strong></span>
+                <span><strong style="color: var(--color-primary); font-size: 1.1rem;">@Model.ten_san_pham</strong></span>
             </div>
             <div class="detail-item">
                 <label>Loại:</label>
@@ -46,11 +46,11 @@
                 <span>
                     @if (Model.gia.HasValue)
                     {
-                        <strong style="color: #27ae60; font-size: 1.2rem;">@Model.gia.Value.ToString("N0") VNĐ</strong>
+                        <strong style="color: var(--color-success); font-size: 1.2rem;">@Model.gia.Value.ToString("N0") VNĐ</strong>
                     }
                     else
                     {
-                        <span style="color: #999;">Chưa định giá</span>
+                        <span style="color: var(--color-text-light);">Chưa định giá</span>
                     }
                 </span>
             </div>
@@ -59,11 +59,11 @@
                 <span>
                     @if (!string.IsNullOrEmpty(Model.mo_ta))
                     {
-                        <p style="white-space: pre-wrap; color: #666; line-height: 1.6;">@Model.mo_ta</p>
+                        <p style="white-space: pre-wrap; color: var(--color-text-light); line-height: 1.6;">@Model.mo_ta</p>
                     }
                     else
                     {
-                        <span style="color: #999;">Không có mô tả</span>
+                        <span style="color: var(--color-text-light);">Không có mô tả</span>
                     }
                 </span>
             </div>
@@ -78,8 +78,8 @@
     </div>
     <div class="detail-body">
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #3498db;">
+            <div class="stat-card blue">
+                <div class="stat-icon blue">
                     <i class="fas fa-shopping-cart"></i>
                 </div>
                 <div class="stat-content">
@@ -87,8 +87,8 @@
                     <p>Tổng Số Lượng Đã Bán</p>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #27ae60;">
+            <div class="stat-card green">
+                <div class="stat-icon green">
                     <i class="fas fa-money-bill-wave"></i>
                 </div>
                 <div class="stat-content">
@@ -96,8 +96,8 @@
                     <p>Tổng Doanh Thu</p>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #e74c3c;">
+            <div class="stat-card purple">
+                <div class="stat-icon purple">
                     <i class="fas fa-receipt"></i>
                 </div>
                 <div class="stat-content">
@@ -141,16 +141,16 @@
                             @ngayTao
                         </td>
                         <td>
-                            <span class="badge badge-info">@order.so_luong</span>
+                            <span class="badge" style="background: #17a2b8; color: white; padding: 0.4rem 0.8rem; border-radius: 6px; font-weight: 600;">@order.so_luong</span>
                         </td>
                         <td>
                             @if (Model.gia.HasValue)
                             {
-                                <strong style="color: #27ae60;">@((order.so_luong * Model.gia.Value).ToString("N0")) VNĐ</strong>
+                                <strong style="color: var(--color-success);">@((order.so_luong * Model.gia.Value).ToString("N0")) VNĐ</strong>
                             }
                             else
                             {
-                                <span style="color: #999;">N/A</span>
+                                <span style="color: var(--color-text-light);">N/A</span>
                             }
                         </td>
                         <td>@(order.Dat_Ve != null && order.Dat_Ve.Khach_Hang != null ? order.Dat_Ve.Khach_Hang.ho_ten : "N/A")</td>
@@ -178,7 +178,7 @@
     }
     else
     {
-        <div style="text-align: center; padding: 2rem; color: #999;">
+        <div style="text-align: center; padding: 2rem; color: var(--color-text-light);">
             <i class="fas fa-inbox" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
             <p>Chưa có đơn hàng nào cho sản phẩm này.</p>
         </div>
@@ -194,11 +194,12 @@
     }
 
         .content-header h1 {
-            font-size: 2rem;
-            color: #333;
+            font-size: 1.8rem;
+            color: var(--color-dark-blue);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 700;
         }
 
     .header-actions {
@@ -228,21 +229,22 @@
 
         .detail-item label {
             font-weight: 600;
-            color: #666;
+            color: var(--color-text-light);
             font-size: 0.9rem;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .detail-item span {
             font-size: 1rem;
-            color: #333;
+            color: var(--color-text);
         }
 
     .badge-category {
-        background: #3498db;
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         color: white;
         padding: 0.5rem 1rem;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 0.9rem;
         font-weight: 600;
         display: inline-block;
@@ -255,21 +257,25 @@
     }
 
     .stat-card {
-        background: white;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
+        background: var(--color-white);
+        border-radius: var(--border-radius);
         padding: 1.5rem;
         display: flex;
         align-items: center;
         gap: 1.5rem;
         transition: all 0.3s ease;
+        box-shadow: var(--shadow-sm);
+        border-left: 5px solid transparent;
     }
 
         .stat-card:hover {
-            border-color: #ff6b35;
-            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.15);
+            box-shadow: var(--shadow-md);
             transform: translateY(-5px);
         }
+
+    .stat-card.blue { border-left-color: #007bff; }
+    .stat-card.green { border-left-color: #28a745; }
+    .stat-card.purple { border-left-color: #6f42c1; }
 
     .stat-icon {
         width: 70px;
@@ -278,55 +284,51 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
+        color: var(--color-white);
         font-size: 2rem;
     }
+
+    .stat-icon.blue { background: linear-gradient(135deg, #007bff 0%, #3498db 100%); }
+    .stat-icon.green { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+    .stat-icon.purple { background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%); }
 
     .stat-content h3 {
         font-size: 1.8rem;
         font-weight: 700;
-        color: #333;
+        color: var(--color-dark-blue);
         margin-bottom: 0.5rem;
     }
 
     .stat-content p {
-        color: #666;
+        color: var(--color-text-light);
         font-size: 0.9rem;
         margin: 0;
-    }
-
-    .badge-info {
-        background: #3498db;
-        color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-weight: 500;
     }
 
     .badge-success {
-        background: #27ae60;
+        background: var(--color-success);
         color: white;
         padding: 0.4rem 0.8rem;
-        border-radius: 4px;
+        border-radius: 6px;
         font-size: 0.85rem;
         font-weight: 600;
     }
 
     .badge-warning {
-        background: #f39c12;
-        color: white;
+        background: var(--color-warning);
+        color: #333;
         padding: 0.4rem 0.8rem;
-        border-radius: 4px;
+        border-radius: 6px;
         font-size: 0.85rem;
         font-weight: 600;
     }
 
     .badge-danger {
-        background: #e74c3c;
+        background: var(--color-danger);
         color: white;
         padding: 0.4rem 0.8rem;
-        border-radius: 4px;
+        border-radius: 6px;
         font-size: 0.85rem;
         font-weight: 600;
     }

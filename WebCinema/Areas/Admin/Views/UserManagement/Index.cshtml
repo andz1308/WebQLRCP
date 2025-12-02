@@ -3,7 +3,63 @@
 @{
     ViewBag.Title = "Quản Lý Người Dùng";
     Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalItems = ViewBag.TotalItems ?? 0;
 }
+
+<style>
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 0.5rem 1rem;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-block;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pagination a:hover {
+        background: orange;
+        color: white;
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .pagination .active {
+        background: orange;
+        color: white;
+        border-color: #667eea;
+        font-weight: 700;
+    }
+
+    .pagination .disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .pagination-info {
+        text-align: center;
+        color: darkorange;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+</style>
 
 <div class="content-card">
     <div class="card-header">
@@ -47,8 +103,8 @@
                             <td><strong>@user.khach_hang_id</strong></td>
                             <td>@user.ho_ten</td>
                             <td>@user.email</td>
-                            <td>@(user.so_dien_thoai ?? "N/A")</td>
-                            <td>@(user.ngay_dang_ky.HasValue ? user.ngay_dang_ky.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                            <td>@(user.so_dien_thoai ?? "")</td>
+                            <td>@(user.ngay_dang_ky.HasValue ? user.ngay_dang_ky.Value.ToString("dd/MM/yyyy") : "")</td>
                             <td>
                                 <a href="@Url.Action("Details", new { id = user.khach_hang_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
                                     <i class="fas fa-eye"></i> Xem
@@ -69,6 +125,100 @@
     else
     {
         <p style="text-align: center; color: #999; padding: 2rem;">Không có người dùng nào.</p>
+    }
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <div class="pagination">
+            <!-- First Page -->
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = 1 })">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+            }
+
+            <!-- Previous Page -->
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = currentPage - 1 })">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-left"></i></span>
+            }
+
+            <!-- Page Numbers -->
+            @{
+                int startPage = Math.Max(1, currentPage - 2);
+                int endPage = Math.Min(totalPages, currentPage + 2);
+
+                if (startPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = 1 })">1</a>
+                    if (startPage > 2)
+                    {
+                        <span>...</span>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    if (i == currentPage)
+                    {
+                        <span class="active">@i</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = i })">@i</a>
+                    }
+                }
+
+                if (endPage < totalPages)
+                {
+                    if (endPage < totalPages - 1)
+                    {
+                        <span>...</span>
+                    }
+                    <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = totalPages })">@totalPages</a>
+                }
+            }
+
+            <!-- Next Page -->
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = currentPage + 1 })">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-right"></i></span>
+            }
+
+            <!-- Last Page -->
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("Index", new { searchTerm = ViewBag.SearchTerm, page = totalPages })">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+            }
+        </div>
+
+        <div class="pagination-info">
+            Hiển thị @((currentPage - 1) * 10 + 1) - @Math.Min(currentPage * 10, totalItems) trong tổng số @totalItems người dùng
+        </div>
     }
 </div>
 

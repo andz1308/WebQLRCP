@@ -87,7 +87,7 @@
                         <label for="loai_giam_gia">
                             <i class="fas fa-calculator"></i> Loại Giảm Giá <span class="required">*</span>
                         </label>
-                        <select id="loai_giam_gia" name="loai_giam_gia" class="form-control">
+                        <select id="loai_giam_gia" name="loai_giam_gia" class="form-control" onchange="validateDiscountValue()">
                             <option value="%">Theo Phần Trăm (%)</option>
                             <option value="VND">Theo Tiền Mặt (VND)</option>
                         </select>
@@ -98,8 +98,14 @@
                             <i class="fas fa-dollar-sign"></i> Giá Trị Giảm <span class="required">*</span>
                         </label>
                         <input type="number" id="gia_tri_giam" name="gia_tri_giam" value="@initGiaTri"
-                               placeholder="0" min="0" step="0.01" required class="form-control" />
-                        <small class="form-hint">Nhập số tiền hoặc phần trăm giảm</small>
+                               placeholder="0" min="0" step="0.01" required class="form-control"
+                               oninput="validateDiscountValue()"
+                               onkeydown="preventInvalidChars(event)" />
+
+                        <small class="form-hint" id="discount-hint">Nhập số phần trăm giảm (tối đa 100)</small>
+                        <small id="error-msg" style="color: #dc3545; display: none; margin-top: 5px; font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle"></i> Giá trị phần trăm không được quá 100!
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -107,7 +113,8 @@
                             <i class="fas fa-box"></i> Số Lượng Mã <span class="required">*</span>
                         </label>
                         <input type="number" id="so_luong_con_lai" name="so_luong_con_lai" value="@initSoLuong"
-                               placeholder="100" min="1" required class="form-control" />
+                               placeholder="100" min="1" required class="form-control"
+                               onkeydown="preventInvalidChars(event)" />
                     </div>
                 </div>
             </div>
@@ -647,4 +654,58 @@
 
     // Khởi chạy 1 lần để đảm bảo UI đúng
     toggleFoodSelection();
+</script>
+
+<script>
+    // 1. Hàm chặn các ký tự lạ (e, dấu trừ, dấu cộng) ngay khi nhấn phím
+    function preventInvalidChars(e) {
+        // Mã phím cho: e, E, -, +
+        const invalidChars = ["e", "E", "-", "+"];
+        if (invalidChars.includes(e.key)) {
+            e.preventDefault();
+        }
+    }
+
+    // 2. Hàm kiểm tra logic giá trị
+    function validateDiscountValue() {
+        const typeSelect = document.getElementById("loai_giam_gia");
+        const valueInput = document.getElementById("gia_tri_giam");
+        const hintText = document.getElementById("discount-hint");
+        const errorMsg = document.getElementById("error-msg");
+
+        let value = parseFloat(valueInput.value);
+        const type = typeSelect.value;
+
+        // Cập nhật gợi ý (Hint)
+        if (type === '%') {
+            hintText.innerText = "Nhập số phần trăm giảm (0 - 100%)";
+
+            // LOGIC QUAN TRỌNG: Kiểm tra giới hạn 100
+            if (value > 100) {
+                // Cách 1: Tự động sửa về 100 (Hard limit)
+                valueInput.value = 100;
+
+                // Cách 2: Hiển thị lỗi (Optional - nếu muốn UI mượt thì dùng Cách 1)
+                errorMsg.style.display = "block";
+
+                // Tự động ẩn lỗi sau 2 giây
+                setTimeout(() => { errorMsg.style.display = "none"; }, 2000);
+            } else {
+                errorMsg.style.display = "none";
+            }
+        } else {
+            hintText.innerText = "Nhập số tiền giảm (VND)";
+            errorMsg.style.display = "none";
+        }
+
+        // Chặn số âm (phòng trường hợp copy paste)
+        if (value < 0) {
+            valueInput.value = 0;
+        }
+    }
+
+    // Gọi hàm 1 lần khi trang vừa load để setup đúng trạng thái
+    document.addEventListener("DOMContentLoaded", function () {
+        validateDiscountValue();
+    });
 </script>

@@ -1,0 +1,564 @@
+﻿@model IEnumerable<WebCinema.Models.Danh_Gia>
+
+@{
+    ViewBag.Title = "Quản Lý Đánh Giá";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalItems = ViewBag.TotalItems ?? 0;
+    int? selectedRating = ViewBag.SelectedRating;
+
+}
+
+<style>
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+        border-bottom: 3px solid #ff6b35;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .card-title {
+        color: #ff6b35;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .filter-container {
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        border: 2px solid #ff9966;
+    }
+
+    .star-filter {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .star-filter-btn {
+        padding: 0.6rem 1.2rem;
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+        .star-filter-btn:hover {
+            background: #fff3cd;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 193, 7, 0.3);
+        }
+
+        .star-filter-btn.active {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            color: white;
+            border-color: #ff6b35;
+        }
+
+    .review-card {
+        border: 2px solid #ffe8dc;
+        border-radius: 12px;
+        padding: 1.5rem;
+        background: white;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+        .review-card:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.15);
+            border-color: #ff9966;
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+        .pagination a,
+        .pagination span {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ffd4b8;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+            .pagination a:hover {
+                background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+                color: white;
+                border-color: #ff6b35;
+                transform: translateY(-2px);
+            }
+
+        .pagination .active {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            color: white;
+            border-color: #ff6b35;
+            font-weight: 700;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+    .pagination-info {
+        text-align: center;
+        color: #ff6b35;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+        border: none;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+        }
+</style>
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-star"></i> Quản Lý Đánh Giá & Bình Luận</h2>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-container">
+        @using (Html.BeginForm("Index", "ReviewManagement", FormMethod.Get))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="color: #ff6b35; font-weight: 600;">
+                        <i class="fas fa-film"></i> Lọc theo phim
+                    </label>
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- Tất cả phim --", new { @class = "form-control" })
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="color: #ff6b35; font-weight: 600;">
+                        <i class="fas fa-star"></i> Lọc theo số sao
+                    </label>
+                    <select name="rating" class="form-control">
+                        <option value="">-- Tất cả đánh giá --</option>
+                        <option value="5" @(selectedRating == 5 ? "selected" : "")>⭐⭐⭐⭐⭐ (5 sao)</option>
+                        <option value="4" @(selectedRating == 4 ? "selected" : "")>⭐⭐⭐⭐ (4 sao)</option>
+                        <option value="3" @(selectedRating == 3 ? "selected" : "")>⭐⭐⭐ (3 sao)</option>
+                        <option value="2" @(selectedRating == 2 ? "selected" : "")>⭐⭐ (2 sao)</option>
+                        <option value="1" @(selectedRating == 1 ? "selected" : "")>⭐ (1 sao)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+
+    @{
+        var allReviews = Model != null ? Model.ToList() : new List<WebCinema.Models.Danh_Gia>();
+
+        // Get all reviews from ViewBag for reply mapping
+        var allReviewsForMap = ViewBag.AllReviewsForReplies as List<WebCinema.Models.Danh_Gia> ?? new List<WebCinema.Models.Danh_Gia>();
+
+        // Function to check if a review is an admin reply
+        Func<WebCinema.Models.Danh_Gia, bool> isAdminReply = r =>
+            r.noi_dung != null &&
+            (r.noi_dung.Contains("[AdminReply]") ||
+             r.noi_dung.Contains("[Phản hồi từ Admin]") ||
+             r.noi_dung.Contains("[ReplyTo:"));
+
+        // Function to extract parent ID from reply
+        Func<WebCinema.Models.Danh_Gia, int?> getParentId = r =>
+        {
+            if (r.noi_dung == null) return null;
+
+            int parentId;
+
+            // Try to extract ParentID from [ParentID:123] format
+            var match = System.Text.RegularExpressions.Regex.Match(r.noi_dung, @"\[ParentID:(\d+)\]");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out parentId))
+            {
+                return parentId;
+            }
+
+            // Try old format [ReplyTo:123]
+            match = System.Text.RegularExpressions.Regex.Match(r.noi_dung, @"\[ReplyTo:(\d+)\]");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out parentId))
+            {
+                return parentId;
+            }
+
+            return null;
+        };
+
+        // Function to clean reply content
+        Func<string, string> cleanReplyContent = content =>
+        {
+            if (string.IsNullOrEmpty(content)) return "";
+            return System.Text.RegularExpressions.Regex.Replace(content,
+                @"\[AdminReply\]|\[ParentID:\d+\]|\[Phản hồi từ Admin\]|\[ReplyTo:\d+\]", "").Trim();
+        };
+
+        // Build parent-child relationship map
+        var repliesMap = new Dictionary<int, List<WebCinema.Models.Danh_Gia>>();
+        var parentReviews = allReviews.Where(r => !isAdminReply(r)).ToList();
+
+        foreach (var reply in allReviewsForMap.Where(r => isAdminReply(r)))
+        {
+            var parentId = getParentId(reply);
+            if (parentId.HasValue && parentReviews.Any(p => p.Danh_Gia_id == parentId.Value))
+            {
+                if (!repliesMap.ContainsKey(parentId.Value))
+                {
+                    repliesMap[parentId.Value] = new List<WebCinema.Models.Danh_Gia>();
+                }
+                repliesMap[parentId.Value].Add(reply);
+            }
+        }
+
+        parentReviews = parentReviews.OrderByDescending(p => p.ngay_Danh_Gia).ToList();
+    }
+
+    @if (parentReviews != null && parentReviews.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            @foreach (var review in parentReviews)
+            {
+                var stars = review.diem_rating ?? 0;
+                var replies = repliesMap.ContainsKey(review.Danh_Gia_id)
+                    ? repliesMap[review.Danh_Gia_id].OrderBy(r => r.ngay_Danh_Gia).ToList()
+                    : new List<WebCinema.Models.Danh_Gia>();
+
+                <div class="review-card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    @if (review.Khach_Hang != null)
+                                    {
+                                        @review.Khach_Hang.ho_ten.Substring(0, 1).ToUpper()
+                                    }
+                                    else
+                                    {
+                                        <text>?</text>
+                                    }
+                                </div>
+                                <div>
+                                    <strong style="color: #2c3e50;">
+                                        @(review.Khach_Hang != null ? review.Khach_Hang.ho_ten : "Khách hàng")
+                                    </strong>
+                                    <div style="color: #999; font-size: 0.85rem;">
+                                        @(review.ngay_Danh_Gia.HasValue ? review.ngay_Danh_Gia.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin: 1rem 0;">
+                                <strong style="color: #ff6b35; font-size: 1.1rem;">
+                                    <i class="fas fa-film"></i> @(review.Phim != null ? review.Phim.ten_phim : "N/A")
+                                </strong>
+                            </div>
+
+                            @if (review.diem_rating.HasValue)
+                            {
+                                <div style="color: #ffc107; font-size: 1.2rem; margin-bottom: 0.5rem;">
+                                    @for (int i = 0; i < stars; i++)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    @for (int i = stars; i < 5; i++)
+                                    {
+                                        <i class="far fa-star"></i>
+                                    }
+                                    <span style="color: #666; font-size: 0.9rem; margin-left: 0.5rem;">(@stars/5)</span>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(review.noi_dung))
+                            {
+                                <p style="color: #555; margin-top: 1rem; padding: 1rem; background: #fff5f0; border-radius: 8px; border-left: 3px solid #ff6b35;">
+                                    @review.noi_dung
+                                </p>
+                            }
+
+                            @if (replies != null && replies.Any())
+                            {
+                                <div style="margin-top: 1rem; margin-left: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                                    @foreach (var reply in replies)
+                                    {
+                                        var cleanContent = cleanReplyContent(reply.noi_dung);
+                                        <div style="padding: 1rem; background: #f0f8ff; border-left: 3px solid #3498db; border-radius: 8px; position: relative;">
+                                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                                                <i class="fas fa-shield-alt" style="color: #3498db;"></i>
+                                                <strong style="color: #3498db;">Quản trị viên</strong>
+                                                <span style="color: #999; font-size: 0.85rem; margin-left: auto;">@(reply.ngay_Danh_Gia.HasValue ? reply.ngay_Danh_Gia.Value.ToString("dd/MM/yyyy HH:mm") : "")</span>
+                                            </div>
+                                            <p style="color: #555; margin: 0; margin-bottom: 0.5rem;">@cleanContent</p>
+                                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                                <button onclick="showEditReplyModal(@reply.Danh_Gia_id, '@Html.Raw(cleanContent.Replace("'", "\\'"))')" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </button>
+                                                <button onclick="deleteReview(@reply.Danh_Gia_id)" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                            <button onclick="showReplyModal(@review.Danh_Gia_id, '@Html.Raw((review.Khach_Hang != null ? review.Khach_Hang.ho_ten : "Khách hàng").Replace("'", "\\'"))')" class="btn btn-secondary" style="padding: 0.6rem 1rem;">
+                                <i class="fas fa-reply"></i> Phản hồi
+                            </button>
+                            <button onclick="deleteReview(@review.Danh_Gia_id)" class="btn btn-danger" style="padding: 0.6rem 1rem;">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có đánh giá nào.</p>
+    }
+
+    <!-- Pagination -->
+    @if (totalPages > 1)
+    {
+        <div class="pagination">
+            <!-- First Page -->
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = 1 })">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-double-left"></i></span>
+            }
+
+            <!-- Previous Page -->
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = currentPage - 1 })">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-left"></i></span>
+            }
+
+            <!-- Page Numbers -->
+            @{
+                int startPage = Math.Max(1, currentPage - 2);
+                int endPage = Math.Min(totalPages, currentPage + 2);
+
+                if (startPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = 1 })">1</a>
+                    if (startPage > 2)
+                    {
+                        <span>...</span>
+                    }
+                }
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    if (i == currentPage)
+                    {
+                        <span class="active">@i</span>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = i })">@i</a>
+                    }
+                }
+
+                if (endPage < totalPages)
+                {
+                    if (endPage < totalPages - 1)
+                    {
+                        <span>...</span>
+                    }
+                    <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = totalPages })">@totalPages</a>
+                }
+            }
+
+            <!-- Next Page -->
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = currentPage + 1 })">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-right"></i></span>
+            }
+
+            <!-- Last Page -->
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("Index", new { movieId = ViewBag.SelectedMovie, rating = selectedRating, page = totalPages })">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            }
+            else
+            {
+                <span class="disabled"><i class="fas fa-angle-double-right"></i></span>
+            }
+        </div>
+
+        <div class="pagination-info">
+            Hiển thị @((currentPage - 1) * 10 + 1) - @Math.Min(currentPage * 10, totalItems) trong tổng số @totalItems đánh giá
+        </div>
+    }
+</div>
+
+<!-- Reply Modal -->
+<div id="replyModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 2rem; border-radius: 12px; width: 50%; max-width: 600px; border-top: 4px solid #ff6b35;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: #ff6b35; margin: 0;"><i class="fas fa-reply"></i> <span id="modalTitle">Phản hồi đánh giá</span></h3>
+            <span onclick="closeReplyModal()" style="cursor: pointer; font-size: 1.5rem; color: #999;">&times;</span>
+        </div>
+        <input type="hidden" id="replyReviewId" />
+        <input type="hidden" id="editReplyId" />
+        <p style="margin-bottom: 1rem; color: #666;">Phản hồi cho: <strong id="replyCustomerName" style="color: #ff6b35;"></strong></p>
+        <div class="form-group">
+            <label class="form-label" style="font-weight: 600; color: #333;">Nội dung phản hồi *</label>
+            <textarea id="replyContent" class="form-control" rows="5" placeholder="Nhập nội dung phản hồi của bạn..." style="border: 2px solid #ffd4b8;"></textarea>
+        </div>
+        <div style="text-align: right; margin-top: 1.5rem;">
+            <button onclick="closeReplyModal()" class="btn btn-secondary" style="margin-right: 0.5rem;">Hủy</button>
+            <button onclick="submitReply()" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Gửi phản hồi
+            </button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function showReplyModal(reviewId, customerName) {
+            document.getElementById('replyReviewId').value = reviewId;
+            document.getElementById('editReplyId').value = '';
+            document.getElementById('replyCustomerName').innerText = customerName;
+            document.getElementById('replyContent').value = '';
+            document.getElementById('modalTitle').innerText = 'Phản hồi đánh giá';
+            document.getElementById('replyModal').style.display = 'block';
+        }
+
+        function showEditReplyModal(replyId, content) {
+            document.getElementById('editReplyId').value = replyId;
+            document.getElementById('replyReviewId').value = '';
+            document.getElementById('replyCustomerName').innerText = 'Chỉnh sửa phản hồi';
+            document.getElementById('replyContent').value = content;
+            document.getElementById('modalTitle').innerText = 'Chỉnh sửa phản hồi';
+            document.getElementById('replyModal').style.display = 'block';
+        }
+
+        function closeReplyModal() {
+            document.getElementById('replyModal').style.display = 'none';
+            document.getElementById('replyReviewId').value = '';
+            document.getElementById('editReplyId').value = '';
+        }
+
+        function submitReply() {
+            var reviewId = document.getElementById('replyReviewId').value;
+            var replyId = document.getElementById('editReplyId').value;
+            var content = document.getElementById('replyContent').value;
+
+            if (!content.trim()) {
+                alert('Vui lòng nhập nội dung phản hồi.');
+                return;
+            }
+
+            var url = replyId ? '@Url.Action("UpdateReply")' : '@Url.Action("Reply")';
+            var data = replyId ? { replyId: replyId, replyContent: content } : { reviewId: reviewId, replyContent: content };
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    if (response.success) {
+                        alert('✅ ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Đã có lỗi xảy ra: ' + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('❌ Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+                }
+            });
+        }
+
+        function deleteReview(reviewId) {
+            if (confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: reviewId },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('✅ Xóa đánh giá thành công!');
+                            location.reload();
+                        } else {
+                            alert('❌ Đã có lỗi xảy ra: ' + response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('❌ Đã có lỗi xảy ra. Vui lòng thử lại sau.');
+                    }
+                });
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('replyModal');
+            if (event.target == modal) {
+                closeReplyModal();
+            }
+        }
+    </script>
+}
+
+

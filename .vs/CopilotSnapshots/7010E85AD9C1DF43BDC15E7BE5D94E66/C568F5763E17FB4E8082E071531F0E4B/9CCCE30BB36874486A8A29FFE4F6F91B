@@ -1,0 +1,512 @@
+﻿@model WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai
+@using WebCinema.Areas.Admin.Controllers
+
+@{
+    ViewBag.Title = "Chi Tiết Phiếu Đề Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+
+    var details = ViewBag.Details as IEnumerable<PromotionDetailViewModel>;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-file-alt"></i> Chi Tiết Phiếu #DX-@Model.de_xuat_id</h1>
+    <div class="header-actions">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-info-circle"></i> Thông Tin Chung</h2>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div class="info-row">
+                    <strong><i class="far fa-calendar-alt"></i> Ngày tạo:</strong>
+                    <span>@Model.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="info-row">
+                    <strong><i class="fas fa-flag"></i> Trạng thái:</strong>
+                    <span>
+                        @if (Model.trang_thai == "Chờ duyệt")
+                        {
+                            <span class="badge badge-warning">
+                                <i class="fas fa-clock"></i> Chờ duyệt
+                            </span>
+                        }
+                        else if (Model.trang_thai == "Đã duyệt")
+                        {
+                            <span class="badge badge-success">
+                                <i class="fas fa-check-circle"></i> Đã duyệt
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-danger">
+                                <i class="fas fa-times-circle"></i> Từ chối
+                            </span>
+                        }
+                    </span>
+                </div>
+
+                <div class="discount-highlight">
+                    <div class="discount-header">
+                        <i class="fas fa-percentage"></i> Mức Giảm Đề Xuất
+                    </div>
+                    <div class="discount-value">
+                        -@Model.muc_giam_gia%
+                    </div>
+                    <div class="discount-note">
+                        <i class="fas fa-info-circle"></i> Áp dụng cho tất cả các món trong danh sách
+                        @if ((Model.so_luong_ton ?? 0) > 0)
+                        {
+                            <div style="margin-top: 0.5rem;">
+                                <i class="fas fa-filter"></i> Điều kiện lọc: Tồn kho > @Model.so_luong_ton
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <label class="info-label">
+                        <i class="fas fa-comment-dots"></i> Lý do:
+                    </label>
+                    <div class="info-content">@Model.ly_do</div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ghi_chu_quan_ly))
+                {
+                    <div class="info-section">
+                        <label class="info-label" style="color: #17a2b8;">
+                            <i class="fas fa-user-tie"></i> Phản hồi từ Quản lý:
+                        </label>
+                        <div class="feedback-content">
+                            @Model.ghi_chu_quan_ly
+                        </div>
+                    </div>
+                }
+
+                @if (Model.ngay_duyet.HasValue)
+                {
+                    <div style="text-align: right; color: #999; font-size: 0.85rem; margin-top: 1rem;">
+                        <i class="far fa-clock"></i> Duyệt ngày: @Model.ngay_duyet.Value.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Sản Phẩm</h2>
+                <span class="badge badge-info">@(details != null ? details.Count() : 0) món</span>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Tên Món Ăn</th>
+                        <th style="width: 120px;">Loại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (details != null && details.Any())
+                    {
+                        int i = 1;
+                        foreach (var item in details)
+                        {
+                            <tr>
+                                <td style="text-align: center;"><strong>@(i++)</strong></td>
+                                <td>
+                                    <strong style="color: #333; font-size: 1.05rem;">@item.da.ten_san_pham</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">@item.da.loai</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 2rem; color: #999;">
+                                <i class="fas fa-box-open" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; display: block;"></i>
+                                <p>Không có sản phẩm nào</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ============================
+       HEADER & LAYOUT
+       ============================ */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .content-header h1 {
+            font-size: 2rem;
+            color: #ff6b35;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+            .content-header h1 i {
+                color: #ff8555;
+            }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* ============================
+       GRID
+       ============================ */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -15px;
+        margin-right: -15px;
+    }
+
+    .col-md-5 {
+        flex: 0 0 41.666667%;
+        max-width: 41.666667%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .col-md-7 {
+        flex: 0 0 58.333333%;
+        max-width: 58.333333%;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* ============================
+       CARDS
+       ============================ */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    }
+
+    .card-title {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ============================
+       INFO SECTIONS
+       ============================ */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: #fffaf8;
+        border-radius: 6px;
+        border-left: 3px solid #ff6b35;
+    }
+
+        .info-row strong {
+            color: #ff6b35;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-row i {
+            color: #ff8555;
+        }
+
+    .discount-highlight {
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        border: 2px solid #ff6b35;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+    }
+
+    .discount-header {
+        color: #ff6b35;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .discount-value {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #ff6b35;
+        line-height: 1;
+        margin: 0.5rem 0;
+        text-shadow: 2px 2px 4px rgba(255, 107, 53, 0.2);
+    }
+
+    .discount-note {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #ff8555;
+    }
+
+        .discount-note i {
+            color: #ff8555;
+        }
+
+    .info-section {
+        margin-top: 1.5rem;
+    }
+
+    .info-label {
+        display: block;
+        font-weight: 600;
+        color: #ff6b35;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+        .info-label i {
+            color: #ff8555;
+        }
+
+    .info-content {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ffe5dc;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .feedback-content {
+        background: linear-gradient(135deg, #e8f8fc 0%, #d4f1f9 100%);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 2px solid #17a2b8;
+        color: #0c5460;
+        line-height: 1.6;
+        font-weight: 500;
+    }
+
+    /* ============================
+       BUTTONS
+       ============================ */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+        }
+
+    /* ============================
+       TABLE
+       ============================ */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #ff6b35;
+            border-bottom: 2px solid #ff6b35;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ffe5dc;
+            color: #333;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fffaf8;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+        }
+
+    /* ============================
+       BADGES
+       ============================ */
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, #ffb84d 0%, #ffc870 100%);
+        color: #333;
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        color: white;
+    }
+
+    .badge-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #ec7063 100%);
+        color: white;
+    }
+
+    .badge-secondary {
+        background-color: #ffb366;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(255, 179, 102, 0.3);
+    }
+
+    .badge-info {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    /* ============================
+       RESPONSIVE
+       ============================ */
+    @media (max-width: 768px) {
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .col-md-5,
+        .col-md-7 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .discount-value {
+            font-size: 2rem;
+        }
+
+        .data-table {
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    /* ============================
+       ACCENT & HIGHLIGHTS
+       ============================ */
+    ::selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    ::-moz-selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #fff5f0;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 5px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+        }
+</style>

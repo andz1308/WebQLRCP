@@ -115,8 +115,16 @@
                             <span class="required">*</span>
                         </label>
                         <input type="number" id="gia_tri_giam" name="gia_tri_giam"
-                               value="@Model.gia_tri_giam.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" min="0" step="1" required class="form-control" />
+                               value="@Model.gia_tri_giam.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)"
+                               min="0" step="0.01" required class="form-control"
+                               oninput="validateDiscountValue()"
+                               onkeydown="preventInvalidChars(event)" />
+
                         <small class="form-hint">Nhập số tiền hoặc phần trăm giảm</small>
+
+                        <small id="error-msg" style="color: #dc3545; display: none; margin-top: 5px; font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle"></i> Giá trị phần trăm không được quá 100!
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -125,7 +133,8 @@
                             <span class="required">*</span>
                         </label>
                         <input type="number" id="so_luong_con_lai" name="so_luong_con_lai"
-                               value="@soLuongConLai" min="0" required class="form-control" />
+                               value="@soLuongConLai" min="0" required class="form-control"
+                               onkeydown="preventInvalidChars(event)" />
                         <small class="form-hint">Cập nhật số lượng mã còn lại</small>
                     </div>
                 </div>
@@ -702,6 +711,7 @@
 </style>
 
 <script>
+    // 1. Logic ẩn hiện danh sách món ăn (Code cũ của bạn)
     function toggleFoodSelection() {
         var radios = document.querySelectorAll('input[name="pham_vi_ap_dung"]');
         var selectedValue = null;
@@ -713,7 +723,6 @@
         });
 
         var area = document.getElementById('foodSelectionArea');
-
         if (selectedValue === '1') {
             area.style.display = 'block';
         } else {
@@ -730,13 +739,55 @@
         }
     }
 
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        toggleFoodSelection();
+    // --- 2. LOGIC MỚI: VALIDATE SỐ & CHẶN KÝ TỰ ---
 
-        // Update all checkbox styles based on checked state
+    // Chặn nhập e, +, -
+    function preventInvalidChars(e) {
+        const invalidChars = ["e", "E", "-", "+"];
+        if (invalidChars.includes(e.key)) {
+            e.preventDefault();
+        }
+    }
+
+    // Kiểm tra giá trị giảm giá
+    function validateDiscountValue() {
+        // Dù select bị disabled, JS vẫn lấy được value của nó
+        const typeSelect = document.getElementById("loai_giam_gia");
+        const valueInput = document.getElementById("gia_tri_giam");
+        const errorMsg = document.getElementById("error-msg");
+
+        if (!valueInput || !typeSelect) return;
+
+        let value = parseFloat(valueInput.value);
+        const type = typeSelect.value; // Lấy giá trị % hoặc VND từ ô bị khóa
+
+        // Nếu loại là % và giá trị > 100
+        if (type === '%' && value > 100) {
+            valueInput.value = 100; // Tự động sửa về 100
+
+            // Hiện thông báo lỗi
+            if (errorMsg) {
+                errorMsg.style.display = "block";
+                // Ẩn sau 2 giây
+                setTimeout(() => { errorMsg.style.display = "none"; }, 2000);
+            }
+        }
+
+        // Chặn số âm
+        if (value < 0) {
+            valueInput.value = 0;
+        }
+    }
+
+    // --- KHỞI TẠO KHI LOAD TRANG ---
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Setup phần món ăn
+        toggleFoodSelection();
         document.querySelectorAll('.food-checkbox input[type="checkbox"]').forEach(function (checkbox) {
             updateCheckboxStyle(checkbox);
         });
+
+        // 2. Setup phần validate (chạy 1 lần để đảm bảo dữ liệu ban đầu đúng)
+        validateDiscountValue();
     });
 </script>

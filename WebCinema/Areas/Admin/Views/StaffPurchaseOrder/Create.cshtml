@@ -7,72 +7,100 @@
 
 <div class="content-header">
     <h1><i class="fas fa-cart-plus"></i> Tạo Phiếu Nhập Hàng</h1>
+    <div class="header-actions">
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
 </div>
 
-<div class="content-card" style="padding: 20px;">
-
-    <div class="form-group">
-        <label>Ghi chú nhập hàng:</label>
-        <textarea id="txtNote" class="form-control" rows="2" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-file-alt"></i> Thông Tin Phiếu Nhập</h2>
     </div>
-
-    <div class="row" style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-        <div class="col-md-6">
-            <div class="form-group">
-                <label>Nhà Cung Cấp (*):</label>
-                <select id="ddlSupplier" class="form-control">
-                    <option value="">-- Chọn nhà cung cấp --</option>
-                    @if (suppliers != null)
-                    {
-                        foreach (var ncc in suppliers)
-                        {
-                            <option value="@ncc.id">@ncc.ten_nha_cung_cap</option>
-}
-                    }
-                </select>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <label>Chọn món ăn:</label>
-            <select id="ddlFood" class="form-control">
-                @foreach (var item in listFood)
+    <div style="padding: 1.5rem;">
+        <div class="form-group">
+            <label class="form-label">Nhà Cung Cấp (*):</label>
+            <select id="ddlSupplier" class="form-control">
+                <option value="">-- Chọn nhà cung cấp --</option>
+                @if (suppliers != null)
                 {
-                    <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
-                        @item.ten_san_pham (@item.loai)
-                    </option>
+                    foreach (var ncc in suppliers)
+                    {
+                        <option value="@ncc.id">@ncc.ten_nha_cung_cap</option>
+                    }
                 }
             </select>
         </div>
-        <div class="col-md-3">
-            <label>Số lượng:</label>
-            <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
+
+        <div class="form-group">
+            <label class="form-label">Ghi chú nhập hàng:</label>
+            <textarea id="txtNote" class="form-control" rows="3" placeholder="Ví dụ: Nhập hàng bổ sung cho cuối tuần..."></textarea>
         </div>
-        <div class="col-md-4" style="display: flex; align-items: flex-end;">
+    </div>
+</div>
+
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-plus-circle"></i> Thêm Sản Phẩm</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 1rem; align-items: end;">
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Chọn món ăn:</label>
+                <select id="ddlFood" class="form-control">
+                    @foreach (var item in listFood)
+                    {
+                        <option value="@item.Do_An_id" data-name="@item.ten_san_pham" data-unit="@item.loai">
+                            @item.ten_san_pham (@item.loai)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label class="form-label">Số lượng:</label>
+                <input type="number" id="numQuantity" class="form-control" value="10" min="1" />
+            </div>
             <button class="btn btn-success" onclick="addItem()">
-                <i class="fas fa-plus"></i> Thêm vào danh sách
+                <i class="fas fa-plus"></i> Thêm
             </button>
         </div>
     </div>
+</div>
 
-    <table class="table table-bordered" id="tblImport">
+<div class="content-card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Danh Sách Nhập Hàng</h2>
+        <span class="badge badge-info" id="itemCount">0 mặt hàng</span>
+    </div>
+    <table class="data-table" id="tblImport">
         <thead>
             <tr>
-                <th>Tên món</th>
+                <th style="width: 50px;">STT</th>
+                <th>Tên Sản Phẩm</th>
                 <th>Loại</th>
-                <th>Số lượng nhập</th>
-                <th>Thao tác</th>
+                <th style="width: 150px;">Số Lượng</th>
+                <th style="width: 100px;">Thao Tác</th>
             </tr>
         </thead>
         <tbody>
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 3rem; color: #999;">
+                    <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>Chưa có món nào được chọn</p>
+                </td>
+            </tr>
         </tbody>
     </table>
+</div>
 
-    <div style="text-align: right; margin-top: 20px;">
-        <a href="@Url.Action("Index")" class="btn btn-secondary">Hủy</a>
-        <button class="btn btn-primary" onclick="submitOrder()">
-            <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
-        </button>
-    </div>
+<div style="text-align: right; margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Hủy
+    </a>
+    <button class="btn btn-primary" onclick="submitOrder()">
+        <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+    </button>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -115,18 +143,24 @@
     function renderTable() {
         var html = '';
         if (importList.length === 0) {
-            html = '<tr><td colspan="4" class="text-center">Chưa có món nào được chọn</td></tr>';
+            html = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: #999;"><i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; display: block;"></i><p>Chưa có món nào được chọn</p></td></tr>';
         } else {
             for (var i = 0; i < importList.length; i++) {
                 html += `<tr>
-                            <td>${importList[i].Name}</td>
-                            <td>${importList[i].Unit}</td>
-                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" style="width: 80px;" /></td>
-                            <td><button class="btn btn-danger btn-sm" onclick="removeItem(${i})"><i class="fas fa-trash"></i></button></td>
+                            <td><strong>${i + 1}</strong></td>
+                            <td><strong style="color: #333; font-size: 1.05rem;">${importList[i].Name}</strong></td>
+                            <td><span class="badge badge-secondary">${importList[i].Unit}</span></td>
+                            <td><input type="number" min="1" value="${importList[i].SoLuong}" onchange="updateQty(${i}, this.value)" class="form-control" style="width: 100px; display: inline-block;" /></td>
+                            <td style="text-align: center;">
+                                <button class="btn btn-sm btn-danger" onclick="removeItem(${i})" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                          </tr>`;
             }
         }
         $('#tblImport tbody').html(html);
+        $('#itemCount').text(importList.length + ' mặt hàng');
     }
 
     function updateQty(index, newVal) {
@@ -139,32 +173,7 @@
             return;
         }
 
-        if (!confirm("Bạn có chắc chắn muốn gửi yêu cầu nhập hàng này?")) return;
-
-        var note = $('#txtNote').val();
-
-        $.ajax({
-            url: '@Url.Action("Create")',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ items: importList, ghiChu: note }),
-            success: function (res) {
-                if (res.success) {
-                    alert(res.message);
-                    window.location.href = '@Url.Action("Index")';
-                } else {
-                    alert(res.message);
-                }
-            }
-        });
-    }
-    function submitOrder() {
-        if (importList.length === 0) {
-            alert("Vui lòng chọn ít nhất 1 món ăn.");
-            return;
-        }
-
-        // 🆕 Validate Nhà Cung Cấp
+        // Validate Nhà Cung Cấp
         var supplierId = $('#ddlSupplier').val();
         if (!supplierId) {
             alert("Vui lòng chọn Nhà cung cấp.");
@@ -182,7 +191,7 @@
             data: JSON.stringify({
                 items: importList,
                 ghiChu: note,
-                supplierId: supplierId // Gửi ID nhà cung cấp về Server
+                supplierId: supplierId
             }),
             success: function (res) {
                 if (res.success) {
@@ -194,39 +203,347 @@
             }
         });
     }
-    // Thêm vào cuối phần <script> trong Create.cshtml
 
-// Thêm vào cuối thẻ <script> trong file StaffPurchaseOrder/Create.cshtml
+    $(document).ready(function() {
+        // Lấy dữ liệu tự động từ Controller (nếu có)
+        var autoData = @Html.Raw(ViewBag.AutoImportList ?? "[]");
 
-$(document).ready(function() {
-    // 1. Lấy dữ liệu tự động từ Controller (nếu có)
+        // Nếu có dữ liệu -> Đổ vào bảng ngay
+        if (autoData && autoData.length > 0) {
+            importList = [];
 
-    var autoData = @Html.Raw(ViewBag.AutoImportList ?? "[]");
-
-    // 2. Nếu có dữ liệu -> Đổ vào bảng ngay
-    if (autoData && autoData.length > 0) {
-
-        // Xóa danh sách cũ (nếu có)
-        importList = [];
-
-        // Duyệt qua từng món và thêm vào mảng quản lý
-        autoData.forEach(function(item) {
-            importList.push({
-                Id: item.Id,
-                Name: item.Name,
-                Unit: item.Unit,
-                SoLuong: item.SoLuong // Mặc định 50 (hoặc số bạn set trong Controller)
+            autoData.forEach(function(item) {
+                importList.push({
+                    Id: item.Id,
+                    Name: item.Name,
+                    Unit: item.Unit,
+                    SoLuong: item.SoLuong
+                });
             });
-        });
 
-        // 3. Vẽ lại bảng HTML
-        renderTable();
+            renderTable();
 
-        // 4. Thông báo nhẹ
-        var msg = '@Html.Raw(ViewBag.AutoMessage)';
-        if(msg) alert(msg);
-    }
-});
+            var msg = '@Html.Raw(ViewBag.AutoMessage)';
+            if(msg) alert(msg);
+        }
+    });
+
     // Init
     renderTable();
 </script>
+
+<style>
+    /* ============================
+       HEADER & LAYOUT
+       ============================ */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .content-header h1 {
+            font-size: 2rem;
+            color: black;
+            display: flex;
+            align-items: center;    
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+            .content-header h1 i {
+                color: black;
+            }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    /* ============================
+       CARDS
+       ============================ */
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 107, 53, 0.1);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    }
+
+    .card-title {
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ============================
+       FORMS
+       ============================ */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #ff6b35;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        border: 2px solid #ffe5dc;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+            background-color: #fffaf8;
+        }
+
+        .form-control:hover {
+            border-color: #ff8555;
+        }
+
+    /* ============================
+       BUTTONS
+       ============================ */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+    .btn-success {
+        background: linear-gradient(135deg, #ff9f55 0%, #ffb366 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 159, 85, 0.3);
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 159, 85, 0.4);
+            background: linear-gradient(135deg, #ff8c3d 0%, #ffa354 100%);
+        }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+        }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #ec7063 100%);
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    /* ============================
+       TABLE
+       ============================ */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        }
+
+        .data-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #ff6b35;
+            border-bottom: 2px solid #ff6b35;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #ffe5dc;
+            color: #333;
+        }
+
+        .data-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background: #fffaf8;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+        }
+
+        .data-table input.form-control {
+            border: 1px solid #ffe5dc;
+            padding: 0.4rem 0.6rem;
+        }
+
+            .data-table input.form-control:focus {
+                border-color: #ff6b35;
+                box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.1);
+            }
+
+    /* ============================
+       BADGES
+       ============================ */
+    .badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-secondary {
+        background-color: #ffb366;
+        color: white;
+        box-shadow: 0 2px 4px rgba(255, 179, 102, 0.3);
+    }
+
+    .badge-info {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    .badge-success {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .badge-warning {
+        background-color: #ffb84d;
+        color: #333;
+    }
+
+    .badge-danger {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    /* ============================
+       RESPONSIVE
+       ============================ */
+    @@media (max-width: 768px) {
+        .content-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.5rem;
+        }
+
+        div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        .data-table {
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+
+    /* ============================
+       ACCENT & HIGHLIGHTS
+       ============================ */
+    ::selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    ::-moz-selection {
+        background: #ff6b35;
+        color: white;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #fff5f0;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 5px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff5722 0%, #ff7043 100%);
+        }
+</style>

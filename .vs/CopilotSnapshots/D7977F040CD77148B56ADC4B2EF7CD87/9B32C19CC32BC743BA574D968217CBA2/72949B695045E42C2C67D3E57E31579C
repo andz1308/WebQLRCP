@@ -1,0 +1,276 @@
+﻿@{
+    ViewBag.Title = "Cảnh Báo Tồn Kho";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    var outOfStock = ViewBag.OutOfStock as System.Collections.Generic.List<WebCinema.Models.Do_An>;
+    var lowStock = ViewBag.LowStock as System.Collections.Generic.List<WebCinema.Models.Do_An>;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-exclamation-triangle"></i> Cảnh Báo Tồn Kho</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+    </a>
+</div>
+
+<!-- Statistics -->
+<div class="warning-stats-grid">
+    <div class="warning-stat-card danger">
+        <div class="warning-stat-icon danger">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="warning-stat-content">
+            <div class="warning-stat-number">@(outOfStock != null ? outOfStock.Count : 0)</div>
+            <div class="warning-stat-label">Sản phẩm hết hàng</div>
+        </div>
+    </div>
+
+    <div class="warning-stat-card warning">
+        <div class="warning-stat-icon warning">
+            <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="warning-stat-content">
+            <div class="warning-stat-number">@(lowStock != null ? lowStock.Count : 0)</div>
+            <div class="warning-stat-label">Sản phẩm sắp hết</div>
+        </div>
+    </div>
+</div>
+
+<!-- Out of Stock Items -->
+<div class="content-card" style="margin-bottom: 1.5rem;">
+    @if (outOfStock != null && outOfStock.Any())
+    {
+        <div class="card-header" style="background: linear-gradient(135deg, var(--color-danger) 0%, #c82333 100%); color: white;">
+            <h2 style="color: white; margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: 700;">
+                <i class="fas fa-times-circle"></i> Sản Phẩm Hết Hàng
+            </h2>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Loại</th>
+                        <th>Số Lượng</th>
+                        <th>Giá Vốn</th>
+                        <th>Giá Bán</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in outOfStock)
+                    {
+                        <tr>
+                            <td><strong style="color: var(--color-dark-blue);">@item.ten_san_pham</strong></td>
+                            <td><span class="badge badge-category">@item.loai</span></td>
+                            <td>
+                                <span style="padding: 0.4rem 0.9rem; background: var(--color-danger); color: white; border-radius: 6px; font-weight: 600; font-size: 0.9rem;">
+                                    @(item.so_luong ?? 0)
+                                </span>
+                            </td>
+                            <td><strong style="color: var(--color-text);">@((item.gia_von ?? 0).ToString("N0")) VNĐ</strong></td>
+                            <td><strong style="color: var(--color-success);">@((item.gia ?? 0).ToString("N0")) VNĐ</strong></td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+            <p style="margin: 0; font-weight: 600; font-size: 1rem;">Không có sản phẩm nào hết hàng!</p>
+        </div>
+    }
+</div>
+
+<!-- Low Stock Items -->
+<div class="content-card">
+    @if (lowStock != null && lowStock.Any())
+    {
+        <div class="card-header" style="background: linear-gradient(135deg, var(--color-warning) 0%, #e0a800 100%); color: white;">
+            <h2 style="color: white; margin: 0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.3rem; font-weight: 700;">
+                <i class="fas fa-exclamation-circle"></i> Sản Phẩm Sắp Hết Hàng (Dưới 10)
+            </h2>
+        </div>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tên Sản Phẩm</th>
+                        <th>Loại</th>
+                        <th>Số Lượng</th>
+                        <th>Giá Vốn</th>
+                        <th>Giá Bán</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in lowStock)
+                    {
+                        <tr>
+                            <td><strong style="color: var(--color-dark-blue);">@item.ten_san_pham</strong></td>
+                            <td><span class="badge badge-category">@item.loai</span></td>
+                            <td>
+                                <span style="padding: 0.4rem 0.9rem; background: var(--color-warning); color: #333; border-radius: 6px; font-weight: 600; font-size: 0.9rem;">
+                                    @(item.so_luong ?? 0)
+                                </span>
+                            </td>
+                            <td><strong style="color: var(--color-text);">@((item.gia_von ?? 0).ToString("N0")) VNĐ</strong></td>
+                            <td><strong style="color: var(--color-success);">@((item.gia ?? 0).ToString("N0")) VNĐ</strong></td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = item.Do_An_id })" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+            <p style="margin: 0; font-weight: 600; font-size: 1rem;">Tất cả sản phẩm đều còn hàng đầy đủ!</p>
+        </div>
+    }
+</div>
+
+<!-- Action Button -->
+<div style="margin-top: 2rem; text-align: center;">
+    <a href="@Url.Action("Create", "PurchaseOrder")" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;">
+        <i class="fas fa-plus-circle"></i> Tạo Phiếu Nhập Hàng
+    </a>
+</div>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .content-header h1 {
+        font-size: 1.8rem;
+        color: var(--color-dark-blue);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+    }
+
+    .warning-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .warning-stat-card {
+        background: var(--color-white);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        border-left: 5px solid transparent;
+    }
+
+    .warning-stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .warning-stat-card.danger {
+        border-left-color: var(--color-danger);
+    }
+
+    .warning-stat-card.warning {
+        border-left-color: var(--color-warning);
+    }
+
+    .warning-stat-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+    }
+
+    .warning-stat-icon.danger {
+        background: linear-gradient(135deg, var(--color-danger) 0%, #c82333 100%);
+    }
+
+    .warning-stat-icon.warning {
+        background: linear-gradient(135deg, var(--color-warning) 0%, #e0a800 100%);
+    }
+
+    .warning-stat-content {
+        flex: 1;
+    }
+
+    .warning-stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-dark-blue);
+        margin-bottom: 0.25rem;
+    }
+
+    .warning-stat-label {
+        font-size: 1.1rem;
+        color: var(--color-text-light);
+        font-weight: 500;
+    }
+
+    .badge-category {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-sm:hover {
+        transform: translateY(-2px);
+    }
+
+    .alert-success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        text-align: center;
+        color: #155724;
+    }
+
+    @media (max-width: 768px) {
+        .warning-stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

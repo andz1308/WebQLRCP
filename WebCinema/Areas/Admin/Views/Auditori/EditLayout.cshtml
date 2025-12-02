@@ -10,7 +10,7 @@
 <style>
     /* Container chính */
     .seat-editor-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: orange;
         padding: 30px;
         border-radius: 15px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <div class="action-buttons">
+    @*<div class="action-buttons">
         @using (Html.BeginForm("UpdateCapacity", "Auditori", FormMethod.Post, new { @style = "display: inline-block;" }))
         {
             @Html.Hidden("phong_chieu_id", phongChieu.phong_chieu_id)
@@ -353,7 +353,7 @@
             </button>
         }
         @Html.ActionLink("← Quay lại danh sách", "Index", new { rapId = phongChieu.rap_id }, new { @class = "btn btn-custom btn-back" })
-    </div>
+    </div>*@
 
     <div class="seat-layout-wrapper">
         <div class="screen-container">
@@ -377,7 +377,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editSeatModal" tabindex="-1" role="dialog">
+@*<div class="modal fade" id="editSeatModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -403,7 +403,7 @@
             </div>
         </div>
     </div>
-</div>
+</div>*@
 
 @section scripts {
     <script>

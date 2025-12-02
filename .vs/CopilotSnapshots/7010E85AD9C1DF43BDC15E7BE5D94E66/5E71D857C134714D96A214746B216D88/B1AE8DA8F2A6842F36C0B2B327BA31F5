@@ -1,0 +1,111 @@
+﻿@model IEnumerable<WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai>
+
+@{
+    ViewBag.Title = "Lịch Sử Đề Xuất Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-history"></i> Lịch Sử Đề Xuất Khuyến Mãi</h1>
+    <div class="header-actions">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Tạo Đề Xuất Mới
+        </a>
+    </div>
+</div>
+
+<div class="content-card">
+    @if (Model != null && Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Mã Phiếu</th>
+                    <th>Ngày Tạo</th>
+                    <th>Lý Do</th>
+                    <th>Trạng Thái</th>
+                    <th>Phản Hồi (Admin)</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>#DX-@item.de_xuat_id</strong></td>
+                        <td>@item.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (item.ly_do.Length > 50)
+                            {
+                                <span title="@item.ly_do">@item.ly_do.Substring(0, 50)...</span>
+                            }
+                            else
+                            {
+                                <span>@item.ly_do</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.trang_thai == "Chờ duyệt")
+                            {
+                                <span class="badge badge-warning">Chờ duyệt</span>
+                            }
+                            else if (item.trang_thai == "Đã duyệt")
+                            {
+                                <span class="badge badge-success">Đã duyệt</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger">Từ chối</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ghi_chu_quan_ly))
+                            {
+                                <span class="text-info"><i class="fas fa-comment-dots"></i> @item.ghi_chu_quan_ly</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>
+                            <a href="@Url.Action("Details", new { id = item.de_xuat_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; color: #999;">
+            <i class="fas fa-folder-open" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p>Bạn chưa gửi đề xuất khuyến mãi nào.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+</style>

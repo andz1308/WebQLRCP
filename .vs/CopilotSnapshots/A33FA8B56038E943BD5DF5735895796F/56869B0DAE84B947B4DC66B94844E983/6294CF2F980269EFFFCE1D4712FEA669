@@ -1,0 +1,357 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    // Cho phép cả Admin và Manager truy cập
+    [RoleAuthorize(Roles = "Admin,Manager")]
+    public class ManagerPurchaseOrderController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // Helper: Lấy thông tin nhân viên đang đăng nhập
+        private Nhan_Vien GetCurrentStaff()
+        {
+            var username = User.Identity.Name;
+            return db.Nhan_Viens.FirstOrDefault(nv => nv.email == username || nv.ho_ten == username);
+        }
+
+
+        // --- 1. HÀM PHỤ ĐỂ CHECK ADMIN (Dùng chung cho cả Controller) ---
+        private bool CheckIsAdmin(Nhan_Vien staff)
+        {
+            if (staff == null) return false;
+            // Check theo ID (ưu tiên) hoặc theo Tên
+            if (staff.role_id == 1) return true;
+            if (staff.Role != null && staff.Role.ten_role.Trim().ToLower() == "admin") return true;
+            return false;
+        }
+        // Trong ManagerPurchaseOrderController.cs
+
+        public ActionResult Index(string status, int? page)
+        {
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
+            var staff = GetCurrentStaff();
+            if (staff == null) return RedirectToAction("Login", "Account", new { area = "" });
+
+            // 1. Check quyền
+            bool isAdmin = CheckIsAdmin(staff);
+            ViewBag.IsAdmin = isAdmin;
+
+            // 2. Query Phiếu Nhập Kho
+            IQueryable<Phieu_Nhap> queryNhap = db.Phieu_Nhaps;
+
+            // 4. Lọc theo Rạp (nếu không phải Admin)
+            if (!isAdmin)
+            {
+                if (staff.rap_id == null)
+                {
+                    // Trả về view rỗng nếu nhân viên ko có rạp
+                    return View(new ManagerDashboardViewModel
+                    {
+                        DSNhapKho = new List<Phieu_Nhap>(),
+                        DSDeXuat = new List<Phieu_De_Xuat_Khuyen_Mai>()
+                    });
+                }
+
+                queryNhap = queryNhap.Where(p => p.rap_id == staff.rap_id);
+            }
+
+            // 5. Lọc theo trạng thái
+            if (!string.IsNullOrEmpty(status))
+            {
+                queryNhap = queryNhap.Where(p => p.trang_thai == status);
+            }
+
+            var orderedQuery = queryNhap.OrderByDescending(p => p.ngay_nhap);
+
+            // Calculate pagination
+            int totalItems = orderedQuery.Count();
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var result = orderedQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // 6. Đóng gói vào ViewModel
+            var model = new ManagerDashboardViewModel
+            {
+                DSNhapKho = result,
+                DSDeXuat = new List<Phieu_De_Xuat_Khuyen_Mai>()
+            };
+
+            ViewBag.SelectedStatus = status;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+
+            return View(model);
+        }
+        // --- 2. XEM CHI TIẾT ---
+        public ActionResult Details(int id)
+        {
+            var staff = GetCurrentStaff();
+            if (staff == null) return RedirectToAction("Login", "Account", new { area = "" });
+
+            var phieu = db.Phieu_Nhaps.FirstOrDefault(p => p.phieu_nhap_id == id);
+            if (phieu == null) return HttpNotFound();
+
+            // SỬA LOGIC BẢO MẬT:
+            bool isAdmin = CheckIsAdmin(staff);
+
+            // Nếu không phải Admin VÀ phiếu này không thuộc rạp của quản lý -> Chặn
+            if (!isAdmin)
+            {
+                if (staff.rap_id != phieu.rap_id)
+                {
+                    return new HttpStatusCodeResult(403, "Bạn không có quyền xem phiếu của rạp khác.");
+                }
+            }
+
+            var details = from ct in db.Chi_Tiet_Phieu_Nhaps
+                          join da in db.Do_Ans on ct.do_an_id equals da.Do_An_id
+                          where ct.phieu_nhap_id == id
+                          select new DetailImportViewModel
+                          {
+                              TenMon = da.ten_san_pham,
+                              Loai = da.loai,
+                              SoLuong = ct.so_luong_nhap,
+                              DonVi = "Cái"
+                          };
+
+            ViewBag.PhieuInfo = phieu;
+            return View(details.ToList());
+        }
+
+        // --- 3. DUYỆT PHIẾU ---
+        [HttpPost]
+        public JsonResult Approve(int id)
+        {
+            try
+            {
+                var staff = GetCurrentStaff();
+                if (staff == null) return Json(new { success = false, message = "Vui lòng đăng nhập lại." });
+
+                var phieu = db.Phieu_Nhaps.FirstOrDefault(p => p.phieu_nhap_id == id);
+                if (phieu == null) return Json(new { success = false, message = "Phiếu không tồn tại" });
+
+                // SỬA LOGIC BẢO MẬT:
+                bool isAdmin = CheckIsAdmin(staff);
+
+                // Admin được duyệt tất cả. Manager chỉ duyệt rạp mình.
+                if (!isAdmin && staff.rap_id != phieu.rap_id)
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền duyệt phiếu của rạp khác." });
+                }
+
+                if (phieu.trang_thai != "Chờ duyệt")
+                    return Json(new { success = false, message = "Phiếu này không ở trạng thái chờ duyệt." });
+
+                phieu.trang_thai = "Đã duyệt";
+
+                // Nếu bảng Phieu_Nhap của bạn chưa có cột này thì để comment, nếu có rồi thì mở ra
+                // phieu.admin_duyet_id = staff.nhanvien_id; 
+                // phieu.ngay_duyet = DateTime.Now;
+
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Đã duyệt phiếu! Chờ nhân viên nhập kho." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // --- 4. TỪ CHỐI / HỦY ---
+        [HttpPost]
+        public JsonResult Reject(int id, string reason)
+        {
+            try
+            {
+                var staff = GetCurrentStaff();
+                if (staff == null) return Json(new { success = false, message = "Vui lòng đăng nhập lại." });
+
+                var phieu = db.Phieu_Nhaps.FirstOrDefault(p => p.phieu_nhap_id == id);
+                if (phieu == null) return Json(new { success = false, message = "Phiếu không tồn tại" });
+
+                // SỬA LOGIC BẢO MẬT:
+                bool isAdmin = CheckIsAdmin(staff);
+
+                if (!isAdmin && staff.rap_id != phieu.rap_id)
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền thao tác phiếu này." });
+                }
+
+                if (phieu.trang_thai == "Đã nhập")
+                    return Json(new { success = false, message = "Không thể hủy phiếu đã nhập kho." });
+
+                phieu.trang_thai = "Đã hủy";
+                phieu.ghi_chu = phieu.ghi_chu + " | Hủy bởi: " + staff.ho_ten + ". Lý do: " + reason;
+
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Đã hủy phiếu nhập." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+        // 5. Danh sách phiếu đề xuất khuyến mãi
+        public ActionResult Promotions(string status, int? page)
+        {
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
+            var staff = GetCurrentStaff();
+            if (staff == null) return RedirectToAction("Login", "Account", new { area = "" });
+
+            // Logic phân quyền
+            bool isAdmin = CheckIsAdmin(staff);
+            ViewBag.IsAdmin = isAdmin;
+
+            IQueryable<Phieu_De_Xuat_Khuyen_Mai> query = db.Phieu_De_Xuat_Khuyen_Mais;
+
+            if (!isAdmin)
+            {
+                if (staff.rap_id == null) return View(new List<Phieu_De_Xuat_Khuyen_Mai>());
+                query = query.Where(p => p.rap_id == staff.rap_id);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                query = query.Where(p => p.trang_thai == status);
+            }
+
+            var orderedQuery = query.OrderByDescending(p => p.ngay_tao);
+
+            // Calculate pagination
+            int totalItems = orderedQuery.Count();
+            int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            var result = orderedQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.SelectedStatus = status;
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+
+            return View(result);
+        }
+
+        // 6. Xem chi tiết phiếu khuyến mãi
+        public ActionResult PromotionDetails(int id)
+        {
+            var staff = GetCurrentStaff();
+            var phieu = db.Phieu_De_Xuat_Khuyen_Mais.FirstOrDefault(p => p.de_xuat_id == id);
+
+            if (phieu == null) return HttpNotFound();
+
+            bool isAdmin = CheckIsAdmin(staff);
+            if (!isAdmin && staff.rap_id != phieu.rap_id)
+            {
+                return new HttpStatusCodeResult(403, "Không có quyền truy cập.");
+            }
+
+            // Lấy chi tiết món ăn + thông tin Do_An
+            var details = from ct in db.Chi_Tiet_De_Xuat_Khuyen_Mais
+                          join da in db.Do_Ans on ct.do_an_id equals da.Do_AnId
+                          where ct.de_xuat_id == id
+                          select new PromotionDetailViewModel // Dùng lại ViewModel đã tạo ở bài trước
+                          {
+                              ct = ct,
+                              da = da
+                          };
+
+            ViewBag.Details = details.ToList();
+            return View(phieu);
+        }
+
+        // 7. Duyệt phiếu khuyến mãi
+        [HttpPost]
+        public JsonResult ApprovePromotion(int id)
+        {
+            try
+            {
+                var staff = GetCurrentStaff();
+                var phieu = db.Phieu_De_Xuat_Khuyen_Mais.FirstOrDefault(p => p.de_xuat_id == id);
+
+                if (phieu == null) return Json(new { success = false, message = "Phiếu không tồn tại" });
+
+                bool isAdmin = CheckIsAdmin(staff);
+                if (!isAdmin && staff.rap_id != phieu.rap_id)
+                    return Json(new { success = false, message = "Không có quyền." });
+
+                if (phieu.trang_thai != "Chờ duyệt")
+                    return Json(new { success = false, message = "Phiếu này đã được xử lý rồi." });
+
+                phieu.trang_thai = "Đã duyệt";
+                phieu.ngay_duyet = DateTime.Now;
+                phieu.ghi_chu_quan_ly = "Đã duyệt bởi " + staff.ho_ten;
+
+                // Tùy chọn: Tại đây có thể cập nhật giá gốc trong bảng Do_An nếu muốn giảm giá thật luôn
+                // Hoặc chỉ duyệt để nhân viên dán tem giảm giá.
+
+                db.SubmitChanges();
+
+                string redirectUrl = Url.Action("CreateFromProposal", "Promo", new { area = "Admin", proposalId = id });
+                return Json(new { success = true, isRedirect = true, redirectUrl = redirectUrl, message = "Đã duyệt! Đang chuyển sang tạo mã khuyến mãi..." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        // 8. Từ chối phiếu khuyến mãi
+        [HttpPost]
+        public JsonResult RejectPromotion(int id, string reason)
+        {
+            try
+            {
+                var staff = GetCurrentStaff();
+                var phieu = db.Phieu_De_Xuat_Khuyen_Mais.FirstOrDefault(p => p.de_xuat_id == id);
+
+                if (phieu == null) return Json(new { success = false, message = "Phiếu không tồn tại" });
+
+                bool isAdmin = CheckIsAdmin(staff);
+                if (!isAdmin && staff.rap_id != phieu.rap_id)
+                    return Json(new { success = false, message = "Không có quyền." });
+
+                phieu.trang_thai = "Từ chối";
+                phieu.ngay_duyet = DateTime.Now;
+                phieu.ghi_chu_quan_ly = "Từ chối bởi " + staff.ho_ten + ". Lý do: " + reason;
+
+                db.SubmitChanges();
+                return Json(new { success = true, message = "Đã từ chối phiếu." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+    }
+    public class ManagerDashboardViewModel
+    {
+        public List<WebCinema.Models.Phieu_Nhap> DSNhapKho { get; set; }
+        public List<WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai> DSDeXuat { get; set; }
+    }
+    public class DetailImportViewModel
+    {
+        public string TenMon { get; set; }
+        public string Loai { get; set; }
+        public int SoLuong { get; set; }
+        public string DonVi { get; set; }
+    }
+}

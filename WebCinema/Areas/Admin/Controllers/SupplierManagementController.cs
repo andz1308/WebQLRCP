@@ -1,0 +1,190 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class SupplierManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/SupplierManagement
+        public ActionResult Index()
+        {
+            try
+            {
+                var suppliers = db.Nha_Cung_Caps
+                    .OrderBy(s => s.ten_nha_cung_cap)
+                    .ToList();
+
+                return View(suppliers);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi khi tải danh sách nhà cung cấp: " + ex.Message;
+                return View(new List<Nha_Cung_Cap>());
+            }
+        }
+
+        // GET: Admin/SupplierManagement/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Admin/SupplierManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Nha_Cung_Cap model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Kiểm tra trùng tên
+                    var exists = db.Nha_Cung_Caps.Any(s => s.ten_nha_cung_cap == model.ten_nha_cung_cap);
+                    if (exists)
+                    {
+                        TempData["ErrorMessage"] = "Tên nhà cung cấp đã tồn tại!";
+                        return View(model);
+                    }
+
+                    // Thêm mới
+                    db.Nha_Cung_Caps.InsertOnSubmit(model);
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Thêm nhà cung cấp thành công!";
+                    return RedirectToAction("Index");
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return View(model);
+            }
+        }
+
+        // GET: Admin/SupplierManagement/Edit/5
+        public ActionResult Edit(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                var supplier = db.Nha_Cung_Caps.FirstOrDefault(s => s.id == id.Value);
+                if (supplier == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy nhà cung cấp!";
+                    return RedirectToAction("Index");
+                }
+
+                return View(supplier);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: Admin/SupplierManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(Nha_Cung_Cap model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var supplier = db.Nha_Cung_Caps.FirstOrDefault(s => s.id == model.id);
+                    if (supplier == null)
+                    {
+                        TempData["ErrorMessage"] = "Không tìm thấy nhà cung cấp!";
+                        return RedirectToAction("Index");
+                    }
+
+                    // Kiểm tra trùng tên (ngoại trừ chính nó)
+                    var exists = db.Nha_Cung_Caps.Any(s => s.ten_nha_cung_cap == model.ten_nha_cung_cap && s.id != model.id);
+                    if (exists)
+                    {
+                        TempData["ErrorMessage"] = "Tên nhà cung cấp đã tồn tại!";
+                        return View(model);
+                    }
+
+                    // Cập nhật thông tin
+                    supplier.ten_nha_cung_cap = model.ten_nha_cung_cap;
+                    supplier.dia_chi = model.dia_chi;
+                    supplier.so_dien_thoai = model.so_dien_thoai;
+                    supplier.email = model.email;
+                    supplier.trang_thai = model.trang_thai;
+
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Cập nhật nhà cung cấp thành công!";
+                    return RedirectToAction("Index");
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+                return View(model);
+            }
+        }
+
+        // POST: Admin/SupplierManagement/Delete/5
+        [HttpPost]
+        public JsonResult Delete(int id)
+        {
+            try
+            {
+                var supplier = db.Nha_Cung_Caps.FirstOrDefault(s => s.id == id);
+                if (supplier == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhà cung cấp!" });
+                }
+
+                // Kiểm tra xem có phiếu nhập nào đang sử dụng không
+                var hasOrders = db.Phieu_Nhaps.Any(p => p.nha_cung_cap_id == id);
+                if (hasOrders)
+                {
+                    return Json(new { success = false, message = "Không thể xóa nhà cung cấp đã có phiếu nhập!" });
+                }
+
+                db.Nha_Cung_Caps.DeleteOnSubmit(supplier);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa nhà cung cấp thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

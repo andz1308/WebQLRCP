@@ -38,7 +38,301 @@
     .summary .info { display:flex; gap:2rem; }
     .summary .total { font-size:1.4rem; font-weight:700; color:#ff6b35; }
     .payment-option input:checked + .option-box { border-color: #27ae60 !important; background-color: #eafaf1; color: #27ae60; box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2); }
-    @@media (max-width:768px) { .seat-map { grid-template-columns: repeat(@Model.so_cot, 35px); gap:5px; } .seat { width:35px; height:35px; } }
+    /* Tối ưu thanh chọn khuyến mãi: làm cả cụm có thể click, căn chiều cao nút */
+    #promoPicker { cursor: pointer; }
+    #promoPicker .form-control[readonly] { background-color: #fff; }
+    #promoPicker .btn { height: calc(1.5em + .75rem + 2px); }
+    #promoDescDisplay { cursor: pointer; }
+
+    /* ===== CSS MODAL KHUYẾN MÃI MỚI - THIẾT KẾ ĐẸP ===== */
+    
+    /* Modal Backdrop */
+    #promoListModal.modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1050;
+        display: none;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(3px);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    #promoListModal.show {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Modal Dialog */
+    #promoListModal .modal-dialog {
+        margin: 1.5rem auto;
+        max-width: 600px;
+        width: 90%;
+        animation: slideDown 0.4s ease;
+    }
+
+    /* Modal Content */
+    #promoListModal .modal-content {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: none;
+        background: #ffffff;
+    }
+
+    /* Modal Header - Gradient đẹp */
+    #promoListModal .modal-header {
+        background: linear-gradient(135deg, #f39c12 0%, #f1c40f 50%, #f39c12 100%);
+        color: white;
+        padding: 1.5rem;
+        border-bottom: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #promoListModal .modal-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: shimmer 3s infinite;
+    }
+
+    #promoListModal .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    #promoListModal .modal-title::before {
+        content: '🎫';
+        font-size: 1.8rem;
+    }
+
+    #promoListModal .close {
+        color: white;
+        opacity: 1;
+        font-size: 2rem;
+        font-weight: 300;
+        text-shadow: none;
+        transition: transform 0.3s ease;
+        position: relative;
+        z-index: 1;
+    }
+
+    #promoListModal .close:hover {
+        transform: rotate(90deg) scale(1.2);
+        opacity: 1;
+    }
+
+    /* Modal Body */
+    #promoListModal .modal-body {
+        padding: 0;
+        max-height: 500px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+
+    /* Custom Scrollbar */
+    #promoListModal .modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #promoListModal .modal-body::-webkit-scrollbar-track {
+        background: #e9ecef;
+    }
+
+    #promoListModal .modal-body::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #f39c12, #f1c40f);
+        border-radius: 10px;
+    }
+
+    #promoListModal .modal-body::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #e67e22, #f39c12);
+    }
+
+    /* Loading State */
+    #promoListLoading {
+        padding: 3rem 2rem !important;
+        background: linear-gradient(135deg, #fff8e1 0%, #fffaf0 100%);
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    #promoListLoading i {
+        font-size: 2.5rem;
+        color: #f39c12;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Empty State */
+    #promoListEmpty {
+        padding: 3rem 2rem !important;
+        background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+    }
+
+    #promoListEmpty::before {
+        content: '📭';
+        display: block;
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Promo Item Card */
+    #promoListContainer .promo-item {
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.25rem 1.5rem;
+        transition: all 0.3s ease;
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #promoListContainer .promo-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: linear-gradient(180deg, #f39c12, #f1c40f);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+
+    #promoListContainer .promo-item:hover {
+        background: linear-gradient(135deg, #fffbf0 0%, #fff8e1 100%);
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.15);
+    }
+
+    #promoListContainer .promo-item:hover::before {
+        transform: scaleY(1);
+    }
+
+    #promoListContainer .promo-item:active {
+        transform: translateX(3px) scale(0.98);
+    }
+
+    /* Promo Code Title */
+    #promoListContainer .promo-item h5 {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* Badge Discount */
+    #promoListContainer .promo-item .badge-warning {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        font-size: 1.1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+
+    /* Promo Description */
+    #promoListContainer .promo-item p {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Scope Badge */
+    #promoListContainer .promo-item .badge-info {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    #promoListContainer .promo-item .badge-secondary {
+        background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Remaining Count */
+    #promoListContainer .promo-item small {
+        color: #e67e22;
+        font-weight: 600;
+    }
+
+    /* Animations */
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes shimmer {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        #promoListModal .modal-dialog {
+            max-width: 95%;
+            margin: 1rem auto;
+        }
+
+        #promoListModal .modal-title {
+            font-size: 1.2rem;
+        }
+
+        #promoListContainer .promo-item {
+            padding: 1rem;
+        }
+
+        #promoListContainer .promo-item h5 {
+            font-size: 1.1rem;
+        }
+
+        #promoListContainer .promo-item .badge-warning {
+            font-size: 0.95rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .seat-map { grid-template-columns: repeat(@Model.so_cot, 35px); gap:5px; }
+        .seat { width:35px; height:35px; }
+    }
 </style>
 
 <div class="seat-selection">
@@ -112,11 +406,11 @@
                 <h3 style="margin:0 0 0.8rem 0; color: #f39c12;">
                     <i class="fas fa-ticket-alt"></i> Khuyến Mãi
                 </h3>
-                <div class="input-group">
-                    <input type="text" id="txtPromoDisplay" class="form-control" placeholder="Chưa chọn mã nào" readonly style="background:white; font-weight:bold; color:#27ae60;">
+                <div class="input-group" id="promoPicker">
+                    <input type="text" id="txtPromoDisplay" class="form-control" placeholder="Chưa chọn mã nào" readonly style="background:white; font-weight:bold; color:#27ae60;"> <br />
                     <div class="input-group-append">
-                        <button class="btn btn-warning text-white" type="button" onclick="openPromoModal()"><i class="fas fa-list"></i> Chọn Mã</button>
-                        <button class="btn btn-outline-secondary" type="button" onclick="clearPromo()" title="Bỏ chọn"><i class="fas fa-times"></i></button>
+                        <button class="btn btn-warning text-white" type="button" id="btnOpenPromo"><i class="fas fa-list"></i> Chọn Mã</button> 
+                        <button class="btn btn-outline-secondary" type="button" id="btnClearPromo" title="Bỏ chọn"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
                 <div id="promoDescDisplay" style="font-size:0.85rem; color:#666; margin-top:5px; font-style:italic;"></div>
@@ -140,12 +434,12 @@
                         </div>
                     </label>
                     @*<label class="payment-option" style="flex:1; min-width:120px; cursor:pointer;">
-                        <input type="radio" name="paymentMethod" value="card" onchange="updatePaymentUI()" style="display:none" />
-                        <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:1.5rem;">💳</div>
-                            <div style="font-weight:bold;">Thẻ ATM</div>
-                        </div>
-                    </label>*@
+                            <input type="radio" name="paymentMethod" value="card" onchange="updatePaymentUI()" style="display:none" />
+                            <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
+                                <div style="font-size:1.5rem;">💳</div>
+                                <div style="font-weight:bold;">Thẻ ATM</div>
+                            </div>
+                        </label>*@
                 </div>
             </div>
         </div>
@@ -178,16 +472,16 @@
 <div id="promoListModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
+            <div class="modal-header">
                 <h5 class="modal-title">Chọn Mã Khuyến Mãi</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body p-0">
-                <div id="promoListLoading" class="text-center p-4">
-                    <i class="fas fa-spinner fa-spin text-warning"></i> Đang tìm mã phù hợp...
+            <div class="modal-body">
+                <div id="promoListLoading" class="text-center">
+                    <i class="fas fa-spinner fa-spin"></i> Đang tìm mã phù hợp...
                 </div>
-                <div id="promoListContainer" class="list-group list-group-flush"></div>
-                <div id="promoListEmpty" class="text-center p-4 text-muted" style="display:none;">
+                <div id="promoListContainer" class="list-group"></div>
+                <div id="promoListEmpty" class="text-center" style="display:none;">
                     Không tìm thấy mã nào phù hợp.
                 </div>
             </div>
@@ -203,6 +497,24 @@
         var selectedSeats = [];
         var maxSeats = 10;
         var currentPromo = null;
+
+        // === Fallback helpers cho modal (nếu $.fn.modal không tồn tại hoặc CSS Bootstrap bị override) ===
+        function showPromoModalFallback() {
+            $('#promoListModal').addClass('show');
+            if (!$('#promoBackdrop').length) {
+                $('body').append('<div id="promoBackdrop" class="modal-backdrop show" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index=1040;"></div>');
+            }
+        }
+        function hidePromoModalFallback() {
+            $('#promoListModal').removeClass('show');
+            $('#promoBackdrop').remove();
+        }
+        function showPromoModal() {
+            if ($.fn.modal) $('#promoListModal').modal('show'); else showPromoModalFallback();
+        }
+        function hidePromoModal() {
+            if ($.fn.modal) $('#promoListModal').modal('hide'); else hidePromoModalFallback();
+        }
 
         // 2. CÁC HÀM XỬ LÝ
 
@@ -229,27 +541,20 @@
         };
 
         // Mở Modal Promo
-        // Mở Modal & Gọi Server lấy mã phù hợp
         window.openPromoModal = function() {
             // 1. Gom dữ liệu giỏ hàng
             var items = [];
             $('.food-quantity').each(function () {
                 var qty = parseInt($(this).val()) || 0;
-
-                // Chỉ gửi những món có số lượng > 0
                 if (qty > 0) {
-                    items.push({
-                        id: $(this).data('food-id'), // Lấy ID món ăn
-                        quantity: qty
-                    });
+                    items.push({ id: $(this).data('food-id'), quantity: qty });
                 }
             });
 
-            // Debug để xem Client gửi gì đi
             console.log("Gửi lên Server check Promo:", JSON.stringify(items));
 
             // 2. Reset UI Modal
-            $('#promoListModal').modal('show');
+            showPromoModal();
             $('#promoListContainer').empty();
             $('#promoListLoading').show();
             $('#promoListEmpty').hide();
@@ -265,10 +570,9 @@
                     if (res.success && res.data && res.data.length > 0) {
                         var html = '';
                         res.data.forEach(function(p) {
-                            // 🔴 BƯỚC SỬA QUAN TRỌNG: Ánh xạ dữ liệu Server (Tiếng Việt) -> Client (Tiếng Anh)
                             var clientPromo = {
-                                Code: p.maKhuyen,           // Server trả về maKhuyen
-                                Value: p.giaTriGiam,        // Server trả về giaTriGiam
+                                Code: p.maKhuyen,
+                                Value: p.giaTriGiam,
                                 Type: (p.loaiGiam === '%') ? 'PERCENT' : 'AMOUNT',
                                 Scope: p.isProductScope ? 1 : 0,
                                 Desc: p.moTa,
@@ -276,24 +580,24 @@
                                 AllowedFoods: p.AllowedFoods
                             };
 
-                            // Sau khi map xong mới dùng biến clientPromo để hiển thị
-                            var badge = clientPromo.Type === 'PERCENT' ? clientPromo.Value + '%' : clientPromo.Value.toLocaleString('vi-VN') + '₫';
-
+                            var badge = clientPromo.Type === 'PERCENT' 
+                                ? clientPromo.Value + '%' 
+                                : clientPromo.Value.toLocaleString('vi-VN') + '₫';
+                            
                             var scopeText = clientPromo.Scope === 1
                                 ? '<span class="badge badge-info">Theo món</span>'
                                 : '<span class="badge badge-secondary">Toàn đơn</span>';
 
-                            // Escape chuỗi JSON để đưa vào onclick
-                            var dataJson = JSON.stringify(clientPromo).replace(/"/g, '&quot;');
+                            var dataAttr = encodeURIComponent(JSON.stringify(clientPromo));
 
-                            html += `<a href="javascript:void(0)" class="list-group-item list-group-item-action" onclick="selectPromo(${dataJson})">
-                                        <div class="d-flex w-100 justify-content-between align-items-center">
-                                            <h5 class="mb-1 text-primary font-weight-bold">${clientPromo.Code}</h5>
-                                            <span class="badge badge-warning" style="font-size:1rem;">Giảm ${badge}</span>
-                                        </div>
-                                        <p class="mb-1 small text-muted">${clientPromo.Desc || ''}</p>
-                                        <div class="mt-1">${scopeText} <small class="text-muted">(Còn: ${clientPromo.Remaining})</small></div>
-                                     </a>`;
+                            // CẤU TRÚC HTML MỚI ĐẸP HƠN
+                            html += `
+                                <a href="#" class="list-group-item list-group-item-action promo-item" data-promo="${dataAttr}" style="text-align: center">
+                                    <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                        <h5 class="mb-0 text-primary font-weight-bold">${clientPromo.Code}</h5>
+                                        <span class="badge badge-warning">Giảm ${badge}</span>
+                                    </div>
+                                </a>`;
                         });
                         $('#promoListContainer').html(html);
                     } else {
@@ -309,10 +613,11 @@
 
         // Chọn mã
         window.selectPromo = function(promoObj) {
-            currentPromo = promoObj; // Lưu object { Code, Value, Type, Scope, AllowedFoods... }
+            currentPromo = promoObj;
             $('#txtPromoDisplay').val(promoObj.Code);
             $('#promoDescDisplay').text(promoObj.Desc);
-            $('#promoListModal').modal('hide');
+            $('#btnClearPromo').prop('disabled', false);
+            hidePromoModal();
             updateSummary();
         }
 
@@ -321,6 +626,7 @@
             currentPromo = null;
             $('#txtPromoDisplay').val('');
             $('#promoDescDisplay').text('');
+            $('#btnClearPromo').prop('disabled', true);
             updateSummary();
         }
 
@@ -334,11 +640,9 @@
                 return;
             }
 
-            // A. Vé
             var names = selectedSeats.map(s => s.name).join(', ');
             var ticketTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
 
-            // B. Đồ ăn
             var foodTotal = 0;
             var foodDetails = [];
             $('.food-quantity').each(function () {
@@ -355,20 +659,15 @@
             var totalBeforeDiscount = ticketTotal + foodTotal;
             var discountAmount = 0;
 
-            // C. Tính Giảm Giá (Dựa vào currentPromo)
             if (currentPromo) {
-                // TH1: Giảm toàn đơn
                 if (currentPromo.Scope === 0) {
                     if (currentPromo.Type === 'PERCENT') {
                         discountAmount = (totalBeforeDiscount * currentPromo.Value) / 100;
                     } else {
                         discountAmount = currentPromo.Value;
                     }
-                }
-                // TH2: Giảm theo món
-                else if (currentPromo.Scope === 1) {
+                } else if (currentPromo.Scope === 1) {
                     foodDetails.forEach(function(f) {
-                        // Kiểm tra món này có trong AllowedFoods không
                         if (currentPromo.AllowedFoods && currentPromo.AllowedFoods.includes(f.id)) {
                             if (currentPromo.Type === 'PERCENT') {
                                 discountAmount += (f.subTotal * currentPromo.Value) / 100;
@@ -384,7 +683,6 @@
             if (discountAmount > totalBeforeDiscount) discountAmount = totalBeforeDiscount;
             var finalTotal = totalBeforeDiscount - discountAmount;
 
-            // D. Update UI
             $('#selectedSeatsText').text(names);
             $('#seatCount').text(selectedSeats.length);
 
@@ -401,7 +699,7 @@
             var name = $('#customerName').val().trim();
             var phone = $('#customerPhone').val().trim();
             var paymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cash';
-            var promoCodeToSend = currentPromo ? currentPromo.Code : ''; // Lấy mã
+            var promoCodeToSend = currentPromo ? currentPromo.Code : '';
 
             if (!name) { alert('Vui lòng nhập tên khách hàng'); $('#customerName').focus(); return; }
             if (!phone) { alert('Vui lòng nhập số điện thoại'); $('#customerPhone').focus(); return; }
@@ -484,6 +782,34 @@
                 }
                 updateSummary();
             });
+
+            // Khi click vào toàn bộ thanh chọn khuyến mãi (trừ nút xoá), mở modal
+            $('#promoPicker').on('click', function (e) {
+                if ($(e.target).closest('#btnClearPromo').length) return;
+                openPromoModal();
+            });
+            $('#btnOpenPromo').on('click', function (e) { e.preventDefault(); openPromoModal(); });
+            $('#btnClearPromo').on('click', function (e) { e.preventDefault(); clearPromo(); });
+
+            // Bắt sự kiện click item khuyến mãi bằng event delegation
+            $('#promoListContainer').on('click', '.promo-item', function (e) {
+                e.preventDefault();
+                var data = $(this).attr('data-promo');
+                try {
+                    var promo = JSON.parse(decodeURIComponent(data));
+                    selectPromo(promo);
+                } catch (err) {
+                    console.error('Parse promo error', err);
+                    alert('Không thể chọn mã này, vui lòng thử mã khác.');
+                }
+            });
+
+            // Close button fallback
+            $('#promoListModal .close').on('click', function(){ hidePromoModal(); });
+
+            // Khởi tạo trạng thái nút xoá
+            $('#btnClearPromo').prop('disabled', !currentPromo);
+
             updatePaymentUI();
             updateSummary();
         });

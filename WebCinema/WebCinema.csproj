@@ -290,6 +290,7 @@
     <Compile Include="Areas\Admin\Controllers\StaffPromotionController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffPurchaseOrderController.cs" />
     <Compile Include="Areas\Admin\Controllers\StaffShowtimeTicketManagementController.cs" />
+    <Compile Include="Areas\Admin\Controllers\SupplierManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketRefundManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
@@ -460,6 +461,10 @@
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\PromotionDetails.cshtml" />
     <Content Include="Areas\Admin\Views\StaffDashboardNew\Index.cshtml" />
     <Content Include="Areas\Admin\Views\StaffDashboard\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\SupplierManagement\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\SupplierManagement\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\SupplierManagement\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\_CinemaStockPartial.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

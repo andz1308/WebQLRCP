@@ -1,0 +1,204 @@
+﻿@model WebCinema.Models.Do_An
+
+@{
+    ViewBag.Title = "Thêm Sản Phẩm Mới";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-plus-circle"></i> Thêm Sản Phẩm Mới</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> @ViewBag.ErrorMessage
+    </div>
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-edit"></i> Thông Tin Sản Phẩm</h2>
+    </div>
+
+    @using (Html.BeginForm("Create", "InventoryManagement", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <div class="form-body">
+            <!-- Product Name -->
+            <div class="form-group">
+                <label class="form-label required">
+                    Tên Sản Phẩm <span style="color: red;">*</span>
+                </label>
+                @Html.TextBoxFor(m => m.ten_san_pham, new { @class = "form-control", placeholder = "VD: Bắp rang bơ lớn", required = "required" })
+                @Html.ValidationMessageFor(m => m.ten_san_pham, "", new { @class = "error-message" })
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label class="form-label">Loại Sản Phẩm</label>
+                @Html.DropDownListFor(m => m.loai, (SelectList)ViewBag.Categories, "-- Chọn loại --", new { @class = "form-control" })
+                <small class="form-text">Hoặc nhập loại mới vào ô bên dưới</small>
+            </div>
+
+            <!-- Custom Category (optional) -->
+            <div class="form-group">
+                <label class="form-label">Hoặc nhập loại mới</label>
+                <input type="text" id="customCategory" class="form-control" placeholder="VD: Món ăn đặc biệt" />
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label class="form-label">Mô Tả</label>
+                @Html.TextAreaFor(m => m.mo_ta, new { @class = "form-control", rows = 4, placeholder = "Mô tả chi tiết về sản phẩm..." })
+                @Html.ValidationMessageFor(m => m.mo_ta, "", new { @class = "error-message" })
+            </div>
+
+            <!-- Price -->
+            <div class="form-group">
+                <label class="form-label">Giá (VNĐ)</label>
+                @Html.TextBoxFor(m => m.gia, new { @class = "form-control", type = "number", min = "0", step = "1000", placeholder = "VD: 50000" })
+                @Html.ValidationMessageFor(m => m.gia, "", new { @class = "error-message" })
+                <small class="form-text">Để trống nếu chưa định giá</small>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu Sản Phẩm
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .content-header h1 {
+        font-size: 2rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-body {
+        padding: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-label.required::after {
+        content: ' *';
+        color: red;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-text {
+        display: block;
+        margin-top: 0.5rem;
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #e0e0e0;
+        margin-top: 2rem;
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+</style>
+
+@section scripts {
+    <script>
+        // Handle custom category input
+        $(document).ready(function () {
+            $('#customCategory').on('input', function () {
+                var customValue = $(this).val().trim();
+                if (customValue) {
+                    $('#loai').val('');
+                    // Create a temporary option for custom category
+                    var $tempOption = $('<option>')
+                        .val(customValue)
+                        .text(customValue + ' (Mới)')
+                        .attr('selected', 'selected');
+                    
+                    $('#loai').append($tempOption);
+                }
+            });
+
+            // Clear custom input when selecting from dropdown
+            $('#loai').on('change', function () {
+                if ($(this).val()) {
+                    $('#customCategory').val('');
+                }
+            });
+        });
+    </script>
+    @Scripts.Render("~/bundles/jqueryval")
+}
