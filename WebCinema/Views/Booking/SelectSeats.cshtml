@@ -4,7 +4,7 @@
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
 
-    
+
     var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
     var room = ViewBag.Room as WebCinema.Models.Phong_Chieu;
     var seats = ViewBag.Seats as List<WebCinema.Models.Ghe>;
@@ -465,13 +465,13 @@
 
         .movie-details h2 {
             font-size: 1.5rem;
-     
+
         }
 
         .movie-meta {
             gap: 1.5rem;
             font-size: 0.85rem;
-     
+
         }
 
         .progress-steps {
@@ -617,8 +617,8 @@
                     }
                 }
 
-                <div class="@seatClass" 
-                     data-seat-id="@seat.ghe_id" 
+                <div class="@seatClass"
+                     data-seat-id="@seat.ghe_id"
                      data-seat-name="@seat.so_ghe"
                      data-seat-price="@( (ViewBag.SeatPrices as System.Collections.Generic.Dictionary<int, decimal>).ContainsKey(seat.ghe_id) ? (ViewBag.SeatPrices as System.Collections.Generic.Dictionary<int, decimal>)[seat.ghe_id] : 0 )"
                      data-booked="@(isBooked ? "true" : "false")"
@@ -655,7 +655,7 @@
     <script>
         $(document).ready(function() {
             var selectedSeats = [];
-            var seatMap = {};  // ✅ Lưu bản đồ ghế theo tên (e.g., A1, A2, etc.)
+            var seatMap = {};
             var roomColumns = @room.so_cot;
 
             // Build seat map for validation
@@ -682,74 +682,25 @@
                 var seatId = $(this).data('seat-id');
                 var seatName = $(this).data('seat-name');
                 var seatPrice = parseFloat($(this).data('seat-price'));
-                var loaiGhe = $(this).hasClass('vip') ? 2 : $(this).hasClass('couple') ? 3 : 1;  // ✅ Lấy loại ghế
+                var loaiGhe = $(this).hasClass('vip') ? 2 : $(this).hasClass('couple') ? 3 : 1;
 
                 if ($(this).hasClass('selected')) {
                     // Deselect
                     $(this).removeClass('selected');
                     selectedSeats = selectedSeats.filter(s => s.id !== seatId);
                 } else {
-                    // ✅ CHECK RULE: Loại ghế phải giống nhau
-                    if (selectedSeats.length > 0) {
-                        var firstSeatLoai = selectedSeats[0].loaiGhe;
-                        if (loaiGhe !== firstSeatLoai) {
-                            var loaiNames = { 1: 'Ghế thường', 2: 'Ghế VIP', 3: 'Ghế đôi' };
-                            alert('❌ Không được phép chọn các loại ghế khác nhau!\n\nGhế đã chọn: ' + loaiNames[firstSeatLoai] + '\nGhế hiện tại: ' + loaiNames[loaiGhe]);
-                            return;
-                        }
-
-                        // ✅ CHECK RULE: Ghế phải sát nhau (liên tiếp, cùng hàng)
-                        if (!isSeatsAdjacent(selectedSeats, seatName)) {
-                            alert('❌ Ghế phải sát nhau (liên tiếp và cùng hàng)!\n\nVui lòng chọn ghế gần nhau.');
-                            return;
-                        }
-                    }
-
-                    if (selectedSeats.length >= 10) {
-                        alert('Bạn chỉ có thể chọn tối đa 10 ghế!');
-                        return;
-                    }
-
+                    // ✅ TẤT CẢ ĐIỀU KIỆN ĐÃ BỊ GỬI BỎ - Khách hàng có thể chọn bất kỳ ghế nào
                     $(this).addClass('selected');
                     selectedSeats.push({
                         id: seatId,
                         name: seatName,
                         price: seatPrice,
-                        loaiGhe: loaiGhe  // ✅ Lưu loại ghế
+                        loaiGhe: loaiGhe
                     });
                 }
 
                 updateSummary();
             });
-
-            // ✅ VALIDATE: Ghế phải sát nhau (liên tiếp, cùng hàng)
-            function isSeatsAdjacent(currentSeats, newSeatName) {
-                // Extract row and column from seat name (e.g., "A1" -> row="A", col=1)
-                var newRow = newSeatName.charAt(0);
-                var newCol = parseInt(newSeatName.substring(1));
-
-                // Check if all seats are in the same row
-                for (var i = 0; i < currentSeats.length; i++) {
-                    var row = currentSeats[i].name.charAt(0);
-                    if (row !== newRow) {
-                        return false;  // ❌ Không cùng hàng
-                    }
-                }
-
-                // Get all columns in current selection + new seat
-                var cols = currentSeats.map(s => parseInt(s.name.substring(1)));
-                cols.push(newCol);
-                cols.sort((a, b) => a - b);
-
-                // Check if columns are consecutive
-                for (var i = 1; i < cols.length; i++) {
-                    if (cols[i] !== cols[i - 1] + 1) {
-                        return false;  // ❌ Không sát nhau
-                    }
-                }
-
-                return true;  // ✅ Ghế sát nhau
-            }
 
             function updateSummary() {
                 if (selectedSeats.length === 0) {
@@ -759,7 +710,7 @@
                 } else {
                     var seatNames = selectedSeats.map(s => s.name).join(', ');
                     var total = selectedSeats.reduce((sum, s) => sum + s.price, 0);
-                    
+
                     $('#selectedSeatsText').text(seatNames);
                     $('#totalPrice').text(total.toLocaleString('vi-VN') + ' đ');
                     $('#btnContinue').prop('disabled', false);
@@ -773,7 +724,7 @@
                 }
 
                 var seatIds = selectedSeats.map(s => s.id).join(',');
-                
+
                 $.ajax({
                     url: '@Url.Action("SelectFood", "Booking")',
                     type: 'POST',
