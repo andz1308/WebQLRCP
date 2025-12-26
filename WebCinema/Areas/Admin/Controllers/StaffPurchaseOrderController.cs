@@ -129,7 +129,7 @@ namespace WebCinema.Areas.Admin.Controllers
             }
 
             var staff = GetCurrentStaff();
-            if (staff == null || staff.rap_id == null) 
+            if (staff == null || staff.rap_id == null)
                 return RedirectToAction("Login", "Account");
 
             var phieu = db.Phieu_Nhaps
@@ -186,7 +186,7 @@ namespace WebCinema.Areas.Admin.Controllers
 
                 byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
                 string contentType = "text/html";
-                
+
                 return File(fileBytes, contentType, fileName);
             }
             catch (Exception ex)
@@ -194,6 +194,38 @@ namespace WebCinema.Areas.Admin.Controllers
                 LoggingHelper.LogError(ex, "Lỗi xuất PDF phiếu nhập");
                 TempData["ErrorMessage"] = "Có lỗi khi xuất PDF: " + ex.Message;
                 return RedirectToAction("Details", new { id });
+            }
+        }
+        [HttpPost]
+        public JsonResult CancelOrder(int id)
+        {
+            try
+            {
+                var staff = GetCurrentStaff();
+                if (staff == null) return Json(new { success = false, message = "Vui lòng đăng nhập." });
+
+                // Tìm phiếu nhập
+                var phieu = db.Phieu_Nhaps.FirstOrDefault(p => p.phieu_nhap_id == id);
+
+                if (phieu == null) return Json(new { success = false, message = "Không tìm thấy phiếu nhập." });
+
+                // Chỉ cho phép hủy khi trạng thái là "Đã duyệt" (hoặc "Chờ duyệt" tùy quy trình bên bạn)
+                if (phieu.trang_thai != "Đã duyệt")
+                {
+                    return Json(new { success = false, message = "Chỉ có thể hủy phiếu khi đang ở trạng thái 'Đã duyệt'." });
+                }
+
+                // Cập nhật trạng thái
+                phieu.trang_thai = "Đã hủy";
+                phieu.ghi_chu = phieu.ghi_chu + " | (Đã hủy bởi nhân viên: " + staff.ho_ten + ")";
+
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Đã hủy phiếu nhập thành công." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
     }

@@ -53,8 +53,8 @@
                 <thead>
                     <tr>
                         <th>Khách Hàng</th>
-                        <th>Phim</th>
-                        <th>Ngày Chiếu</th>
+                        @*<th>Phim</th>
+                        <th>Ngày Chiếu</th>*@
                         <th>Hoàn Lại</th>
                         <th>Trạng Thái</th>
                         <th>Ngày Gửi</th>
@@ -74,12 +74,12 @@
                                 <strong>@(customer != null ? (customer.ho_ten ?? "") : "")</strong><br />
                                 <small style="color: #999;">@(customer != null ? (customer.so_dien_thoai ?? "") : "")</small>
                             </td>
-                            <td>
+                            @*<td>
                                 @((showtime != null && showtime.Phim != null) ? showtime.Phim.ten_phim : "")
                             </td>
                             <td>
                                 @((showtime != null && showtime.ngay_chieu != null) ? showtime.ngay_chieu.ToString("dd/MM/yyyy") : "")
-                            </td>
+                            </td>*@
                             <td>
                                 <strong style="color: #27ae60; font-size: 1.05rem;">@((request.so_tien_hoan_lai ?? 0).ToString("N0")) ₫</strong>
                             </td>

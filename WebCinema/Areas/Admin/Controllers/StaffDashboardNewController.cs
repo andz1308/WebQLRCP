@@ -532,7 +532,7 @@ namespace WebCinema.Areas.Admin.Controllers
             var stat = new StaffEmployeeStatisticsViewModel
             {
                 TongNhanVien = employees.Count,
-                NhanVienDangLamViec = employees.Count(nv => nv.trang_thai == "Đang làm việc"),
+                NhanVienDangLamViec = employees.Count(nv => nv.trang_thai == "Hoạt động"),
                 NhanVienNghiPhep = employees.Count(nv => nv.trang_thai == "Nghỉ phép"),
                 HoatDongNhanVien = new List<StaffEmployeeActivityViewModel>()
             };

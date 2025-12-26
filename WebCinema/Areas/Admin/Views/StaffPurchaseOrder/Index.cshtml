@@ -107,6 +107,9 @@
                                     <button class="btn btn-sm btn-success" onclick="confirmReceipt(@item.phieu_nhap_id)" title="Xác nhận đã nhập kho">
                                         <i class="fas fa-box-open"></i> Nhập Kho
                                     </button>
+                                    <button class="btn btn-sm btn-danger" onclick="cancelOrder(@item.phieu_nhap_id)" title="Hủy phiếu nhập (NCC không giao hàng)">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </button>
                                 }
                                 else if (item.trang_thai == "Chờ duyệt")
                                 {
@@ -145,6 +148,18 @@
             $.post('@Url.Action("ConfirmReceipt")', { id: id }, function(res) {
                 if (res.success) {
                     alert("Đã cập nhật kho thành công!");
+                    location.reload();
+                } else {
+                    alert("Lỗi: " + res.message);
+                }
+            });
+        }
+    }
+    function cancelOrder(id) {
+        if (confirm("Bạn có chắc chắn muốn HỦY phiếu nhập này không?\nHành động này không thể hoàn tác.")) {
+            $.post('@Url.Action("CancelOrder")', { id: id }, function(res) {
+                if (res.success) {
+                    alert("Đã hủy phiếu nhập thành công!");
                     location.reload();
                 } else {
                     alert("Lỗi: " + res.message);
@@ -307,10 +322,10 @@
             transition: all 0.2s ease;
         }
 
-        .data-table tbody tr:hover {
-            background: #fffaf8;
-            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
-        }
+            .data-table tbody tr:hover {
+                background: #fffaf8;
+                box-shadow: 0 2px 8px rgba(255, 107, 53, 0.1);
+            }
 
     /* ============================
        BADGES
@@ -356,18 +371,18 @@
             gap: 1rem;
         }
 
-        .content-header h1 {
-            font-size: 1.5rem;
-        }
+            .content-header h1 {
+                font-size: 1.5rem;
+            }
 
         .data-table {
             font-size: 0.85rem;
         }
 
-        .data-table th,
-        .data-table td {
-            padding: 0.75rem 0.5rem;
-        }
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 0.5rem;
+            }
     }
 
     /* ============================
