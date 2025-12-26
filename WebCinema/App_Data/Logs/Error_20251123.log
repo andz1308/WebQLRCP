@@ -1,8 +1,0 @@
-
-================================================================================
-Time: 2025-11-23 20:10:39
-Message: KM004 JSON parse error: Unexpected character encountered while parsing value: C. Path '[0].name', line 1, position 49.
-
-Stack Trace: 
-Inner Exception: Unexpected character encountered while parsing value: C. Path '[0].name', line 1, position 49.
-================================================================================
