@@ -51,24 +51,24 @@ namespace WebCinema.Controllers.API
 
                 // ✅ Query cơ bản - Lọc theo rạp nếu staff có gán rạp
                 var bookingsQuery = db.Dat_Ves.AsQueryable();
-                
+
                 if (staff.rap_id.HasValue)
                 {
                     // Staff có gán rạp → chỉ xem thống kê của rạp đó
                     var rapId = staff.rap_id.Value;
-                    bookingsQuery = bookingsQuery.Where(b => 
-                        b.Ves.Any(v => v.Suat_Chieu != null && 
-                                      v.Suat_Chieu.Phong_Chieu != null && 
+                    bookingsQuery = bookingsQuery.Where(b =>
+                        b.Ves.Any(v => v.Suat_Chieu != null &&
+                                      v.Suat_Chieu.Phong_Chieu != null &&
                                       v.Suat_Chieu.Phong_Chieu.rap_id == rapId));
                 }
 
                 // ✅ 1. TỔNG VÉ BÁN (Đã thanh toán)
                 int totalTickets = db.Ves
-                    .Where(v => v.Dat_Ve_id != null && 
+                    .Where(v => v.Dat_Ve_id != null &&
                                v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" &&
-                               (staff.rap_id == null || 
-                                (v.Suat_Chieu != null && 
-                                 v.Suat_Chieu.Phong_Chieu != null && 
+                               (staff.rap_id == null ||
+                                (v.Suat_Chieu != null &&
+                                 v.Suat_Chieu.Phong_Chieu != null &&
                                  v.Suat_Chieu.Phong_Chieu.rap_id == staff.rap_id.Value)))
                     .Count();
 
@@ -96,21 +96,21 @@ namespace WebCinema.Controllers.API
                 // ✅ 5. VÉ ĐÃ SOÁT (Đã sử dụng)
                 int ticketsVerified = db.Ves
                     .Where(v => v.trang_thai_ve == "Đã sử dụng" &&
-                               (staff.rap_id == null || 
-                                (v.Suat_Chieu != null && 
-                                 v.Suat_Chieu.Phong_Chieu != null && 
+                               (staff.rap_id == null ||
+                                (v.Suat_Chieu != null &&
+                                 v.Suat_Chieu.Phong_Chieu != null &&
                                  v.Suat_Chieu.Phong_Chieu.rap_id == staff.rap_id.Value)))
                     .Count();
 
                 // ✅ 6. VÉ CHỜ SOÁT (Chưa sử dụng, đã thanh toán, chưa qua ngày chiếu)
                 int ticketsPending = db.Ves
-                    .Where(v => v.trang_thai_ve == "Chưa sử dụng" && 
+                    .Where(v => v.trang_thai_ve == "Chưa sử dụng" &&
                                v.Dat_Ve_id != null &&
                                v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" &&
                                v.Suat_Chieu != null &&
                                v.Suat_Chieu.ngay_chieu >= today &&
-                               (staff.rap_id == null || 
-                                (v.Suat_Chieu.Phong_Chieu != null && 
+                               (staff.rap_id == null ||
+                                (v.Suat_Chieu.Phong_Chieu != null &&
                                  v.Suat_Chieu.Phong_Chieu.rap_id == staff.rap_id.Value)))
                     .Count();
 
@@ -128,9 +128,9 @@ namespace WebCinema.Controllers.API
                                 dh.Dat_Ve.ngay_tao.HasValue &&
                                 dh.Dat_Ve.ngay_tao.Value.Month == currentMonth &&
                                 dh.Dat_Ve.ngay_tao.Value.Year == currentYear &&
-                                (staff.rap_id == null || 
-                                 dh.Dat_Ve.Ves.Any(v => v.Suat_Chieu != null && 
-                                                       v.Suat_Chieu.Phong_Chieu != null && 
+                                (staff.rap_id == null ||
+                                 dh.Dat_Ve.Ves.Any(v => v.Suat_Chieu != null &&
+                                                       v.Suat_Chieu.Phong_Chieu != null &&
                                                        v.Suat_Chieu.Phong_Chieu.rap_id == staff.rap_id.Value)))
                     .Sum(dh => (int?)dh.so_luong) ?? 0;
 
@@ -142,9 +142,9 @@ namespace WebCinema.Controllers.API
                                 dh.Dat_Ve.ngay_tao.HasValue &&
                                 dh.Dat_Ve.ngay_tao.Value.Month == currentMonth &&
                                 dh.Dat_Ve.ngay_tao.Value.Year == currentYear &&
-                                (staff.rap_id == null || 
-                                 dh.Dat_Ve.Ves.Any(v => v.Suat_Chieu != null && 
-                                                       v.Suat_Chieu.Phong_Chieu != null && 
+                                (staff.rap_id == null ||
+                                 dh.Dat_Ve.Ves.Any(v => v.Suat_Chieu != null &&
+                                                       v.Suat_Chieu.Phong_Chieu != null &&
                                                        v.Suat_Chieu.Phong_Chieu.rap_id == staff.rap_id.Value)))
                     .ToList();
 
@@ -161,26 +161,26 @@ namespace WebCinema.Controllers.API
                     // Thống kê tổng quan
                     total_tickets = totalTickets,
                     total_revenue = totalRevenue,
-                    
+
                     // Thống kê tháng này
                     monthly_revenue = monthlyRevenue,
                     monthly_bookings = monthlyBookings,
                     monthly_food_items_sold = foodItemsSold,
                     monthly_food_revenue = foodRevenue,
-                    
+
                     // Thống kê hôm nay
                     today_revenue = todayRevenue,
-                    
+
                     // Thống kê soát vé
                     tickets_verified = ticketsVerified,
                     tickets_pending = ticketsPending,
-                    
+
                     // Thông tin rạp (nếu có)
                     cinema_id = staff.rap_id,
-                    cinema_name = staff.rap_id.HasValue 
-                        ? db.Raps.FirstOrDefault(r => r.rap_id == staff.rap_id.Value)?.ten_rap 
+                    cinema_name = staff.rap_id.HasValue
+                        ? db.Raps.FirstOrDefault(r => r.rap_id == staff.rap_id.Value)?.ten_rap
                         : "Tất cả rạp",
-                    
+
                     // Metadata
                     staff_id = staffId,
                     staff_name = staff.ho_ten,
@@ -190,7 +190,7 @@ namespace WebCinema.Controllers.API
                 };
 
                 LoggingHelper.LogInfo($"✅ Staff Dashboard: ID {staffId} | Rạp: {dashboard.cinema_name}");
-                
+
                 return Ok(new
                 {
                     success = true,
@@ -225,25 +225,59 @@ namespace WebCinema.Controllers.API
                     query = query.Where(s => s.ngay_chieu.Date == filterDate.Date);
                 }
 
-                var showtimes = query
+                var allShowtimes = query
                     .OrderBy(s => s.ngay_chieu)
-                    .ThenBy(s => s.Ca_Chieu != null ? s.Ca_Chieu.gio_bat_dau : TimeSpan.Zero)
-                    .ToList() // ✅ Materialize to avoid null-nav in LINQ-to-SQL
-                    .Select(s => new
-                    {
-                        showtime_id = s.suat_chieu_id,
-                        movie_title = s.Phim != null ? s.Phim.ten_phim : "N/A",
-                        cinema = s.Phong_Chieu != null && s.Phong_Chieu.Rap != null ? s.Phong_Chieu.Rap.ten_rap : "N/A",
-                        room = s.Phong_Chieu != null ? s.Phong_Chieu.ten_phong : "N/A",
-                        date = s.ngay_chieu.ToString("yyyy-MM-dd"),
-                        start_time = s.Ca_Chieu != null ? s.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") : "N/A",
-                        price = s.gia_ve,
-                        total_seats = s.Phong_Chieu != null ? s.Phong_Chieu.Ghes.Count(g => g.trang_thai == 2) : 0,
-                        booked_seats = s.Ves != null ? s.Ves.Count(v => v.Dat_Ve_id != null) : 0,
-                        available_seats = (s.Phong_Chieu != null ? s.Phong_Chieu.Ghes.Count(g => g.trang_thai == 2) : 0) -
-                                        (s.Ves != null ? s.Ves.Count(v => v.Dat_Ve_id != null && (s.Phong_Chieu == null || s.Phong_Chieu.Ghes.Any(g => g.ghe_id == v.ghe_id && g.trang_thai == 2))) : 0)
-                    })
+                    .ToList() // ✅ Materialize first
+                    .OrderBy(s => s.Ca_Chieu != null ? s.Ca_Chieu.gio_bat_dau : TimeSpan.Zero)
                     .ToList();
+
+                var showtimes = new List<object>();
+
+                foreach (var s in allShowtimes)
+                {
+                    try
+                    {
+                        var totalSeats = 0;
+                        var bookedSeats = 0;
+
+                        if (s.Phong_Chieu != null && s.Phong_Chieu.Ghes != null)
+                        {
+                            totalSeats = s.Phong_Chieu.Ghes.Count(g => g.trang_thai == 2);
+                        }
+
+                        if (s.Ves != null)
+                        {
+                            bookedSeats = s.Ves.Count(v => v.Dat_Ve_id != null);
+                        }
+
+                        var startTime = "N/A";
+                        if (s.Ca_Chieu != null)
+                        {
+                            var ts = s.Ca_Chieu.gio_bat_dau;
+                            startTime = string.Format("{0:D2}:{1:D2}", ts.Hours, ts.Minutes);
+                        }
+
+                        showtimes.Add(new
+                        {
+                            showtime_id = s.suat_chieu_id,
+                            movie_title = s.Phim != null ? s.Phim.ten_phim : "N/A",
+                            cinema = s.Phong_Chieu != null && s.Phong_Chieu.Rap != null ? s.Phong_Chieu.Rap.ten_rap : "N/A",
+                            room = s.Phong_Chieu != null ? s.Phong_Chieu.ten_phong : "N/A",
+                            date = s.ngay_chieu.ToString("yyyy-MM-dd"),
+                            start_time = startTime,
+                            price = s.gia_ve,
+                            total_seats = totalSeats,
+                            booked_seats = bookedSeats,
+                            available_seats = totalSeats - bookedSeats
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Skip invalid showtime
+                        LoggingHelper.LogError(ex);
+                        continue;
+                    }
+                }
 
                 if (!showtimes.Any())
                 {
@@ -562,9 +596,10 @@ namespace WebCinema.Controllers.API
                 // ✅ KIỂM TRA 1: Vé PHẢI THUỘC SUẤT CHIẾU HÔM NAY
                 if (showtime.ngay_chieu.Date != today)
                 {
-                    return Ok(new { 
-                        success = false, 
-                        message = $"❌ Vé này thuộc suất chiếu ngày {showtime.ngay_chieu:dd/MM/yyyy}. Chỉ được soát vé hôm nay ({today:dd/MM/yyyy})." 
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"❌ Vé này thuộc suất chiếu ngày {showtime.ngay_chieu:dd/MM/yyyy}. Chỉ được soát vé hôm nay ({today:dd/MM/yyyy})."
                     });
                 }
 
@@ -575,10 +610,11 @@ namespace WebCinema.Controllers.API
                     var selectedShowtime = db.Suat_Chieus.FirstOrDefault(sc => sc.suat_chieu_id == showtimeId.Value);
                     if (selectedShowtime != null)
                     {
-                        return Ok(new { 
-                            success = false, 
+                        return Ok(new
+                        {
+                            success = false,
                             message = $"❌ Vé này thuộc phim '{movie.ten_phim}' ({showtime.Ca_Chieu.gio_bat_dau:hh\\:mm}), " +
-                                     $"không phải phim '{selectedShowtime.Phim.ten_phim}' ({selectedShowtime.Ca_Chieu.gio_bat_dau:hh\\:mm}) đang soát." 
+                                     $"không phải phim '{selectedShowtime.Phim.ten_phim}' ({selectedShowtime.Ca_Chieu.gio_bat_dau:hh\\:mm}) đang soát."
                         });
                     }
                     else
@@ -622,20 +658,22 @@ namespace WebCinema.Controllers.API
                 DateTime showtimeStart = showtimeDate.Add(startTime);
                 DateTime allowedStartTime = showtimeStart.AddMinutes(-30);
                 DateTime allowedEndTime = showtimeStart.AddHours(1);
-                
+
                 if (now > allowedEndTime)
                 {
-                    return Ok(new { 
-                        success = false, 
-                        message = $"❌ Đã quá thời gian soát vé. Chỉ được soát đến {allowedEndTime:dd/MM/yyyy HH:mm}." 
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"❌ Đã quá thời gian soát vé. Chỉ được soát đến {allowedEndTime:dd/MM/yyyy HH:mm}."
                     });
                 }
-                
+
                 if (now < allowedStartTime)
                 {
-                    return Ok(new { 
-                        success = false, 
-                        message = $"❌ Chưa đến giờ soát vé. Vui lòng quay lại sau {allowedStartTime:dd/MM/yyyy HH:mm} (30 phút trước giờ chiếu)." 
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"❌ Chưa đến giờ soát vé. Vui lòng quay lại sau {allowedStartTime:dd/MM/yyyy HH:mm} (30 phút trước giờ chiếu)."
                     });
                 }
 
@@ -843,31 +881,33 @@ namespace WebCinema.Controllers.API
                 DateTime now = DateTime.Now;
                 DateTime showtimeDate = showtime.ngay_chieu.Date;
                 TimeSpan startTime = showtime.Ca_Chieu.gio_bat_dau;
-                
+
                 // Tính thời gian bắt đầu suất chiếu
                 DateTime showtimeStart = showtimeDate.Add(startTime);
-                
+
                 // Cho phép soát vé từ 30 phút trước giờ chiếu
                 DateTime allowedStartTime = showtimeStart.AddMinutes(-30);
-                
+
                 // Cho phép soát vé đến 1 giờ sau giờ chiếu bắt đầu
                 DateTime allowedEndTime = showtimeStart.AddHours(1);
-                
+
                 // ✅ Kiểm tra: Suất chiếu đã qua (quá 1 giờ sau giờ bắt đầu)
                 if (now > allowedEndTime)
                 {
-                    return Ok(new { 
-                        success = false, 
-                        message = $"❌ Đã quá thời gian soát vé. Chỉ được soát đến {allowedEndTime:dd/MM/yyyy HH:mm}." 
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"❌ Đã quá thời gian soát vé. Chỉ được soát đến {allowedEndTime:dd/MM/yyyy HH:mm}."
                     });
                 }
-                
+
                 // ✅ Kiểm tra: Chưa đến giờ soát vé (trước 30 phút)
                 if (now < allowedStartTime)
                 {
-                    return Ok(new { 
-                        success = false, 
-                        message = $"❌ Chưa đến giờ soát vé. Vui lòng quay lại sau {allowedStartTime:dd/MM/yyyy HH:mm} (30 phút trước giờ chiếu)." 
+                    return Ok(new
+                    {
+                        success = false,
+                        message = $"❌ Chưa đến giờ soát vé. Vui lòng quay lại sau {allowedStartTime:dd/MM/yyyy HH:mm} (30 phút trước giờ chiếu)."
                     });
                 }
 
@@ -930,7 +970,7 @@ namespace WebCinema.Controllers.API
             {
                 var now = DateTime.Now;
                 var today = now.Date;
-                
+
                 // Lấy staff hiện tại
                 int staffId = 0;
                 if (!int.TryParse(User.Identity.Name, out staffId))
@@ -942,11 +982,11 @@ namespace WebCinema.Controllers.API
                         staffId = staffByEmail.nhanvien_id;
                     }
                 }
-                
+
                 var showtimesQuery = db.Suat_Chieus
                     .Where(sc => sc.ngay_chieu.Date == today)
                     .AsQueryable();
-                
+
                 // Lọc theo rạp của staff
                 if (staffId > 0)
                 {
@@ -956,30 +996,30 @@ namespace WebCinema.Controllers.API
                         showtimesQuery = showtimesQuery.Where(sc => sc.Phong_Chieu.rap_id == staff.rap_id.Value);
                     }
                 }
-                
+
                 var allShowtimes = showtimesQuery.ToList();
-                
+
                 // Lọc ra các suất chiếu trong khung giờ hợp lệ
                 var validShowtimes = new List<dynamic>();
-                
+
                 foreach (var sc in allShowtimes)
                 {
                     DateTime showtimeStart = sc.ngay_chieu.Date.Add(sc.Ca_Chieu.gio_bat_dau);
                     DateTime allowedStartTime = showtimeStart.AddMinutes(-30);
                     DateTime allowedEndTime = showtimeStart.AddHours(1);
-                    
+
                     bool isValid = now >= allowedStartTime && now <= allowedEndTime;
-                    
+
                     if (isValid)
                     {
-                        var totalTickets = db.Ves.Count(v => v.suat_chieu_id == sc.suat_chieu_id 
-                                                            && v.Dat_Ve_id != null 
+                        var totalTickets = db.Ves.Count(v => v.suat_chieu_id == sc.suat_chieu_id
+                                                            && v.Dat_Ve_id != null
                                                             && v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán");
-                        var verifiedTickets = db.Ves.Count(v => v.suat_chieu_id == sc.suat_chieu_id 
+                        var verifiedTickets = db.Ves.Count(v => v.suat_chieu_id == sc.suat_chieu_id
                                                                 && v.trang_thai_ve == "Đã sử dụng");
-                        
+
                         var timeRemaining = allowedEndTime - now;
-                        
+
                         validShowtimes.Add(new
                         {
                             showtime_id = sc.suat_chieu_id,
@@ -995,7 +1035,7 @@ namespace WebCinema.Controllers.API
                         });
                     }
                 }
-                
+
                 return Ok(new
                 {
                     success = true,
