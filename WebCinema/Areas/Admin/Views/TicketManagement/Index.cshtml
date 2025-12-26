@@ -148,7 +148,7 @@
                         movieId = ViewBag.MovieId,
                         cinemaId = ViewBag.CinemaId,
                         date = ViewBag.Date,
-                        pageNumber = ViewBag.CurrentPage - 1
+                        page = ViewBag.CurrentPage - 1
                     })" class="btn btn-secondary">
                         <i class="fas fa-chevron-left"></i> Trước
                     </a>
@@ -166,7 +166,7 @@
                             movieId = ViewBag.MovieId,
                             cinemaId = ViewBag.CinemaId,
                             date = ViewBag.Date,
-                            pageNumber = i
+                            page = i
                         })" class="btn btn-secondary">@i</a>
                     }
                     else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
@@ -181,7 +181,7 @@
                         movieId = ViewBag.MovieId,
                         cinemaId = ViewBag.CinemaId,
                         date = ViewBag.Date,
-                        pageNumber = ViewBag.CurrentPage + 1
+                        page = ViewBag.CurrentPage + 1
                     })" class="btn btn-secondary">
                         Sau <i class="fas fa-chevron-right"></i>
                     </a>

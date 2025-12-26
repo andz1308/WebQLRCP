@@ -5,9 +5,60 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     Response.ContentEncoding = System.Text.Encoding.UTF8;
     Response.Charset = "utf-8";
-    
+
     var movie = Model.Movie;
-    var genres = Model.Genres;
+    var genres = Model.Genres ?? new List<string>(); // Đảm bảo không null
+
+    // --- 1. XỬ LÝ LOGIC TÁCH ĐỘ TUỔI TỪ THỂ LOẠI ---
+    string badgeClass = "badge-success";
+    string ratingLabel = "P";
+    string ratingDesc = "Phổ biến - Dành cho mọi lứa tuổi";
+    string foundAgeGenre = ""; // Biến để lưu chuỗi độ tuổi tìm thấy
+
+    // Tìm xem trong list genres có chuỗi nào chứa từ khóa độ tuổi không
+    foreach (var g in genres)
+    {
+        string gUpper = g.Trim().ToUpper();
+
+        if (gUpper.Contains("18+") || gUpper.Contains("T18") || gUpper.Contains("C18"))
+        {
+            badgeClass = "badge-danger"; // Đỏ
+            ratingLabel = "18+";
+            ratingDesc = "Phim cấm khán giả dưới 18 tuổi";
+            foundAgeGenre = g; // Đánh dấu để lát nữa không in lại dòng thể loại
+            break; // Tìm thấy rồi thì dừng
+        }
+        else if (gUpper.Contains("16+") || gUpper.Contains("T16") || gUpper.Contains("C16"))
+        {
+            badgeClass = "badge-orange"; // Cam
+            ratingLabel = "16+";
+            ratingDesc = "Phim cấm khán giả dưới 16 tuổi";
+            foundAgeGenre = g;
+            break;
+        }
+        else if (gUpper.Contains("13+") || gUpper.Contains("T13") || gUpper.Contains("C13"))
+        {
+            badgeClass = "badge-warning"; // Vàng
+            ratingLabel = "13+";
+            ratingDesc = "Cấm khán giả dưới 13 tuổi";
+            foundAgeGenre = g;
+            break;
+        }
+        else if (gUpper == "K" || gUpper.Contains("P-")) // Các trường hợp khác
+        {
+            badgeClass = "badge-primary";
+            ratingLabel = "K";
+            ratingDesc = "Dưới 13 tuổi cần người giám hộ";
+            foundAgeGenre = g;
+            break;
+        }
+    }
+
+    // Tạo danh sách thể loại hiển thị (đã loại bỏ cái độ tuổi ra cho đỡ trùng)
+    var displayGenres = genres.Where(g => g != foundAgeGenre).ToList();
+    // -----------------------------------------------------
+
+
     var cast = Model.Cast;
     var avgRating = Model.AverageRating;
     var ratingCount = Model.RatingCount;
@@ -36,10 +87,10 @@
         transition: all 0.3s ease;
     }
 
-    .movie-header:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(255, 107, 53, 0.2);
-    }
+        .movie-header:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.2);
+        }
 
     .movie-poster-large {
         width: 100%;
@@ -51,16 +102,16 @@
         transition: all 0.3s ease;
     }
 
-    .movie-poster-large:hover {
-        transform: scale(1.02);
-        box-shadow: 0 12px 40px rgba(255, 107, 53, 0.4);
-    }
+        .movie-poster-large:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 40px rgba(255, 107, 53, 0.4);
+        }
 
-    .movie-poster-large img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+        .movie-poster-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
     .movie-main-info h1 {
         font-size: 2.5rem;
@@ -132,11 +183,11 @@
         transition: all 0.3s ease;
     }
 
-    .btn-book-ticket:hover {
-        background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
-    }
+        .btn-book-ticket:hover {
+            background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
 
     .btn-trailer {
         padding: 1rem 2rem;
@@ -153,12 +204,12 @@
         gap: 0.5rem;
     }
 
-    .btn-trailer:hover {
-        background: #ff6b35;
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
-    }
+        .btn-trailer:hover {
+            background: #ff6b35;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
 
     .section-detail {
         background: white;
@@ -169,17 +220,17 @@
         transition: all 0.3s ease;
     }
 
-    .section-detail:hover {
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    }
+        .section-detail:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
 
-    .section-detail h2 {
-        font-size: 1.8rem;
-        color: #333;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 3px solid #ff6b35;
-    }
+        .section-detail h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #ff6b35;
+        }
 
     .booking-section {
         background: white;
@@ -190,16 +241,17 @@
         display: none;
     }
 
-    .booking-section.active {
-        display: block;
-        animation: slideDown 0.4s ease;
-    }
+        .booking-section.active {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
 
     @@keyframes slideDown {
         from {
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -225,24 +277,24 @@
         border-bottom: 3px solid transparent;
     }
 
-    .booking-tab:hover {
-        color: #ff6b35;
-        background: #fff;
-    }
+        .booking-tab:hover {
+            color: #ff6b35;
+            background: #fff;
+        }
 
-    .booking-tab.active {
-        background: white;
-        color: #ff6b35;
-        border-bottom-color: #ff6b35;
-    }
+        .booking-tab.active {
+            background: white;
+            color: #ff6b35;
+            border-bottom-color: #ff6b35;
+        }
 
     .booking-content {
         display: none;
     }
 
-    .booking-content.active {
-        display: block;
-    }
+        .booking-content.active {
+            display: block;
+        }
 
     .date-selector {
         display: flex;
@@ -263,18 +315,18 @@
         transition: all 0.3s ease;
     }
 
-    .date-item:hover {
-        border-color: #ff6b35;
-        background: #fff;
-        transform: translateY(-2px);
-    }
+        .date-item:hover {
+            border-color: #ff6b35;
+            background: #fff;
+            transform: translateY(-2px);
+        }
 
-    .date-item.active {
-        background: #ff6b35;
-        border-color: #ff6b35;
-        color: white;
-        transform: translateY(-2px);
-    }
+        .date-item.active {
+            background: #ff6b35;
+            border-color: #ff6b35;
+            color: white;
+            transform: translateY(-2px);
+        }
 
     .date-number {
         font-size: 1.5rem;
@@ -300,11 +352,11 @@
         transition: all 0.3s ease;
     }
 
-    .cinema-item:hover {
-        border-color: #ff6b35;
-        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
-        transform: translateY(-2px);
-    }
+        .cinema-item:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+            transform: translateY(-2px);
+        }
 
     .cinema-name-header {
         font-size: 1.2rem;
@@ -346,13 +398,13 @@
         font-weight: 600;
     }
 
-    .time-slot:hover {
-        background: #ff6b35;
-        border-color: #ff6b35;
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-    }
+        .time-slot:hover {
+            background: #ff6b35;
+            border-color: #ff6b35;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
 
     .cast-grid {
         display: grid;
@@ -365,9 +417,9 @@
         transition: all 0.3s ease;
     }
 
-    .cast-item:hover {
-        transform: translateY(-5px);
-    }
+        .cast-item:hover {
+            transform: translateY(-5px);
+        }
 
     .cast-photo {
         width: 120px;
@@ -415,11 +467,11 @@
         transition: all 0.3s ease;
     }
 
-    .info-item:hover {
-        background: #fff;
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
-        transform: translateX(5px);
-    }
+        .info-item:hover {
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+            transform: translateX(5px);
+        }
 
     .info-label {
         font-weight: 600;
@@ -443,15 +495,20 @@
         animation: fadeIn 0.3s ease;
     }
 
-    .trailer-modal.active {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+        .trailer-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
     @@keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     .trailer-content {
@@ -470,6 +527,7 @@
             transform: translateY(50px);
             opacity: 0;
         }
+
         to {
             transform: translateY(0);
             opacity: 1;
@@ -495,10 +553,10 @@
         transition: all 0.3s ease;
     }
 
-    .trailer-close:hover {
-        background: #ff6b35;
-        transform: rotate(90deg) scale(1.1);
-    }
+        .trailer-close:hover {
+            background: #ff6b35;
+            transform: rotate(90deg) scale(1.1);
+        }
 
     .trailer-video-wrapper {
         position: relative;
@@ -507,14 +565,14 @@
         overflow: hidden;
     }
 
-    .trailer-video-wrapper iframe,
-    .trailer-video-wrapper video {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
+        .trailer-video-wrapper iframe,
+        .trailer-video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
 
     @@media (max-width: 768px) {
         .movie-header {
@@ -557,10 +615,10 @@
         cursor: pointer;
     }
 
-    .btn.btn-primary:hover {
-        background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
-        transform: translateY(-2px);
-    }
+        .btn.btn-primary:hover {
+            background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+            transform: translateY(-2px);
+        }
 
     /* Star Rating Buttons */
     .star-button {
@@ -582,20 +640,20 @@
         line-height: 1;
     }
 
-    .star-button:hover {
-        border-color: #ffc107;
-        background: #fffbf0;
-        transform: translateY(-3px) scale(1.1);
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-        color: #ffc107;
-    }
+        .star-button:hover {
+            border-color: #ffc107;
+            background: #fffbf0;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
 
-    .star-button.selected {
-        background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-        border-color: #ffc107;
-        color: white;
-        box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
-    }
+        .star-button.selected {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            border-color: #ffc107;
+            color: white;
+            box-shadow: 0 6px 16px rgba(255, 193, 7, 0.4);
+        }
 </style>
 
 <div class="movie-detail-container">
@@ -618,24 +676,29 @@
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Thời lượng:</span>
-                    <span>@(movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A")</span>
+                    <span>@(movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "")</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Khởi chiếu:</span>
-                    <span>@(movie.ngay_khoi_chieu.HasValue ? movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy") : "N/A")</span>
+                    <span>@(movie.ngay_khoi_chieu.HasValue ? movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy") : "")</span>
                 </div>
             </div>
-
+            <div class="meta-item">
+                <span class="meta-label">Độ tuổi:</span>
+                <div class="rating-badge-container" title="@ratingDesc">
+                    <span class="badge @badgeClass" style="font-size: 1rem; padding: 6px 12px; border-radius: 4px;">@ratingLabel</span>
+                    <span style="font-size: 0.9rem; color: #888; margin-left: 5px;">(@ratingDesc)</span>
+                </div>
+            </div>
+            <br />
             <div class="movie-rating-detail">
                 <div class="rating-stars-large">
                     @for (int i = 0; i < (int)Math.Round(avgRating); i++)
                     {
-                        <text>★</text>
-                    }
+                        <text>★</text>}
                     @for (int i = 0; i < 5 - (int)Math.Round(avgRating); i++)
                     {
-                        <text>☆</text>
-                    }
+                        <text>☆</text>}
                 </div>
                 <span class="rating-number">@avgRating.ToString("0.0")</span>
                 <span class="rating-total">/ 5 (@ratingCount đánh giá)</span>
@@ -653,8 +716,7 @@
                 {
                     <button class="btn-trailer" onclick="showTrailer()">
                         🎬 Xem Trailer
-                    </button>
-                }
+                    </button>}
             </div>
         </div>
     </div>
@@ -691,7 +753,8 @@
                 cinemaGroups = showtimes
                     .Where(s => s.Phong_Chieu != null && s.Phong_Chieu.Rap != null)
                     .GroupBy(s => s.Phong_Chieu.Rap.rap_id)
-                    .Select(g => new {
+                    .Select(g => new
+                    {
                         Cinema = g.First().Phong_Chieu.Rap,
                         Address = g.First().Phong_Chieu.Rap.dia_chi ?? "",
                         Showtimes = g.ToList()
@@ -705,37 +768,38 @@
             }
 
             // Hàm lấy tỉnh/thành phố từ địa chỉ (lấy phần cuối sau dấu phẩy cuối cùng)
-            Func<string, string> getProvince = (address) => {
+            Func<string, string> getProvince = (address) =>
+            {
                 if (string.IsNullOrEmpty(address)) return "Khác";
                 var parts = address.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length == 0) return "Khác";
                 var province = parts[parts.Length - 1].Trim();
-                
+
                 // Chuẩn hóa tên tỉnh
-                if (province.Contains("Hồ Chí Minh") || province.Contains("HCM") || province.Contains("Sài Gòn")) 
+                if (province.Contains("Hồ Chí Minh") || province.Contains("HCM") || province.Contains("Sài Gòn"))
                     return "Hồ Chí Minh";
-                if (province.Contains("Hà Nội")) 
+                if (province.Contains("Hà Nội"))
                     return "Hà Nội";
-                if (province.Contains("Đà Nẵng")) 
+                if (province.Contains("Đà Nẵng"))
                     return "Đà Nẵng";
-                if (province.Contains("Cần Thơ")) 
+                if (province.Contains("Cần Thơ"))
                     return "Cần Thơ";
-                    
+
                 return province;
             };
 
             // Nhóm rạp theo tỉnh
             var provinceGroups = cinemaGroups
                 .GroupBy(c => getProvince(((dynamic)c).Address))
-                .OrderBy(g => g.Key == "Hồ Chí Minh" ? 0 : 
-                              g.Key == "Hà Nội" ? 1 : 
+                .OrderBy(g => g.Key == "Hồ Chí Minh" ? 0 :
+                              g.Key == "Hà Nội" ? 1 :
                               g.Key == "Đà Nẵng" ? 2 : 3)
                 .ToList();
         }
 
         @if (provinceGroups.Count > 0)
         {
-            <div class="booking-tabs">
+            @*<div class="booking-tabs">
                 @for (int i = 0; i < provinceGroups.Count; i++)
                 {
                     var group = provinceGroups[i];
@@ -743,7 +807,7 @@
                     var sanitizedKey = group.Key.Replace(" ", "");
                     <button class="booking-tab @isActive" onclick="selectRegion('@sanitizedKey')">@group.Key</button>
                 }
-            </div>
+            </div>*@
 
             <!-- Cinema Lists by Province -->
             for (int i = 0; i < provinceGroups.Count; i++)
@@ -770,7 +834,7 @@
                                     }
                                     @foreach (var showtime in sortedShowtimes)
                                     {
-                                        <div class="time-slot" 
+                                        <div class="time-slot"
                                              data-showtime-id="@showtime.suat_chieu_id"
                                              data-showtime-date="@showtime.ngay_chieu.ToString("yyyy-MM-dd")"
                                              onclick="bookShowtime(@showtime.suat_chieu_id)">
@@ -802,12 +866,12 @@
                     <i class="fas fa-user-tie"></i>
                     <div>
                         <span class="info-label">Đạo diễn</span>
-                        
-                            <a href="@Url.Action("Director", "Person", new { id = Model.Movie.Dao_Dien.daodien_id })" style="color: #000000 ; text-decoration: none; font-weight: 600; transition: color 0.3s; ">
-                                @Model.Movie.Dao_Dien.ho_ten
-                            </a>
-            
-                        
+
+                        <a href="@Url.Action("Director", "Person", new { id = Model.Movie.Dao_Dien.daodien_id })" style="color: #000000 ; text-decoration: none; font-weight: 600; transition: color 0.3s; ">
+                            @Model.Movie.Dao_Dien.ho_ten
+                        </a>
+
+
                     </div>
                 </div>
             }
@@ -823,7 +887,7 @@
                             {
                                 if (vaiDien.Dien_Vien != null)
                                 {
-                                    <a href="@Url.Action("Actor", "Person", new { id = vaiDien.Dien_Vien.dienvien_id })" 
+                                    <a href="@Url.Action("Actor", "Person", new { id = vaiDien.Dien_Vien.dienvien_id })"
                                        style="padding: 0.3rem 0.8rem; background: #f0f0f0; border-radius: 20px; color: #333; text-decoration: none; font-size: 0.9rem; transition: all 0.3s; display: inline-block;">
                                         @vaiDien.Dien_Vien.ho_ten
                                         @if (!string.IsNullOrEmpty(vaiDien.ten_vai_dien))
@@ -850,26 +914,26 @@
             }
 
             @*@if (Model.Movie.thoi_luong.HasValue)
-            {
-                <div class="info-item">
-                    <i class="fas fa-clock"></i>
-                    <div>
-                        <span class="info-label">Thời lượng</span>
-                        <span class="info-value">@Model.Movie.thoi_luong phút</span>
+                {
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <span class="info-label">Thời lượng</span>
+                            <span class="info-value">@Model.Movie.thoi_luong phút</span>
+                        </div>
                     </div>
-                </div>
-            }
+                }
 
-            @if (Model.Movie.ngay_khoi_chieu.HasValue)
-            {
-                <div class="info-item">
-                    <i class="fas fa-calendar"></i>
-                    <div>
-                        <span class="info-label">Ngày khởi chiếu</span>
-                        <span class="info-value">@Model.Movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy")</span>
+                @if (Model.Movie.ngay_khoi_chieu.HasValue)
+                {
+                    <div class="info-item">
+                        <i class="fas fa-calendar"></i>
+                        <div>
+                            <span class="info-label">Ngày khởi chiếu</span>
+                            <span class="info-value">@Model.Movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy")</span>
+                        </div>
                     </div>
-                </div>
-            }*@
+                }*@
         </div>
     </div>
 
@@ -889,8 +953,8 @@
                                 <img src="@actorImg" alt="@actor.Dien_Vien.ho_ten" />
                             }
                         </div>
-                        <div class="cast-name">@(actor.Dien_Vien != null ? actor.Dien_Vien.ho_ten : "N/A")</div>
-                        <div class="cast-role">@(actor.ten_vai_dien ?? "N/A")</div>
+                        <div class="cast-name">@(actor.Dien_Vien != null ? actor.Dien_Vien.ho_ten : "")</div>
+                        <div class="cast-role">@(actor.ten_vai_dien ?? "")</div>
                     </div>
                 }
             </div>
@@ -900,31 +964,31 @@
     <!-- Reviews Section -->
     <div class="section-detail">
         <h2>Đánh Giá Từ Khách Hàng</h2>
-        
+
         <!-- ✅ NÚT ĐÁNH GIÁ - Click để mở form -->
         <div style="margin-bottom: 2rem;">
-            @*<button 
-                onclick="toggleReviewInfo()" 
-                style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: space-between; font-size: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <i class="fas fa-info-circle" style="color: #2196f3; font-size: 1.5rem;"></i>
-                    <div style="text-align: left;">
-                        <strong style="color: #1565c0; font-size: 1.1rem; display: block;">Đánh giá sau khi xem phim</strong>
-                        <span style="color: #1976d2; font-size: 0.9rem;">Nhấn để xem hướng dẫn</span>
+            @*<button
+                    onclick="toggleReviewInfo()"
+                    style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #2196f3; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: space-between; font-size: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <i class="fas fa-info-circle" style="color: #2196f3; font-size: 1.5rem;"></i>
+                        <div style="text-align: left;">
+                            <strong style="color: #1565c0; font-size: 1.1rem; display: block;">Đánh giá sau khi xem phim</strong>
+                            <span style="color: #1976d2; font-size: 0.9rem;">Nhấn để xem hướng dẫn</span>
+                        </div>
                     </div>
-                </div>
-                <i class="fas fa-chevron-down" id="reviewInfoIcon" style="color: #2196f3; transition: transform 0.3s ease;"></i>
-            </button>*@
-            
+                    <i class="fas fa-chevron-down" id="reviewInfoIcon" style="color: #2196f3; transition: transform 0.3s ease;"></i>
+                </button>*@
+
             <!-- Nội dung mở rộng -->
             <div id="reviewInfoContent" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f5f5f5; border-radius: 12px; border-left: 4px solid #2196f3; animation: slideDown 0.3s ease;">
                 <p style="margin: 0; color: #1976d2; line-height: 1.6;">
                     <i class="fas fa-star" style="color: #ffc107;"></i>
-                    Bạn có thể đánh giá phim này <strong>sau khi xem phim</strong>.<br/>
+                    Bạn có thể đánh giá phim này <strong>sau khi xem phim</strong>.<br />
                     <i class="fas fa-arrow-right" style="color: #2196f3; margin-top: 0.5rem;"></i>
                     Vui lòng vào <strong>"Vé của tôi"</strong> → Chọn vé đã xem → Nhấn <strong>"Đánh giá"</strong>
                 </p>
-                <a href="@Url.Action("MyTickets", "TicketRefund")" 
+                <a href="@Url.Action("MyTickets", "TicketRefund")"
                    style="display: inline-block; margin-top: 1rem; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
                     <i class="fas fa-ticket-alt"></i> Đến trang Vé của tôi
                 </a>
@@ -933,19 +997,19 @@
 
         @{
             var allReviews = movie.Danh_Gias.ToList();
-            
+
             // Function to check if a review is an admin reply
-            Func<WebCinema.Models.Danh_Gia, bool> isAdminReply = r => 
-                r.noi_dung != null && 
-                (r.noi_dung.Contains("[AdminReply]") || 
-                 r.noi_dung.Contains("[Phản hồi từ Admin]") || 
+            Func<WebCinema.Models.Danh_Gia, bool> isAdminReply = r =>
+                r.noi_dung != null &&
+                (r.noi_dung.Contains("[AdminReply]") ||
+                 r.noi_dung.Contains("[Phản hồi từ Admin]") ||
                  r.noi_dung.Contains("[ReplyTo:"));
 
             // Function to extract parent ID from reply
             Func<WebCinema.Models.Danh_Gia, int?> getParentId = r =>
             {
                 if (r.noi_dung == null) return null;
-                
+
                 // Try to extract ParentID from [ParentID:123] format
                 var match = System.Text.RegularExpressions.Regex.Match(r.noi_dung, @"\[ParentID:(\d+)\]");
                 int parentId = 0;
@@ -953,14 +1017,14 @@
                 {
                     return parentId;
                 }
-                
+
                 // Try old format [ReplyTo:123]
                 match = System.Text.RegularExpressions.Regex.Match(r.noi_dung, @"\[ReplyTo:(\d+)\]");
                 if (match.Success && int.TryParse(match.Groups[1].Value, out parentId))
                 {
                     return parentId;
                 }
-                
+
                 return null;
             };
 
@@ -968,7 +1032,7 @@
             Func<string, string> cleanReplyContent = content =>
             {
                 if (string.IsNullOrEmpty(content)) return "";
-                return System.Text.RegularExpressions.Regex.Replace(content, 
+                return System.Text.RegularExpressions.Regex.Replace(content,
                     @"\[AdminReply\]|\[ParentID:\d+\]|\[Phản hồi từ Admin\]|\[ReplyTo:\d+\]", "").Trim();
             };
 
@@ -998,8 +1062,8 @@
                 @foreach (var review in parentReviews)
                 {
                     var stars = review.diem_rating ?? 0;
-                    var replies = repliesMap.ContainsKey(review.Danh_Gia_id) 
-                        ? repliesMap[review.Danh_Gia_id].OrderBy(r => r.ngay_Danh_Gia).ToList() 
+                    var replies = repliesMap.ContainsKey(review.Danh_Gia_id)
+                        ? repliesMap[review.Danh_Gia_id].OrderBy(r => r.ngay_Danh_Gia).ToList()
                         : new List<WebCinema.Models.Danh_Gia>();
 
                     <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; background: white; transition: all 0.3s ease;">
@@ -1038,7 +1102,7 @@
                                         </div>
                                     }
                                 </div>
-                                
+
                                 <p style="color: #555; margin: 0; line-height: 1.6; padding: 1rem; background: #f9f9f9; border-radius: 8px;">
                                     @review.noi_dung
                                 </p>
@@ -1172,12 +1236,12 @@
         const modal = document.getElementById('trailerModal');
         const wrapper = document.getElementById('trailerWrapper');
         const trailerUrl = '@Html.Raw(trailer ?? "")';
-        
+
         if (!trailerUrl) {
             alert('Trailer chưa có sẵn!');
             return;
         }
-        
+
         if (trailerUrl.includes('youtube.com') || trailerUrl.includes('youtu.be')) {
             let videoId = '';
             if (trailerUrl.includes('youtube.com/watch')) {
@@ -1189,10 +1253,10 @@
             } else if (trailerUrl.includes('youtu.be/')) {
                 videoId = trailerUrl.split('youtu.be/')[1];
             }
-            
-            wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
-                                frameborder="0" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+
+            wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowfullscreen></iframe>`;
         } else {
             wrapper.innerHTML = `<video controls autoplay>
@@ -1200,7 +1264,7 @@
                                     Your browser does not support the video tag.
                                 </video>`;
         }
-        
+
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
@@ -1208,7 +1272,7 @@
     function closeTrailer() {
         const modal = document.getElementById('trailerModal');
         const wrapper = document.getElementById('trailerWrapper');
-        
+
         modal.classList.remove('active');
         wrapper.innerHTML = '';
         document.body.style.overflow = 'auto';
@@ -1245,7 +1309,7 @@
     function toggleReviewInfo() {
         const content = document.getElementById('reviewInfoContent');
         const icon = document.getElementById('reviewInfoIcon');
-        
+
         if (content.style.display === 'none' || content.style.display === '') {
             content.style.display = 'block';
             icon.style.transform = 'rotate(180deg)';

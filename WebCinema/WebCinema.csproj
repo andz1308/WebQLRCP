@@ -294,6 +294,7 @@
     <Compile Include="Areas\Admin\Controllers\TicketManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\TicketRefundManagementController.cs" />
     <Compile Include="Areas\Admin\Controllers\UserManagementController.cs" />
+    <Compile Include="Areas\Admin\Models\ShowtimeVerificationViewModel.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\API\AuthApiController.cs" />
     <Compile Include="Controllers\API\CustomerApiController.cs" />
@@ -351,6 +352,7 @@
     <Compile Include="Services\MovieService.cs" />
     <Compile Include="Services\FoodService.cs" />
     <Compile Include="Services\InvoiceService.cs" />
+    <Compile Include="Services\PurchaseOrderPdfService.cs" />
     <Compile Include="Services\ShowtimeService.cs" />
     <Compile Include="System\Net\Http\MediaTypeHeaderValue.cs" />
   </ItemGroup>
@@ -465,6 +467,8 @@
     <Content Include="Areas\Admin\Views\SupplierManagement\Create.cshtml" />
     <Content Include="Areas\Admin\Views\SupplierManagement\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\ManagerPurchaseOrder\_CinemaStockPartial.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffPurchaseOrder\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\StaffOfflineBooking\VerifyTicketForShowtime.cshtml" />
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

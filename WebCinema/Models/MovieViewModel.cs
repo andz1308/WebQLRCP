@@ -11,5 +11,9 @@ namespace WebCinema.Models
 
         // Resolved image path (absolute URL or virtual path starting with '/').
         public string ImagePath { get; set; }
+        
+        // ? THÊM: Properties cho Hot Movies
+        public int SoVeBan { get; set; }
+        public decimal TongDoanhThu { get; set; }
     }
 }

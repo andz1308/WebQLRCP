@@ -902,7 +902,7 @@
                         <th>Doanh Thu Đồ Ăn</th>
                         <th>Tổng Doanh Thu</th>
                         <th>Vé Bán / Vé Hủy</th>
-                        <th>Tỷ Lệ Lấp Đầy</th>
+                        @*<th>Tỷ Lệ Lấp Đầy</th>*@
                         <th>Suất Chiếu</th>
                     </tr>
                 </thead>
@@ -932,14 +932,14 @@
                                 <span class="badge badge-success">@rap.SoVeBan</span> /
                                 <span class="badge badge-danger">@rap.SoVeHuy</span>
                             </td>
-                            <td>
+                            @*<td>
                                 <strong style="color: @(rap.TyLeLapDay > 70 ? "#27ae60" : rap.TyLeLapDay > 50 ? "#f39c12" : "#e74c3c");">
                                     @rap.TyLeLapDay.ToString("F1")%
                                 </strong>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: @(rap.TyLeLapDay)%"></div>
                                 </div>
-                            </td>
+                            </td>*@
                             <td>@rap.SoSuatChieu</td>
                         </tr>
                     }
@@ -1299,7 +1299,7 @@
                             <th>Số Đơn</th>
                             <th>Số Vé</th>
                             <th>Tổng Chi Tiêu</th>
-                            <th>Điểm Tích Lũy</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -1322,11 +1322,7 @@
                                         @kh.TongChiTieu.ToString("N0") đ
                                     </strong>
                                 </td>
-                                <td>
-                                    <span class="badge @(kh.DiemTichLuy >= 100 ? "badge-warning" : "badge-info")">
-                                        @kh.DiemTichLuy điểm
-                                    </span>
-                                </td>
+                                
                             </tr>
                         }
                     </tbody>

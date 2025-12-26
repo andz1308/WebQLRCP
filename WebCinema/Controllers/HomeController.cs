@@ -20,6 +20,78 @@ namespace WebCinema.Controllers
             DateTime today = DateTime.Today;
             DateTime filterDate = date.HasValue ? date.Value.Date : today;
 
+            // ✅ THÊM: Lấy Top 3 Phim Hot (Doanh thu + Vé bán cao nhất trong tháng này)
+            var currentMonth = DateTime.Now.Month;
+            var currentYear = DateTime.Now.Year;
+
+            //var hotMovies = (from v in db.Ves
+            //                join dv in db.Dat_Ves on v.Dat_Ve_id equals dv.Dat_Ve_id
+            //                join sc in db.Suat_Chieus on v.suat_chieu_id equals sc.suat_chieu_id
+            //                join p in db.Phims on sc.phim_id equals p.phim_id
+            //                where dv.trang_thai_Dat_Ve == "Đã Thanh toán"
+            //                      && dv.ngay_tao.Month == currentMonth
+            //                      && dv.ngay_tao.Year == currentYear
+            //                group new { v, dv } by new { p.phim_id, p.ten_phim, p.hinh_anh, p.thoi_luong } into g
+            //                select new
+            //                {
+            //                    PhimId = g.Key.phim_id,
+            //                    TenPhim = g.Key.ten_phim,
+            //                    HinhAnh = g.Key.hinh_anh,
+            //                    ThoiLuong = g.Key.thoi_luong,
+            //                    SoVeBan = g.Count(),
+            //                    TongDoanhThu = g.Sum(x => x.dv.tong_tien)
+            //                })
+            //                .OrderByDescending(x => x.TongDoanhThu)
+            //                .ThenByDescending(x => x.SoVeBan)
+            //                .Take(3)
+            //                .ToList();
+            var startMonth = new DateTime(currentYear, currentMonth, 1);
+            var endMonth = startMonth.AddMonths(1);
+
+            var hotMovies = (from v in db.Ves
+                             join dv in db.Dat_Ves on v.Dat_Ve_id equals dv.Dat_Ve_id
+                             join sc in db.Suat_Chieus on v.suat_chieu_id equals sc.suat_chieu_id
+                             join p in db.Phims on sc.phim_id equals p.phim_id
+                             where dv.trang_thai_Dat_Ve == "Đã Thanh toán"
+                                   && dv.ngay_tao >= startMonth
+                                   && dv.ngay_tao < endMonth
+                             group new { v, dv } by new
+                             {
+                                 p.phim_id,
+                                 p.ten_phim,
+                                 p.hinh_anh,
+                                 p.thoi_luong
+                             } into g
+                             select new
+                             {
+                                 PhimId = g.Key.phim_id,
+                                 TenPhim = g.Key.ten_phim,
+                                 HinhAnh = g.Key.hinh_anh,
+                                 ThoiLuong = g.Key.thoi_luong,
+                                 SoVeBan = g.Count(),
+                                 TongDoanhThu = g.Sum(x => x.dv.tong_tien)
+                             })
+                             .OrderByDescending(x => x.TongDoanhThu)
+                             .ThenByDescending(x => x.SoVeBan)
+                             .Take(3)
+                             .ToList();
+
+
+            // Tạo ViewModel cho Hot Movies
+            var hotMoviesViewModel = hotMovies.Select(hm => new MovieViewModel
+            {
+                Movie = db.Phims.FirstOrDefault(p => p.phim_id == hm.PhimId),
+                Genres = movieService.GetMovieGenres(hm.PhimId),
+                AverageRating = movieService.GetAverageRating(hm.PhimId),
+                RatingCount = movieService.GetRatingCount(hm.PhimId),
+                ImagePath = ResolveImagePath(hm.HinhAnh),
+                // Thêm thông tin hot movie
+                SoVeBan = hm.SoVeBan,
+                TongDoanhThu = (decimal)hm.TongDoanhThu
+            }).ToList();
+
+            ViewBag.HotMovies = hotMoviesViewModel;
+
             // Build showtime query depending on whether a specific date was requested
             var showtimeQuery = db.Suat_Chieus.AsQueryable();
 
@@ -118,7 +190,11 @@ namespace WebCinema.Controllers
             ViewBag.Cinemas = cinemas;
 
             // ✅ CHỈ LẤY CÁC PROPERTY CẦN THIẾT
+            string[] excludedRatings1 = { "P", "K", "T13", "T16", "T18", "C", "18+", "16+", "13+" };
+
+            // 2. Query DB và lọc bỏ các mã trên
             var genres = db.Loai_Phims
+                .Where(g => !excludedRatings1.Contains(g.ten_loai)) // 👈 Thêm dòng này: Chỉ lấy cái nào KHÔNG nằm trong danh sách loại trừ
                 .OrderBy(g => g.ten_loai)
                 .Select(g => new
                 {
@@ -126,6 +202,7 @@ namespace WebCinema.Controllers
                     ten_loai = g.ten_loai
                 })
                 .ToList();
+
             ViewBag.Genres = genres;
 
             // ✅ Load danh sách ngôn ngữ từ suất chiếu matching our showtimeQuery (respect selected date)

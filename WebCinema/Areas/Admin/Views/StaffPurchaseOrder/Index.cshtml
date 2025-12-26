@@ -27,7 +27,9 @@
                 <th>Ghi Chú</th>
                 <th style="width: 200px;">Nhà Cung Cấp</th>
                 <th style="width: 150px;">Trạng Thái</th>
-                <th style="width: 150px;">Thao Tác</th>
+                <th style="width: 180px;"></th>
+                <th style="width: 180px;">Thao Tác</th>
+
             </tr>
         </thead>
         <tbody>
@@ -90,25 +92,35 @@
                                 </span>
                             }
                         </td>
+
                         <td style="text-align: center;">
-                            @if (item.trang_thai == "Đã duyệt")
-                            {
-                                <button class="btn btn-sm btn-success" onclick="confirmReceipt(@item.phieu_nhap_id)" title="Xác nhận đã nhập kho">
-                                    <i class="fas fa-box-open"></i> Nhập Kho
-                                </button>
-                            }
-                            else if (item.trang_thai == "Chờ duyệt")
-                            {
-                                <small style="color: #999;">
-                                    <i class="fas fa-hourglass-half"></i> Đang chờ quản lý...
-                                </small>
-                            }
-                            else if (item.trang_thai == "Đã nhập")
-                            {
-                                <span style="color: #27ae60;">
-                                    <i class="fas fa-check-double"></i> Đã hoàn thành
-                                </span>
-                            }
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                                <a href="@Url.Action("Details", new { id = item.phieu_nhap_id })" class="btn btn-sm btn-detail" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 0.5rem; justify-content: center; align-items: center;">
+                                @if (item.trang_thai == "Đã duyệt")
+                                {
+                                    <button class="btn btn-sm btn-success" onclick="confirmReceipt(@item.phieu_nhap_id)" title="Xác nhận đã nhập kho">
+                                        <i class="fas fa-box-open"></i> Nhập Kho
+                                    </button>
+                                }
+                                else if (item.trang_thai == "Chờ duyệt")
+                                {
+                                    <small style="color: #999;">
+                                        <i class="fas fa-hourglass-half"></i> Đang chờ...
+                                    </small>
+                                }
+                                else if (item.trang_thai == "Đã nhập")
+                                {
+                                    <span style="color: #27ae60;">
+                                        <i class="fas fa-check-double"></i> Hoàn thành
+                                    </span>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }
@@ -241,6 +253,20 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
             background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+        }
+
+    .btn-detail {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+        .btn-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            color: white;
+            text-decoration: none;
         }
 
     .btn-sm {

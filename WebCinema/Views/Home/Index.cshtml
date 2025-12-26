@@ -11,6 +11,356 @@
     ViewBag.Title = "Home Page";
 }
 
+<style>
+    /* ==================== HOT MOVIES SECTION ==================== */
+    .hot-movies-section {
+        padding: 3rem 2rem;
+        background: #f8f9fa;
+        position: relative;
+    }
+
+    .hot-movies-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .hot-movies-header .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .hot-movies-header .section-title i {
+        color: #ff6b35;
+        font-size: 2rem;
+    }
+
+    .hot-badge {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 0.4rem 1.2rem;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+
+    .hot-subtitle {
+        color: #666;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .hot-movies-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .hot-movie-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        border: 2px solid transparent;
+    }
+
+    .hot-movie-card.rank-1 {
+        border-color: #ffd700;
+    }
+
+    .hot-movie-card.rank-2 {
+        border-color: #c0c0c0;
+    }
+
+    .hot-movie-card.rank-3 {
+        border-color: #cd7f32;
+    }
+
+    .hot-movie-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .hot-rank-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+    }
+
+    .rank-number {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .rank-1 .rank-number {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .rank-2 .rank-number {
+        background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+        color: #333;
+    }
+
+    .rank-3 .rank-number {
+        background: linear-gradient(135deg, #cd7f32 0%, #e89b5c 100%);
+        color: white;
+    }
+
+    .hot-movie-poster {
+        position: relative;
+        height: 380px;
+        overflow: hidden;
+    }
+
+    .hot-movie-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .hot-movie-card:hover .hot-movie-poster img {
+        transform: scale(1.05);
+    }
+
+    .hot-movie-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        font-size: 4rem;
+    }
+
+    .hot-movie-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        padding: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .hot-movie-card:hover .hot-movie-overlay {
+        opacity: 1;
+    }
+
+    .hot-watch-btn {
+        padding: 0.7rem 1.5rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hot-watch-btn:hover {
+        background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+        transform: scale(1.05);
+    }
+
+    .hot-movie-info {
+        padding: 1.25rem;
+    }
+
+    .hot-movie-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.4;
+        height: 3rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .hot-movie-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-bottom: 0.75rem;
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    .hot-movie-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .hot-movie-meta i {
+        color: #ff6b35;
+        font-size: 0.9rem;
+    }
+
+    .hot-movie-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        background: #fff5f0;
+        border-radius: 6px;
+    }
+
+    .hot-movie-rating .stars {
+        color: #ffd700;
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+
+    .hot-movie-rating .rating-text {
+        color: #666;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .hot-movie-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .hot-stat {
+        background: #f8f9fa;
+        padding: 0.75rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .hot-stat:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+        border-color: #ff6b35;
+    }
+
+    .hot-stat i {
+        font-size: 1.4rem;
+        color: #ff6b35;
+    }
+
+    .hot-stat div {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .hot-stat strong {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .hot-stat span {
+        font-size: 0.7rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .hot-book-btn {
+        width: 100%;
+        padding: 0.85rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .hot-book-btn:hover {
+        background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3);
+    }
+
+    /* Responsive */
+    @@media (max-width: 1200px) {
+        .hot-movies-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .hot-movie-card.rank-1 {
+            grid-column: 1 / -1;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .hot-movies-section {
+            padding: 2rem 1rem;
+        }
+        
+        .hot-movies-header .section-title {
+            font-size: 1.6rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .hot-movies-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .hot-movie-poster {
+            height: 320px;
+        }
+        
+        .hot-movie-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
 <!-- BANNER SLIDER -->
 <section class="banner-slider">
     <div class="slider-container">
@@ -93,6 +443,107 @@
         </div>
     </form>
 </section>
+
+<!-- HOT MOVIES SECTION -->
+@if (ViewBag.HotMovies != null && ((List<WebCinema.Models.MovieViewModel>)ViewBag.HotMovies).Count > 0)
+{
+    <section class="hot-movies-section">
+        <div class="hot-movies-header">
+            <h2 class="section-title">
+                <i class="fas fa-fire"></i> Phim Hot Tháng Này
+                @*<span class="hot-badge">TOP 3</span>*@
+            </h2>
+        </div>
+
+        <div class="hot-movies-grid">
+            @{
+                var hotMovies = (List<WebCinema.Models.MovieViewModel>)ViewBag.HotMovies;
+                int rank = 1;
+            }
+            @foreach (var item in hotMovies)
+            {
+                var movie = item.Movie;
+                var genres = item.Genres;
+                var avgRating = item.AverageRating;
+                var ratingCount = item.RatingCount;
+                var imgPath = item.ImagePath;
+                
+                string genreText = genres != null && genres.Any() ? string.Join(", ", genres) : "Chưa phân loại";
+                string durationText = movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A";
+                
+                int fullStars = (int)Math.Round(avgRating);
+                int emptyStars = 5 - fullStars;
+                
+                string rankClass = rank == 1 ? "rank-1" : rank == 2 ? "rank-2" : "rank-3";
+                string rankIcon = rank == 1 ? "👑" : rank == 2 ? "🥈" : "🥉";
+
+                <div class="hot-movie-card @rankClass">
+                    <div class="hot-rank-badge">
+                        <span class="rank-number">@rankIcon #@rank</span>
+                    </div>
+                    
+                    <div class="hot-movie-poster">
+                        @if (!string.IsNullOrEmpty(imgPath))
+                        {
+                            <img src="@imgPath" alt="@movie.ten_phim" />
+                        }
+                        else if (!string.IsNullOrEmpty(movie.hinh_anh))
+                        {
+                            string imgSrc = movie.hinh_anh;
+                            if (imgSrc.StartsWith("~"))
+                            {
+                                imgSrc = Url.Content(imgSrc);
+                            }
+                            else if (!imgSrc.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !imgSrc.StartsWith("/"))
+                            {
+                                imgSrc = Url.Content("~/Content/images/movies/" + imgSrc);
+                            }
+                            <img src="@imgSrc" alt="@movie.ten_phim" />
+                        }
+                        else
+                        {
+                            <div class="hot-movie-placeholder">🎬</div>
+                        }
+                        
+                        <div class="hot-movie-overlay">
+                            <button class="hot-watch-btn" onclick="location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">
+                                <i class="fas fa-play"></i> Xem Chi Tiết
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="hot-movie-info">
+                        <h3 class="hot-movie-title">@movie.ten_phim</h3>
+                        <p class="hot-movie-meta">
+                            <span><i class="fas fa-film"></i> @genreText</span>
+                            <span><i class="fas fa-clock"></i> @durationText</span>
+                        </p>
+                        
+                        <div class="hot-movie-rating">
+                            <span class="stars">
+                                @for (int i = 0; i < fullStars; i++)
+                                {
+                                    <text>★</text>
+                                }
+                                @for (int i = 0; i < emptyStars; i++)
+                                {
+                                    <text>☆</text>
+                                }
+                            </span>
+                            <span class="rating-text">@avgRating.ToString("0.0")/5 (@ratingCount)</span>
+                        </div>  
+                        
+                        <button class="hot-book-btn" onclick="location.href='@Url.Action("Detail", "Home", new { id = movie.phim_id })'">
+                            <i class="fas fa-shopping-cart"></i> Đặt Vé Ngay
+                        </button>
+                    </div>
+                </div>
+                
+                rank++;
+            }
+        </div>
+    </section>
+}
 
 <section class="movies-section" id="movies">
     <h2 class="section-title">Phim Đang Chiếu</h2>

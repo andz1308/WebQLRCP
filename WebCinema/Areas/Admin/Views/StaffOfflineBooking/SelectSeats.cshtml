@@ -360,7 +360,8 @@
         }
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 360px; gap:1.5rem;">
+    <div style="display:grid; grid-template-columns: 1fr 400px; gap:2rem; margin-top: 2rem;">
+        <!-- COLUMN 1: Form nhập liệu -->
         <div>
             <div style="background:white; padding:1rem; border-radius:8px; margin-bottom:1rem;">
                 <h3 style="margin:0 0 0.5rem 0;">Thông tin khách hàng</h3>
@@ -390,11 +391,11 @@
                                     </div>
                                     <div style="display:flex; gap:0.5rem; align-items:center;">
                                         <button type="button" class="btn-food-qty" onclick="changeFoodQty(this, -1)">-</button>
-                                        <input type="number" class="food-quantity" data-food-id="@food.Do_An_id" data-food-price="@(food.gia ?? 0)" data-max="@maxQty" value="0" min="0" readonly style="width:50px; text-align:center; padding:0.3rem; border:1px solid #ddd; border-radius:4px;" />
+                                        <input type="number" class="food-quantity" data-food-id="@food.Do_An_id" data-food-name="@food.ten_san_pham" data-food-price="@(food.gia ?? 0)" data-max="@maxQty" value="0" min="0" readonly style="width:50px; text-align:center; padding:0.3rem; border:1px solid #ddd; border-radius:4px;" />
                                         <button type="button" class="btn-food-qty" onclick="changeFoodQty(this, 1)">+</button>
                                     </div>
                                 </div>
-                            }
+            }
                         }
                         else
                         { <div class="text-muted font-italic">Không có đồ ăn.</div>}
@@ -418,52 +419,125 @@
 
             <div style="background:white; padding:1rem; border-radius:8px; margin-bottom: 1rem;">
                 <h3 style="margin:0 0 0.8rem 0;">Phương thức thanh toán</h3>
-                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                    <label class="payment-option active" style="flex:1; min-width:120px; cursor:pointer;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <label class="payment-option active" style="cursor:pointer;">
                         <input type="radio" name="paymentMethod" value="cash" checked onchange="updatePaymentUI()" style="display:none" />
-                        <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
-                            <div style="font-size:1.5rem;">💵</div>
-                            <div style="font-weight:bold;">Tiền mặt</div>
+                        <div class="option-box" style="border:2px solid #ddd; padding:15px; border-radius:8px; text-align:center; transition: all 0.3s ease;">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">💵</div>
+                            <div style="font-weight:bold; font-size:0.95rem;">Tiền mặt</div>
                         </div>
                     </label>
-                    <label class="payment-option" style="flex:1; min-width:120px; cursor:pointer;">
+                    <label class="payment-option" style="cursor:pointer;">
                         <input type="radio" name="paymentMethod" value="vnpay" onchange="updatePaymentUI()" style="display:none" />
-                        <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
-                            <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" height="30" style="margin-bottom:5px;" />
-                            <div style="font-weight:bold;">VNPay QR</div>
+                        <div class="option-box" style="border:2px solid #ddd; padding:15px; border-radius:8px; text-align:center; transition: all 0.3s ease;">
+                            
+                            <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" height="40" style="margin-bottom:0.5rem; display:block; margin-left:auto; margin-right:auto;" />
+
+                            <div style="font-weight:bold; font-size:0.95rem;">VNPay QR</div>
                         </div>
                     </label>
-                    @*<label class="payment-option" style="flex:1; min-width:120px; cursor:pointer;">
-                            <input type="radio" name="paymentMethod" value="card" onchange="updatePaymentUI()" style="display:none" />
-                            <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
-                                <div style="font-size:1.5rem;">💳</div>
-                                <div style="font-weight:bold;">Thẻ ATM</div>
-                            </div>
-                        </label>*@
                 </div>
             </div>
         </div>
 
+        <!-- COLUMN 2: Panel thông tin đơn hàng -->
         <div>
-            <div class="summary">
-                <div class="info">
-                    <div>
-                        <div style="color:#666; font-size:0.85rem;">Ghế đã chọn</div>
-                        <div id="selectedSeatsText" style="font-weight:700;">Chưa chọn</div>
+            <!-- ✅ Thông tin suất chiếu - Thiết kế mới -->
+            <div style="background: white; border: 2px solid #e0e0e0; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.2rem; color: #333; padding-bottom: 0.75rem; border-bottom: 2px solid #f0f0f0;">
+                    <i class="fas fa-film" style="color: #ff6b35;"></i> Thông Tin Suất Chiếu
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-ticket-alt" style="font-size: 1.1rem; width: 20px; margin-top: 2px; color: #666;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">Phim</div>
+                            <div style="font-weight: 700; font-size: 1rem; color: #333;">@ViewBag.MovieName</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style="color:#666; font-size:0.85rem;">Số lượng</div>
-                        <div id="seatCount" style="font-weight:700;">0</div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-calendar-day" style="font-size: 1.1rem; width: 20px; margin-top: 2px; color: #666;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">Ngày chiếu</div>
+                            <div style="font-weight: 600; color: #333;">@ViewBag.ShowDate</div>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <div style="color:#666; font-size:0.85rem;">Tổng tiền</div>
-                    <div class="total" id="totalPrice">0 ₫</div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-clock" style="font-size: 1.1rem; width: 20px; margin-top: 2px; color: #666;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">Giờ chiếu</div>
+                            <div style="font-weight: 700; font-size: 1.1rem; color: #ff6b35;">@ViewBag.ShowTime</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-door-open" style="font-size: 1.1rem; width: 20px; margin-top: 2px; color: #666;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">Phòng chiếu</div>
+                            <div style="font-weight: 600; color: #333;">@ViewBag.RoomName</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-money-bill-wave" style="font-size: 1.1rem; width: 20px; margin-top: 2px; color: #666;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 2px;">Giá vé/ghế</div>
+                            <div style="font-weight: 700; color: #27ae60;">@ViewBag.TicketPrice.ToString("N0") ₫</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div style="margin-top:1rem; display:flex; gap:0.5rem;">
-                <button class="btn btn-secondary" onclick="window.history.back()">Quay lại</button>
-                <button class="btn btn-primary" id="confirmBtn" onclick="confirmBooking()" disabled>Đặt và Thanh toán</button>
+
+            <!-- ✅ Chi tiết đơn hàng -->
+            <div style="background: white; border: 2px solid #e0e0e0; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.2rem; color: #333; padding-bottom: 0.75rem; border-bottom: 2px solid #f0f0f0;">
+                    <i class="fas fa-shopping-cart" style="color: #ff6b35;"></i> Chi Tiết Đơn Hàng
+                </h3>
+                
+                <!-- Ghế đã chọn -->
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600; color: #666; font-size: 0.9rem;">
+                            <i class="fas fa-chair"></i> Ghế đã chọn
+                        </div>
+                        <div id="seatCount" style="font-weight: 700, color: #ff6b35;">0</div>
+                    </div>
+                    <div id="selectedSeatsText" style="font-size: 0.9rem; color: #555; font-weight: 500;">Chưa chọn ghế</div>
+                    <div id="seatTotal" style="margin-top: 0.5rem; text-align: right; font-weight: 700; color: #333;">0 ₫</div>
+                </div>
+
+                <!-- Đồ ăn đã chọn -->
+                <div id="foodOrderSummary" style="margin-bottom: 1rem; padding: 0.75rem; background: #f8f9fa; border-radius: 6px; display: none;">
+                    <div style="font-weight: 600; color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-hamburger"></i> Đồ ăn đã chọn
+                    </div>
+                    <div id="foodItemsList" style="font-size: 0.85rem; color: #555;"></div>
+                    <div id="foodTotal" style="margin-top: 0.5rem; text-align: right; font-weight: 700; color: #333;">0 ₫</div>
+                </div>
+
+                <!-- Mã giảm giá -->
+                <div id="promoSummary" style="margin-bottom: 1rem; padding: 0.75rem; background: #fff3cd; border-radius: 6px; border: 1px dashed #ffc107; display: none;">
+                    <div style="font-weight: 600; color: #856404; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-tag"></i> Mã giảm giá
+                    </div>
+                    <div id="promoCodeDisplay" style="font-size: 0.9rem; color: #856404; font-weight: 600;"></div>
+                    <div id="discountAmount" style="margin-top: 0.5rem; text-align: right; font-weight: 700; color: #d63031;">-0 ₫</div>
+                </div>
+
+                <!-- Tổng tiền -->
+                <div style="padding-top: 1rem; border-top: 2px solid #e0e0e0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: 700; font-size: 1.1rem; color: #333;">Tổng cộng</div>
+                        <div id="totalPrice" style="font-weight: 800; font-size: 1.5rem; color: #ff6b35;">0 ₫</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:0.75rem;">
+                <button class="btn btn-secondary" onclick="window.history.back()" style="padding: 0.9rem;">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </button>
+                <button class="btn btn-primary" id="confirmBtn" onclick="confirmBooking()" disabled style="padding: 0.9rem;">
+                    <i class="fas fa-check-circle"></i> Đặt và Thanh toán
+                </button>
             </div>
         </div>
     </div>
@@ -633,32 +707,63 @@
         // Cập nhật tổng tiền (Logic cốt lõi)
         function updateSummary() {
             if (selectedSeats.length === 0) {
-                $('#selectedSeatsText').text('Chưa chọn');
+                $('#selectedSeatsText').text('Chưa chọn ghế');
                 $('#seatCount').text('0');
+                $('#seatTotal').text('0 ₫');
                 $('#totalPrice').text('0 ₫');
                 $('#confirmBtn').prop('disabled', true);
+                
+                // Ẩn summary nếu không có gì
+                if ($('.food-quantity').filter(function() { return parseInt($(this).val()) > 0; }).length === 0) {
+                    $('#foodOrderSummary').hide();
+                }
                 return;
             }
 
             var names = selectedSeats.map(s => s.name).join(', ');
             var ticketTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
 
+            // ✅ Cập nhật ghế
+            $('#selectedSeatsText').text(names);
+            $('#seatCount').text(selectedSeats.length);
+            $('#seatTotal').text(ticketTotal.toLocaleString('vi-VN') + ' ₫');
+
+            // ✅ Tính đồ ăn
             var foodTotal = 0;
             var foodDetails = [];
+            var foodItemsHtml = '';
+            
             $('.food-quantity').each(function () {
                 var id = $(this).data('food-id');
+                var name = $(this).data('food-name');
                 var qty = parseInt($(this).val()) || 0;
                 var price = parseFloat($(this).attr('data-food-price')) || 0;
+                
                 if (qty > 0) {
                     var subTotal = qty * price;
                     foodTotal += subTotal;
                     foodDetails.push({ id: id, subTotal: subTotal, qty: qty });
+                    
+                    foodItemsHtml += '<div style="display:flex; justify-content:space-between; margin-bottom:0.3rem;">';
+                    foodItemsHtml += '<span>' + qty + 'x ' + name + '</span>';
+                    foodItemsHtml += '<span style="font-weight:600;">' + subTotal.toLocaleString('vi-VN') + ' ₫</span>';
+                    foodItemsHtml += '</div>';
                 }
             });
+
+            // Hiển thị/ẩn đồ ăn
+            if (foodDetails.length > 0) {
+                $('#foodOrderSummary').show();
+                $('#foodItemsList').html(foodItemsHtml);
+                $('#foodTotal').text(foodTotal.toLocaleString('vi-VN') + ' ₫');
+            } else {
+                $('#foodOrderSummary').hide();
+            }
 
             var totalBeforeDiscount = ticketTotal + foodTotal;
             var discountAmount = 0;
 
+            // ✅ Tính giảm giá
             if (currentPromo) {
                 if (currentPromo.Scope === 0) {
                     if (currentPromo.Type === 'PERCENT') {
@@ -681,16 +786,19 @@
 
             discountAmount = Math.floor(discountAmount);
             if (discountAmount > totalBeforeDiscount) discountAmount = totalBeforeDiscount;
+            
+            // Hiển thị/ẩn mã giảm giá
+            if (currentPromo && discountAmount > 0) {
+                $('#promoSummary').show();
+                $('#promoCodeDisplay').text(currentPromo.Code + ' - ' + currentPromo.Desc);
+                $('#discountAmount').text('-' + discountAmount.toLocaleString('vi-VN') + ' ₫');
+            } else {
+                $('#promoSummary').hide();
+            }
+
             var finalTotal = totalBeforeDiscount - discountAmount;
 
-            $('#selectedSeatsText').text(names);
-            $('#seatCount').text(selectedSeats.length);
-
-            if (discountAmount > 0) {
-                 $('#totalPrice').html(finalTotal.toLocaleString('vi-VN') + ' ₫ <br/><small class="text-success" style="font-size:0.6em">Đã giảm: ' + discountAmount.toLocaleString('vi-VN') + ' ₫</small>').css('color', '#27ae60');
-            } else {
-                 $('#totalPrice').text(finalTotal.toLocaleString('vi-VN') + ' ₫').css('color', '#ff6b35');
-            }
+            $('#totalPrice').text(finalTotal.toLocaleString('vi-VN') + ' ₫');
             $('#confirmBtn').prop('disabled', false);
         }
 
