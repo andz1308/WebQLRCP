@@ -1,0 +1,113 @@
+﻿@model IEnumerable<WebCinema.Models.Danh_Gia>
+
+@{
+    ViewBag.Title = "Qu?n Lý ?ánh Giá";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-star"></i> Qu?n Lý ?ánh Giá & Bình Lu?n</h2>
+    </div>
+
+    <!-- Filter -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "ReviewManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label class="form-label">L?c theo phim</label>
+                    @Html.DropDownList("movieId", (SelectList)ViewBag.Movies, "-- T?t c? phim --", new { @class = "form-control" })
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> L?c
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            @foreach (var review in Model)
+            {
+                var stars = review.diem_rating ?? 0;
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; background: white; transition: all 0.3s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    @(review.Khach_Hang != null ? review.Khach_Hang.ho_ten.Substring(0, 1).ToUpper() : "?")
+                                </div>
+                                <div>
+                                    <strong style="color: #2c3e50;">@(review.Khach_Hang != null ? review.Khach_Hang.ho_ten : "N/A")</strong>
+                                    <div style="color: #999; font-size: 0.85rem;">
+                                        @(review.ngay_Danh_Gia.HasValue ? review.ngay_Danh_Gia.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="margin: 1rem 0;">
+                                <strong style="color: #ff6b35; font-size: 1.1rem;">
+                                    <i class="fas fa-film"></i> @(review.Phim != null ? review.Phim.ten_phim : "N/A")
+                                </strong>
+                            </div>
+
+                            <div style="color: #ffc107; font-size: 1.2rem; margin-bottom: 0.5rem;">
+                                @for (int i = 0; i < stars; i++)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                @for (int i = stars; i < 5; i++)
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                                <span style="color: #666; font-size: 0.9rem; margin-left: 0.5rem;">(@stars/5)</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(review.noi_dung))
+                            {
+                                <p style="color: #555; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 3px solid #ff6b35;">
+                                    "@review.noi_dung"
+                                </p>
+                            }
+                        </div>
+
+                        <button onclick="deleteReview(@review.Danh_Gia_id)" class="btn btn-danger" style="padding: 0.6rem 1rem;">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Ch?a có ?ánh giá nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteReview(id) {
+            if (confirmDelete('B?n có ch?c ch?n mu?n xóa ?ánh giá này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có l?i x?y ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

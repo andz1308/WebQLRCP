@@ -1,0 +1,110 @@
+﻿@model IEnumerable<WebCinema.Models.Dao_Dien>
+
+@{
+    ViewBag.Title = "Quản Lý Đạo Diễn";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-video"></i> Quản Lý Đạo Diễn</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Đạo Diễn
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "DirectorManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm kiếm theo tên..." class="form-control" style="flex: 1;" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+            @foreach (var director in Model)
+            {
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; text-align: center; transition: all 0.3s ease; background: white;">
+                    <div style="width: 150px; height: 150px; margin: 0 auto 1rem; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                        @if (!string.IsNullOrEmpty(director.hinh_anh))
+                        {
+                            var imgSrc = director.hinh_anh.StartsWith("http") ? director.hinh_anh : 
+                                        director.hinh_anh.StartsWith("~") ? Url.Content(director.hinh_anh) : 
+                                        Url.Content("~/Content/images/directors/" + director.hinh_anh);
+                            <img src="@imgSrc" alt="@director.ho_ten" style="width: 100%; height: 100%; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                🎬
+                            </div>
+                        }
+                    </div>
+                    
+                    <h3 style="color: #2c3e50; margin-bottom: 0.5rem; font-size: 1.2rem;">@director.ho_ten</h3>
+                    
+                    @if (!string.IsNullOrEmpty(director.quoc_tich))
+                    {
+                        <p style="color: #666; margin-bottom: 0.5rem;">
+                            <i class="fas fa-flag"></i> @director.quoc_tich
+                        </p>
+                    }
+                    
+                    @if (director.ngay_sinh.HasValue)
+                    {
+                        <p style="color: #999; font-size: 0.9rem; margin-bottom: 1rem;">
+                            <i class="fas fa-birthday-cake"></i> @director.ngay_sinh.Value.ToString("dd/MM/yyyy")
+                        </p>
+                    }
+
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                        <a href="@Url.Action("Edit", new { id = director.daodien_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-edit"></i> Sửa
+                        </a>
+                        <button onclick="deleteDirector(@director.daodien_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có đạo diễn nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteDirector(id) {
+            if (confirmDelete('Bạn có chắc chắn muốn xóa đạo diễn này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

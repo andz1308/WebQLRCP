@@ -1,0 +1,185 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<section class="movies-section" id="movies">
+    <h2 class="section-title">Phim Đang Chiếu</h2>
+    <div class="movies-grid">
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Hành Động 1</h3>
+                <p class="movie-genre">Hành Động | 120 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-text">4.8/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Hành Động 1', 150000)">Đặt Vé</button>
+            </div>
+        </div>
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Tình Cảm 1</h3>
+                <p class="movie-genre">Tình Cảm | 110 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-text">4.5/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Tình Cảm 1', 150000)">Đặt Vé</button>
+            </div>
+        </div>
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Hoạt Hình 1</h3>
+                <p class="movie-genre">Hoạt Hình | 95 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-text">4.9/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Hoạt Hình 1', 120000)">Đặt Vé</button>
+            </div>
+        </div>
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Kinh Dị 1</h3>
+                <p class="movie-genre">Kinh Dị | 105 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-text">4.6/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Kinh Dị 1', 150000)">Đặt Vé</button>
+            </div>
+        </div>
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Hành Động 2</h3>
+                <p class="movie-genre">Hành Động | 130 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-text">4.7/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Hành Động 2', 150000)">Đặt Vé</button>
+            </div>
+        </div>
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-info">
+                <h3 class="movie-title">Phim Tình Cảm 2</h3>
+                <p class="movie-genre">Tình Cảm | 115 phút</p>
+                <div class="movie-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-text">4.4/5</span>
+                </div>
+                <button class="movie-btn" onclick="addToCart('Phim Tình Cảm 2', 150000)">Đặt Vé</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROMOTIONS SECTION -->
+<section class="promotions-section" id="promotions">
+    <div class="promotions-container">
+        <h2 class="section-title">Khuyến Mãi Đặc Biệt</h2>
+        <div class="promo-grid">
+            <div class="promo-card">
+                <div class="promo-icon">🎟️</div>
+                <h3 class="promo-title">Giảm 30% Vé</h3>
+                <p class="promo-desc">Mua vé vào thứ 2 - thứ 5 được giảm 30% giá vé thường</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">🍿</div>
+                <h3 class="promo-title">Combo Bắp Nước</h3>
+                <p class="promo-desc">Mua combo bắp nước được tặng thêm 1 nước miễn phí</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">👥</div>
+                <h3 class="promo-title">Vé Nhóm</h3>
+                <p class="promo-desc">Mua từ 4 vé trở lên được giảm 20% cho mỗi vé</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">💳</div>
+                <h3 class="promo-title">Thanh Toán Thẻ</h3>
+                <p class="promo-desc">Thanh toán bằng thẻ tín dụng được hoàn 10% tiền vé</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">🎁</div>
+                <h3 class="promo-title">Thành Viên VIP</h3>
+                <p class="promo-desc">Đăng ký thành viên VIP nhận ngay 100 điểm thưởng</p>
+            </div>
+            <div class="promo-card">
+                <div class="promo-icon">🌟</div>
+                <h3 class="promo-title">Sinh Nhật Đặc Biệt</h3>
+                <p class="promo-desc">Sinh nhật được tặng 1 vé xem phim miễn phí</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CINEMAS SECTION -->
+<section class="cinemas-section" id="cinemas">
+    <h2 class="section-title">Các Rạp Của Chúng Tôi</h2>
+    <div class="cinemas-grid">
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">CGV Hà Nội</h3>
+                <p class="cinema-location">📍 Hà Nội</p>
+                <p class="cinema-details">
+                    • 8 phòng chiếu<br>
+                    • Công nghệ 4K<br>
+                    • Âm thanh Dolby Atmos
+                </p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">CGV TP.HCM</h3>
+                <p class="cinema-location">📍 TP.HCM</p>
+                <p class="cinema-details">
+                    • 12 phòng chiếu<br>
+                    • Công nghệ IMAX<br>
+                    • Ghế VIP cao cấp
+                </p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">CGV Đà Nẵng</h3>
+                <p class="cinema-location">📍 Đà Nẵng</p>
+                <p class="cinema-details">
+                    • 6 phòng chiếu<br>
+                    • Công nghệ 3D<br>
+                    • Quán cà phê thoải mái
+                </p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+        <div class="cinema-card">
+            <div class="cinema-image"></div>
+            <div class="cinema-info">
+                <h3 class="cinema-name">CGV Cần Thơ</h3>
+                <p class="cinema-location">📍 Cần Thơ</p>
+                <p class="cinema-details">
+                    • 5 phòng chiếu<br>
+                    • Công nghệ 4K<br>
+                    • Bãi đỗ xe rộng
+                </p>
+                <button class="cinema-btn">Xem Chi Tiết</button>
+            </div>
+        </div>
+    </div>
+</section>

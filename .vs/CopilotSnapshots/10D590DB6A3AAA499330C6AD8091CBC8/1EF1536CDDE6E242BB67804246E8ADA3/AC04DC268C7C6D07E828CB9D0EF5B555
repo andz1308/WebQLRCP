@@ -1,0 +1,437 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class BookingController : Controller
+    {
+        private CSDLDataContext db;
+
+        public BookingController()
+        {
+            // Try to get connection string, fallback to default constructor if not found
+            try
+            {
+                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    db = new CSDLDataContext(connString);
+                }
+                else
+                {
+                    db = new CSDLDataContext();
+                }
+            }
+            catch
+            {
+                db = new CSDLDataContext();
+            }
+        }
+
+        // GET: Booking/SelectSeats/5 (showtimeId)
+        [HttpGet]
+        public ActionResult SelectSeats(int id)
+        {
+            // If user not logged in, show in-page notice instead of redirecting
+            if (Session["CustomerId"] == null)
+            {
+                ViewBag.ReturnUrl = Request.Url?.PathAndQuery;
+                ViewBag.ErrorMessage = "Vui lòng đăng nhập để đặt vé!";
+                return View("~/Views/Shared/RequireLogin.cshtml");
+            }
+
+            var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == id);
+            if (showtime == null)
+            {
+                return HttpNotFound("Không tìm thấy suất chiếu!");
+            }
+
+            // Get room and seats
+            var room = showtime.Phong_Chieu;
+            var seats = db.Ghes
+                .Where(g => g.phong_chieu_id == room.phong_chieu_id)
+                .OrderBy(g => g.hang)
+                .ThenBy(g => g.cot)
+                .ToList();
+
+            // **ĐÚNG TRẠNG THÁI: Chỉ vé "Chưa sử dụng" mới là có sẵn**
+            var bookedSeats = db.Ves
+                .Where(v => v.Suat_Chieu.suat_chieu_id == id && 
+                           (v.Dat_Ve_id != null))  // Vé đã được đặt (có Dat_Ve_id)
+                .Select(v => v.ghe_id)
+                .ToList();
+
+            // Build seat price lookup for the view to avoid using db in Razor
+            var seatPrices = db.Ves
+                .Where(v => v.Suat_Chieu.suat_chieu_id == id)
+                .ToDictionary(v => v.ghe_id, v => v.gia_ve);
+
+            ViewBag.Showtime = showtime;
+            ViewBag.Room = room;
+            ViewBag.Seats = seats;
+            ViewBag.BookedSeats = bookedSeats;
+            ViewBag.Movie = showtime.Phim;
+            ViewBag.Cinema = room.Rap;
+            ViewBag.SeatPrices = seatPrices;
+
+            return View();
+        }
+
+        // POST: Booking/SelectFood
+        [HttpPost]
+        public ActionResult SelectFood(string selectedSeats, int showtimeId)
+        {
+            if (string.IsNullOrEmpty(selectedSeats))
+            {
+                return Json(new { success = false, message = "Vui lòng ch?n gh?!" });
+            }
+
+            // Store selected seats in session
+            Session["SelectedSeats"] = selectedSeats;
+            Session["ShowtimeId"] = showtimeId;
+
+            return Json(new { success = true, redirectUrl = Url.Action("SelectFood", "Booking") });
+        }
+
+        // GET: Booking/SelectFood
+        public ActionResult SelectFood()
+        {
+            if (Session["SelectedSeats"] == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Get food items
+            var foods = db.Do_Ans.ToList();
+            
+            var showtimeId = (int)Session["ShowtimeId"];
+            var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
+
+            ViewBag.Foods = foods;
+            ViewBag.Showtime = showtime;
+
+            return View();
+        }
+
+        // POST: Booking/Payment
+        [HttpPost]
+        public ActionResult Payment(string selectedFoods)
+        {
+            // Store selected foods in session
+            Session["SelectedFoods"] = selectedFoods;
+
+            return Json(new { success = true, redirectUrl = Url.Action("Payment", "Booking") });
+        }
+
+        // GET: Booking/Payment
+        public ActionResult Payment()
+        {
+            if (Session["SelectedSeats"] == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var selectedSeats = Session["SelectedSeats"].ToString();
+            var showtimeId = (int)Session["ShowtimeId"];
+            var selectedFoods = Session["SelectedFoods"]?.ToString() ?? "";
+
+            // Get showtime info
+            var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
+            var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+            
+            // Calculate ticket price
+            var tickets = db.Ves
+                .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
+                .ToList();
+
+            decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+
+            // Calculate food price
+            decimal foodTotal = 0;
+            List<dynamic> foodItems = new List<dynamic>();
+            
+            if (!string.IsNullOrEmpty(selectedFoods))
+            {
+                var foodData = selectedFoods.Split(';');
+                foreach (var item in foodData)
+                {
+                    if (string.IsNullOrEmpty(item)) continue;
+                    
+                    var parts = item.Split(':');
+                    var foodId = int.Parse(parts[0]);
+                    var quantity = int.Parse(parts[1]);
+                    
+                    var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                    if (food != null)
+                    {
+                        decimal unitPrice = food.gia ?? 0m;
+                        foodTotal += unitPrice * quantity;
+                        foodItems.Add(new { Food = food, Quantity = quantity });
+                    }
+                }
+            }
+
+            ViewBag.Showtime = showtime;
+            ViewBag.Tickets = tickets;
+            ViewBag.FoodItems = foodItems;
+            ViewBag.TicketTotal = ticketTotal;
+            ViewBag.FoodTotal = foodTotal;
+            ViewBag.GrandTotal = ticketTotal + foodTotal;
+
+            return View();
+        }
+
+        // POST: Booking/Confirm
+        [HttpPost]
+        public ActionResult Confirm(string paymentMethod)
+        {
+            try
+            {
+                if (Session["SelectedSeats"] == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng chọn ghế trước!" });
+                }
+
+                var selectedSeats = Session["SelectedSeats"].ToString();
+                var showtimeId = (int)Session["ShowtimeId"];
+                var selectedFoods = Session["SelectedFoods"]?.ToString() ?? "";
+
+                var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+                
+                // Get tickets
+                var tickets = db.Ves
+                    .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
+                    .ToList();
+
+                // **CHECK: Vé "Chưa sử dụng" mới được phép đặt**
+                var unavailableSeats = tickets.Where(t => t.trang_thai_ve != "Chưa sử dụng").ToList();
+                if (unavailableSeats.Any())
+                {
+                    return Json(new { success = false, message = "Một số ghế đã được đặt. Vui lòng chọn ghế khác!" });
+                }
+
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+
+                // Create booking (use default customer if not logged in)
+                var khachHangId = Session["CustomerId"] as int? ?? 1; // Default to first customer or handle guest
+
+                // **TRẠNG THÁI ĐƠN HÀNG: Tiền mặt = "Chờ xác nhận", Online = "Đã xác nhận"**
+                string bookingStatus = (paymentMethod == "cash") ? "Chờ xác nhận" : "Đã xác nhận";
+
+                var booking = new Dat_Ve
+                {
+                    khach_hang_id = khachHangId,
+                    ngay_tao = DateTime.Now,
+                    tong_tien = ticketTotal,
+                    trang_thai_Dat_Ve = bookingStatus
+                };
+
+                db.Dat_Ves.InsertOnSubmit(booking);
+                db.SubmitChanges(); // Save to get booking ID
+
+                // **CẬP NHẬT VÉ: Tất cả vé được set thành "Chưa sử dụng"**
+                foreach (var ticket in tickets)
+                {
+                    ticket.Dat_Ve_id = booking.Dat_Ve_id;
+                    ticket.trang_thai_ve = "Chưa sử dụng";  // **CHÍNH XÁC TRẠNG THÁI VÉ**
+                    ticket.ma_qr_code = GenerateQRCode(booking.Dat_Ve_id, ticket.ve_id);
+                }
+
+                // Add food items
+                if (!string.IsNullOrEmpty(selectedFoods))
+                {
+                    var foodData = selectedFoods.Split(';');
+                    foreach (var item in foodData)
+                    {
+                        if (string.IsNullOrEmpty(item)) continue;
+                        
+                        var parts = item.Split(':');
+                        var foodId = int.Parse(parts[0]);
+                        var quantity = int.Parse(parts[1]);
+                        
+                        var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                        if (food != null)
+                        {
+                            var foodOrder = new DonHang_DoAn
+                            {
+                                Dat_Ve_id = booking.Dat_Ve_id,
+                                Do_An_id = food.Do_An_id,
+                                so_luong = quantity
+                            };
+                            db.DonHang_DoAns.InsertOnSubmit(foodOrder);
+                            foodTotal += (food.gia ?? 0m) * quantity;
+                        }
+                    }
+                }
+
+                // Update total
+                booking.tong_tien = ticketTotal + foodTotal;
+                db.SubmitChanges();
+
+                // Clear session
+                Session.Remove("SelectedSeats");
+                Session.Remove("ShowtimeId");
+                Session.Remove("SelectedFoods");
+
+                return Json(new { 
+                    success = true, 
+                    message = paymentMethod == "cash" ? 
+                        "Đặt vé thành công! Vui lòng thanh toán tại quầy." : 
+                        "Thanh toán thành công!", 
+                    bookingId = booking.Dat_Ve_id,
+                    redirectUrl = Url.Action("Success", "Booking", new { id = booking.Dat_Ve_id })
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // GET: Booking/Success/5
+        public ActionResult Success(int id)
+        {
+            var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == id);
+            if (booking == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.Tickets = booking.Ves.ToList();
+            ViewBag.Foods = booking.DonHang_DoAns.ToList();
+
+            return View(booking);
+        }
+
+        private string GenerateQRCode(int bookingId, int ticketId)
+        {
+            return $"DAVCINEMA-{bookingId}-{ticketId}-{DateTime.Now.Ticks}";
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        // POST: Booking/AddToCart
+        [HttpPost]
+        public ActionResult AddToCart(string selectedFoods)
+        {
+            try
+            {
+                if (Session["CustomerId"] == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập trước!", requireLogin = true });
+                }
+
+                if (Session["SelectedSeats"] == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin ghế đã chọn!" });
+                }
+
+                var selectedSeats = Session["SelectedSeats"].ToString();
+                var showtimeId = (int)Session["ShowtimeId"];
+                var seatIds = selectedSeats.Split(',').Select(int.Parse).ToList();
+
+                // Get showtime and related info
+                var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
+                if (showtime == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy suất chiếu!" });
+                }
+
+                // Get tickets and calculate price
+                var tickets = db.Ves
+                    .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == showtimeId)
+                    .ToList();
+
+                // Create cart item
+                var cartItem = new CartItem
+                {
+                    ShowtimeId = showtimeId,
+                    MovieName = showtime.Phim.ten_phim,
+                    CinemaName = showtime.Phong_Chieu.Rap.ten_rap,
+                    RoomName = showtime.Phong_Chieu.ten_phong,
+                    ShowDate = showtime.ngay_chieu,
+                    ShowTime = showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm"),
+                    Language = showtime.ngon_ngu ?? "Phụ đề"
+                };
+
+                // Add seat information
+                foreach (var ticket in tickets)
+                {
+                    var seat = ticket.Ghe;
+                    var seatType = seat.Loai_Ghe?.ten_loai ?? "Thường";
+                    
+                    cartItem.Seats.Add(new CartSeatInfo
+                    {
+                        SeatId = seat.ghe_id,
+                        TicketId = ticket.ve_id,
+                        SeatNumber = seat.so_ghe,
+                        SeatType = seatType,
+                        Price = ticket.gia_ve
+                    });
+                }
+                cartItem.TicketTotal = tickets.Sum(t => t.gia_ve);
+
+                // Add food information if selected
+                if (!string.IsNullOrEmpty(selectedFoods))
+                {
+                    var foodData = selectedFoods.Split(';');
+                    foreach (var item in foodData)
+                    {
+                        if (string.IsNullOrEmpty(item)) continue;
+
+                        var parts = item.Split(':');
+                        var foodId = int.Parse(parts[0]);
+                        var quantity = int.Parse(parts[1]);
+
+                        var food = db.Do_Ans.FirstOrDefault(d => d.Do_An_id == foodId);
+                        if (food != null)
+                        {
+                            cartItem.Foods.Add(new CartFoodInfo
+                            {
+                                FoodId = food.Do_An_id,
+                                FoodName = food.ten_san_pham,
+                                Quantity = quantity,
+                                UnitPrice = food.gia ?? 0m
+                            });
+                        }
+                    }
+                    cartItem.FoodTotal = cartItem.Foods.Sum(f => f.TotalPrice);
+                }
+
+                // Add to cart
+                SessionCartManager.AddToCart(cartItem);
+
+                // Clear session booking data
+                Session.Remove("SelectedSeats");
+                Session.Remove("ShowtimeId");
+                Session.Remove("SelectedFoods");
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Đã thêm vào giỏ hàng!",
+                    cartCount = SessionCartManager.GetCartCount()
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+    }
+}

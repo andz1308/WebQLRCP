@@ -1,0 +1,253 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using System.Web;
+using System.IO;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class MovieManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/MovieManagement
+        public ActionResult Index()
+        {
+            var movies = db.Phims
+                .OrderByDescending(p => p.ngay_khoi_chieu)
+                .ToList();
+            return View(movies);
+        }
+
+        // GET: Admin/MovieManagement/Create
+        public ActionResult Create()
+        {
+            ViewBag.DaoDiens = new SelectList(db.Dao_Diens, "daodien_id", "ho_ten");
+            ViewBag.NhaSanXuats = new SelectList(db.Nha_San_Xuats, "nha_san_xuat_id", "ten_nha_san_xuat");
+            ViewBag.LoaiPhims = db.Loai_Phims.ToList();
+            return View();
+        }
+
+        // POST: Admin/MovieManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Phim phim, HttpPostedFileBase imageFile, HttpPostedFileBase videoFile, int[] selectedGenres)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Upload image
+                    if (imageFile != null && imageFile.ContentLength > 0)
+                    {
+                        var fileName = Path.GetFileName(imageFile.FileName);
+                        var uploadDir = Server.MapPath("~/Content/images/movies");
+                        
+                        // Ensure directory exists
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+                        
+                        var path = Path.Combine(uploadDir, fileName);
+                        imageFile.SaveAs(path);
+                        phim.hinh_anh = "~/Content/images/movies/" + fileName;
+                    }
+
+                    // Upload video/trailer
+                    if (videoFile != null && videoFile.ContentLength > 0)
+                    {
+                        var fileName = Path.GetFileName(videoFile.FileName);
+                        var uploadDir = Server.MapPath("~/Content/videos");
+                        
+                        // Ensure directory exists
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+                        
+                        var path = Path.Combine(uploadDir, fileName);
+                        videoFile.SaveAs(path);
+                        phim.video = "~/Content/videos/" + fileName;
+                    }
+
+                    db.Phims.InsertOnSubmit(phim);
+                    db.SubmitChanges();
+
+                    // Thêm thể loại phim
+                    if (selectedGenres != null && selectedGenres.Length > 0)
+                    {
+                        foreach (var genreId in selectedGenres)
+                        {
+                            var phimLoai = new Phim_LoaiPhim
+                            {
+                                phim_id = phim.phim_id,
+                                loaiphim_id = genreId
+                            };
+                            db.Phim_LoaiPhims.InsertOnSubmit(phimLoai);
+                        }
+                        db.SubmitChanges();
+                    }
+
+                    TempData["SuccessMessage"] = "Thêm phim mới thành công!";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            ViewBag.DaoDiens = new SelectList(db.Dao_Diens, "daodien_id", "ho_ten", phim.dao_dien_id);
+            ViewBag.NhaSanXuats = new SelectList(db.Nha_San_Xuats, "nha_san_xuat_id", "ten_nha_san_xuat", phim.nha_san_xuat_id);
+            ViewBag.LoaiPhims = db.Loai_Phims.ToList();
+            return View(phim);
+        }
+
+        // GET: Admin/MovieManagement/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var phim = db.Phims.FirstOrDefault(p => p.phim_id == id);
+            if (phim == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.DaoDiens = new SelectList(db.Dao_Diens, "daodien_id", "ho_ten", phim.dao_dien_id);
+            ViewBag.NhaSanXuats = new SelectList(db.Nha_San_Xuats, "nha_san_xuat_id", "ten_nha_san_xuat", phim.nha_san_xuat_id);
+            ViewBag.LoaiPhims = db.Loai_Phims.ToList();
+            ViewBag.SelectedGenres = phim.Phim_LoaiPhims.Select(pl => pl.loaiphim_id).ToArray();
+            return View(phim);
+        }
+
+        // POST: Admin/MovieManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, FormCollection form, HttpPostedFileBase imageFile, HttpPostedFileBase videoFile, int[] selectedGenres)
+        {
+            try
+            {
+                var phim = db.Phims.FirstOrDefault(p => p.phim_id == id);
+                if (phim == null)
+                {
+                    return HttpNotFound();
+                }
+
+                // Update fields
+                phim.ten_phim = form["ten_phim"];
+                phim.mo_ta = form["mo_ta"];
+                phim.thoi_luong = int.TryParse(form["thoi_luong"], out int thoiLuong) ? thoiLuong : (int?)null;
+                phim.dao_dien_id = int.TryParse(form["dao_dien_id"], out int daoDienId) ? daoDienId : (int?)null;
+                phim.nha_san_xuat_id = int.TryParse(form["nha_san_xuat_id"], out int nhaSanXuatId) ? nhaSanXuatId : (int?)null;
+                phim.ngay_khoi_chieu = DateTime.TryParse(form["ngay_khoi_chieu"], out DateTime ngayKhoiChieu) ? ngayKhoiChieu : (DateTime?)null;
+
+                // Upload new image if provided
+                if (imageFile != null && imageFile.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(imageFile.FileName);
+                    var uploadDir = Server.MapPath("~/Content/images/movies");
+                    
+                    // Ensure directory exists
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+                    
+                    var path = Path.Combine(uploadDir, fileName);
+                    imageFile.SaveAs(path);
+                    phim.hinh_anh = "~/Content/images/movies/" + fileName;
+                }
+
+                // Upload new video if provided
+                if (videoFile != null && videoFile.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(videoFile.FileName);
+                    var uploadDir = Server.MapPath("~/Content/videos");
+                    
+                    // Ensure directory exists
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+                    
+                    var path = Path.Combine(uploadDir, fileName);
+                    videoFile.SaveAs(path);
+                    phim.video = "~/Content/videos/" + fileName;
+                }
+
+                // Update genres
+                var existingGenres = db.Phim_LoaiPhims.Where(pl => pl.phim_id == id);
+                db.Phim_LoaiPhims.DeleteAllOnSubmit(existingGenres);
+
+                if (selectedGenres != null && selectedGenres.Length > 0)
+                {
+                    foreach (var genreId in selectedGenres)
+                    {
+                        var phimLoai = new Phim_LoaiPhim
+                        {
+                            phim_id = phim.phim_id,
+                            loaiphim_id = genreId
+                        };
+                        db.Phim_LoaiPhims.InsertOnSubmit(phimLoai);
+                    }
+                }
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật phim thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            return RedirectToAction("Edit", new { id });
+        }
+
+        // POST: Admin/MovieManagement/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var phim = db.Phims.FirstOrDefault(p => p.phim_id == id);
+                if (phim == null)
+                {
+                    return Json(new { success = false, message = "Phim không tồn tại." });
+                }
+
+                // Delete related records
+                var phimLoais = db.Phim_LoaiPhims.Where(pl => pl.phim_id == id);
+                db.Phim_LoaiPhims.DeleteAllOnSubmit(phimLoais);
+
+                var vaiDiens = db.Vai_Diens.Where(vd => vd.phim_id == id);
+                db.Vai_Diens.DeleteAllOnSubmit(vaiDiens);
+
+                db.Phims.DeleteOnSubmit(phim);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa phim thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

@@ -1,0 +1,322 @@
+
+================================================================================
+Time: 2025-11-27 10:59:14
+Message: A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: SQL Network Interfaces, error: 26 - Error Locating Server/Instance Specified)
+
+Stack Trace:    at System.Data.SqlClient.SqlInternalConnectionTds..ctor(DbConnectionPoolIdentity identity, SqlConnectionString connectionOptions, SqlCredential credential, Object providerInfo, String newPassword, SecureString newSecurePassword, Boolean redirectedUserInstance, SqlConnectionString userConnectionOptions, SessionData reconnectSessionData, DbConnectionPool pool, String accessToken, Boolean applyTransientFaultHandling, SqlAuthenticationProviderManager sqlAuthProviderManager)
+   at System.Data.SqlClient.SqlConnectionFactory.CreateConnection(DbConnectionOptions options, DbConnectionPoolKey poolKey, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningConnection, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnectionPool pool, DbConnection owningObject, DbConnectionOptions options, DbConnectionPoolKey poolKey, DbConnectionOptions userOptions)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject, DbConnectionOptions userOptions, DbConnectionInternal oldConnection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, UInt32 waitForMultipleObjectsTimeout, Boolean allowCreate, Boolean onlyOneCheckConnection, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionPool.TryGetConnection(DbConnection owningObject, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionFactory.TryGetConnection(DbConnection owningConnection, TaskCompletionSource`1 retry, DbConnectionOptions userOptions, DbConnectionInternal oldConnection, DbConnectionInternal& connection)
+   at System.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at System.Data.SqlClient.SqlConnection.TryOpenInner(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry)
+   at System.Data.SqlClient.SqlConnection.Open()
+   at System.Data.Linq.SqlClient.SqlConnectionManager.UseConnection(IConnectionUser user)
+   at System.Data.Linq.SqlClient.SqlProvider.get_IsSqlCe()
+   at System.Data.Linq.SqlClient.SqlProvider.InitializeProviderMode()
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Services.BookingExpirationService.CancelExpiredBookings() in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Services\BookingExpirationService.cs:line 85
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 12:13:08
+Message: Input string was not in a correct format.
+Additional Info: L?i t?o hóa ??n
+Stack Trace:    at System.Globalization.TimeSpanFormat.FormatCustomized(TimeSpan value, String format, DateTimeFormatInfo dtfi)
+   at System.Globalization.TimeSpanFormat.Format(TimeSpan value, String format, IFormatProvider formatProvider)
+   at System.Text.StringBuilder.AppendFormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.FormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.Format(String format, Object arg0)
+   at WebCinema.Services.InvoicePdfService.GenerateInvoiceHtml(Dat_Ve booking, Khach_Hang customer, List`1 tickets, Suat_Chieu showtime, List`1 foodOrders, Decimal ticketTotal, Decimal foodTotal, Decimal originalTotal, Decimal discount) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Services\InvoicePdfService.cs:line 148
+   at WebCinema.Services.InvoicePdfService.GenerateInvoicePdf(Int32 bookingId) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Services\InvoicePdfService.cs:line 64
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 12:13:08
+Message: Input string was not in a correct format.
+Additional Info: Lỗi tạo/gửi email hóa đơn
+Stack Trace:    at System.Globalization.TimeSpanFormat.FormatCustomized(TimeSpan value, String format, DateTimeFormatInfo dtfi)
+   at System.Globalization.TimeSpanFormat.Format(TimeSpan value, String format, IFormatProvider formatProvider)
+   at System.Text.StringBuilder.AppendFormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.FormatHelper(IFormatProvider provider, String format, ParamsArray args)
+   at System.String.Format(String format, Object arg0)
+   at WebCinema.Services.InvoicePdfService.GenerateInvoiceHtml(Dat_Ve booking, Khach_Hang customer, List`1 tickets, Suat_Chieu showtime, List`1 foodOrders, Decimal ticketTotal, Decimal foodTotal, Decimal originalTotal, Decimal discount) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Services\InvoicePdfService.cs:line 148
+   at WebCinema.Services.InvoicePdfService.GenerateInvoicePdf(Int32 bookingId) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Services\InvoicePdfService.cs:line 76
+   at WebCinema.Controllers.BookingController.Success(Int32 id) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\BookingController.cs:line 959
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 13:33:59
+Message: KM004 JSON parse error: Unexpected character encountered while parsing value: C. Path '[0].name', line 1, position 49.
+
+Stack Trace: 
+Inner Exception: Unexpected character encountered while parsing value: C. Path '[0].name', line 1, position 49.
+================================================================================
+
+================================================================================
+Time: 2025-11-27 13:45:55
+Message: KM004 JSON parse error: Unexpected character encountered while parsing value: P. Path '[0].name', line 1, position 49.
+
+Stack Trace: 
+Inner Exception: Unexpected character encountered while parsing value: P. Path '[0].name', line 1, position 49.
+================================================================================
+
+================================================================================
+Time: 2025-11-27 14:33:37
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1852
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 14:40:43
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1852
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 14:54:35
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1932
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 15:00:24
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1932
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 15:06:17
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1940
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 15:17:51
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1887
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 15:27:31
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1887
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 15:35:29
+Message: Method 'System.String ToString(System.String)' has no supported translation to SQL.
+Additional Info: GetAvailablePromos
+Stack Trace:    at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitMethodCall(SqlMethodCall mc)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitColumn(SqlColumn col)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitNew(SqlNew sox)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlVisitor.VisitExpression(SqlExpression exp)
+   at System.Data.Linq.SqlClient.PostBindDotNetConverter.Visitor.VisitSelect(SqlSelect select)
+   at System.Data.Linq.SqlClient.SqlVisitor.Visit(SqlNode node)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(ResultShape resultShape, Type resultType, SqlNode node, ReadOnlyCollection`1 parentParameters, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.BuildQuery(Expression query, SqlNodeAnnotations annotations)
+   at System.Data.Linq.SqlClient.SqlProvider.System.Data.Linq.Provider.IProvider.Execute(Expression query)
+   at System.Data.Linq.DataQuery`1.System.Collections.Generic.IEnumerable<T>.GetEnumerator()
+   at System.Collections.Generic.List`1..ctor(IEnumerable`1 collection)
+   at System.Linq.Enumerable.ToList[TSource](IEnumerable`1 source)
+   at WebCinema.Controllers.API.CustomerApiController.GetAvailablePromos(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\CustomerApiController.cs:line 1887
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 16:00:31
+Message: Input string was not in a correct format.
+
+Stack Trace:    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at WebCinema.Controllers.API.StaffApiController.VerifyTicket(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\StaffApiController.cs:line 447
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 16:00:41
+Message: Input string was not in a correct format.
+
+Stack Trace:    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at WebCinema.Controllers.API.StaffApiController.VerifyTicket(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\StaffApiController.cs:line 447
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 16:00:46
+Message: Input string was not in a correct format.
+
+Stack Trace:    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at WebCinema.Controllers.API.StaffApiController.VerifyTicket(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\StaffApiController.cs:line 447
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 16:13:43
+Message: Input string was not in a correct format.
+
+Stack Trace:    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at WebCinema.Controllers.API.StaffApiController.VerifyTicket(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\StaffApiController.cs:line 447
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-27 16:13:47
+Message: Input string was not in a correct format.
+
+Stack Trace:    at System.Number.StringToNumber(String str, NumberStyles options, NumberBuffer& number, NumberFormatInfo info, Boolean parseDecimal)
+   at System.Number.ParseInt32(String s, NumberStyles style, NumberFormatInfo info)
+   at WebCinema.Controllers.API.StaffApiController.VerifyTicket(JObject data) in D:\WebQLRCP v2\WebQLRCP-main\WebCinema\Controllers\API\StaffApiController.cs:line 447
+Inner Exception: None
+================================================================================

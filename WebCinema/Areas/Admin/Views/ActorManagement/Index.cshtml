@@ -1,0 +1,143 @@
+﻿@model IEnumerable<WebCinema.Models.Dien_Vien>
+
+@{
+    ViewBag.Title = "Quản Lý Diễn Viên";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-user-tie"></i> Danh Sách Diễn Viên</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Diễn Viên
+        </a>
+    </div>
+
+    @if (ViewBag.TotalActors > 0)
+    {
+        <div style="margin-bottom: 1rem; color: #666;">
+            <strong>Tổng số:</strong> @ViewBag.TotalActors diễn viên | <strong>Trang:</strong> @ViewBag.CurrentPage / @ViewBag.TotalPages
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Mã DV</th>
+                        <th>Họ Tên</th>
+                        <th>Ngày Sinh</th>
+                        <th>Quốc Tịch</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var actor in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(actor.hinh_anh))
+                                {
+                                    var imgSrc = actor.hinh_anh.StartsWith("~") ? Url.Content(actor.hinh_anh) : actor.hinh_anh;
+                                    <img src="@imgSrc" alt="@actor.ho_ten" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #e0e0e0;" />
+                                }
+                                else
+                                {
+                                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                                        @(actor.ho_ten != null && actor.ho_ten.Length > 0 ? actor.ho_ten.Substring(0, 1).ToUpper() : "?")
+                                    </div>
+                                }
+                            </td>
+                            <td><strong>#@actor.dienvien_id</strong></td>
+                            <td><strong>@actor.ho_ten</strong></td>
+                            <td>@(actor.ngay_sinh.HasValue ? actor.ngay_sinh.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                            <td>@(string.IsNullOrEmpty(actor.quoc_tich) ? "N/A" : actor.quoc_tich)</td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = actor.dienvien_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteActor(@actor.dienvien_id, '@actor.ho_ten')" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* PHÂN TRANG *@
+        if (ViewBag.TotalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+                
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="btn btn-primary" style="pointer-events: none;">
+                            @i
+                        </span>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = i })" class="btn btn-secondary">
+                            @i
+                        </a>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
+                    {
+                        <span style="padding: 0.6rem; color: #999;">...</span>
+                    }
+                }
+                
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })" 
+                       class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có diễn viên nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteActor(id, name) {
+            if (confirm('Bạn có chắc chắn muốn xóa diễn viên "' + name + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (response.message || 'Không thể xóa diễn viên'));
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi xóa diễn viên.');
+                    }
+                });
+            }
+        }
+    </script>
+}

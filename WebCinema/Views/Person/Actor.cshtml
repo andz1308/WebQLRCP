@@ -1,0 +1,473 @@
+﻿@model WebCinema.Models.Dien_Vien
+
+@{
+    ViewBag.Title = Model.ho_ten;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%);
+        --accent-color: #ff6b35;
+        --text-dark: #2c3e50;
+        --text-light: #6c757d;
+        --card-shadow: 0 8px 30px rgba(255, 107, 53, 0.15);
+        --hover-shadow: 0 12px 40px rgba(255, 107, 53, 0.25);
+    }
+
+    body {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        min-height: 100vh;
+    }
+
+    .person-detail-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+    }
+
+    /* ✅ Back Button với Animation */
+    .back-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 1rem 2rem;
+        background: white;
+        color: var(--accent-color);
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 2rem;
+        border: 2px solid var(--accent-color);
+    }
+
+    .back-button:hover {
+        background: var(--primary-gradient);
+        color: white;
+        transform: translateX(-8px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .back-button i {
+        transition: transform 0.3s ease;
+    }
+
+    .back-button:hover i {
+        transform: translateX(-4px);
+    }
+
+    /* ✅ Hero Header với Glass Effect */
+    .person-header {
+        background: var(--primary-gradient);
+        padding: 4rem 3rem;
+        border-radius: 24px;
+        margin-bottom: 3rem;
+        display: flex;
+        gap: 3rem;
+        align-items: center;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        color: white;
+    }
+
+    .person-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .person-avatar-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+
+    .person-avatar {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 6px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .person-avatar:hover {
+        transform: scale(1.05) rotate(2deg);
+    }
+
+    .person-info {
+        flex: 1;
+        z-index: 1;
+    }
+
+    .person-info h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .actor-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.6rem 1.5rem;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .person-meta {
+        display: flex;
+        gap: 2rem;
+        font-size: 1.1rem;
+        opacity: 0.95;
+        flex-wrap: wrap;
+    }
+
+    .person-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+    }
+
+    .person-meta i {
+        font-size: 1.2rem;
+    }
+
+    /* ✅ Bio Section với Modern Card */
+    .bio-section {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 3rem;
+        transition: all 0.3s ease;
+        border-left: 6px solid var(--accent-color);
+    }
+
+    .bio-section:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .section-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        position: relative;
+        padding-bottom: 1rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+
+    .section-title i {
+        color: var(--accent-color);
+        font-size: 2rem;
+    }
+
+    .bio-section p {
+        line-height: 2;
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    /* ✅ Movies Grid với Hover Effects */
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 2.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .movie-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        position: relative;
+    }
+
+    .movie-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--primary-gradient);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .movie-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(255, 107, 53, 0.3);
+    }
+
+    .movie-card-image {
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .movie-card:hover .movie-card-image {
+        transform: scale(1.1);
+    }
+
+    .movie-card-content {
+        padding: 1.5rem;
+        position: relative;
+        z-index: 2;
+        background: white;
+    }
+
+    .movie-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .movie-role {
+        font-size: 0.95rem;
+        color: var(--accent-color);
+        font-weight: 600;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .movie-role i {
+        font-size: 0.9rem;
+    }
+
+    /* ✅ Empty State */
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 5rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        color: var(--accent-color);
+        opacity: 0.3;
+        margin-bottom: 1.5rem;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+    }
+
+    .empty-state h3 {
+        font-size: 1.8rem;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+    }
+
+    /* ✅ Responsive */
+    @@media (max-width: 768px) {
+        .person-header {
+            flex-direction: column;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .person-avatar {
+            width: 160px;
+            height: 160px;
+        }
+
+        .person-info h1 {
+            font-size: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .movie-card-image {
+            height: 240px;
+        }
+    }
+</style>
+
+<div class="person-detail-container">
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Quay Lại
+    </a>
+
+    <div class="person-header">
+        <div class="person-avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.hinh_anh))
+            {
+                var imgSrc = Model.hinh_anh.StartsWith("~") ? Url.Content(Model.hinh_anh) : Model.hinh_anh;
+                <img src="@imgSrc" alt="@Model.ho_ten" class="person-avatar" />
+            }
+            else
+            {
+                <div class="person-avatar" style="background: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%); display: flex; align-items: center; justify-content: center; font-size: 5rem; font-weight: bold;">
+                    @Model.ho_ten.Substring(0, 1).ToUpper()
+                </div>
+            }
+        </div>
+        <div class="person-info">
+            <h1>@Model.ho_ten</h1>
+            <div class="actor-badge">
+                <i class="fas fa-star"></i>
+                DIỄN VIÊN
+            </div>
+            <div class="person-meta">
+                @if (Model.ngay_sinh.HasValue)
+                {
+                    <span>
+                        <i class="fas fa-birthday-cake"></i>
+                        @Model.ngay_sinh.Value.ToString("dd/MM/yyyy")
+                    </span>
+                }
+                @if (!string.IsNullOrEmpty(Model.quoc_tich))
+                {
+                    <span>
+                        <i class="fas fa-globe-asia"></i>
+                        @Model.quoc_tich
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.tieu_su))
+    {
+        <div class="bio-section">
+            <h2 class="section-title">
+                <i class="fas fa-book-open"></i>
+                Tiểu Sử
+            </h2>
+            <p>@Model.tieu_su</p>
+        </div>
+    }
+
+    <h2 class="section-title">
+        <i class="fas fa-film"></i>
+        Phim Đã Tham Gia
+    </h2>
+    <div class="movies-grid">
+        @{
+            var moviesList = ViewBag.Movies as List<WebCinema.Models.ActorMovieViewModel>;
+        }
+        
+        @if (moviesList != null && moviesList.Count > 0)
+        {
+            foreach (var item in moviesList)
+            {
+                if (item != null && item.Movie != null)
+                {
+                    <a href="@Url.Action("Detail", "Home", new { id = item.Movie.phim_id })" class="movie-card">
+                        @if (!string.IsNullOrEmpty(item.Movie.hinh_anh))
+                        {
+                            var imgSrc = item.Movie.hinh_anh.StartsWith("~") ? Url.Content(item.Movie.hinh_anh) : item.Movie.hinh_anh;
+                            <img src="@imgSrc" alt="@item.Movie.ten_phim" class="movie-card-image" />
+                        }
+                        else
+                        {
+                            <div class="movie-card-image" style="background: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                <i class="fas fa-film"></i>
+                            </div>
+                        }
+                        <div class="movie-card-content">
+                            <div class="movie-title">@item.Movie.ten_phim</div>
+                            @if (!string.IsNullOrEmpty(item.Role))
+                            {
+                                <div class="movie-role">
+                                    <i class="fas fa-theater-masks"></i>
+                                    @item.Role
+                                </div>
+                            }
+                        </div>
+                    </a>
+                }
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Chưa có phim nào</h3>
+                <p>Diễn viên này chưa tham gia phim nào trong hệ thống</p>
+            </div>
+        }
+    </div>
+</div>

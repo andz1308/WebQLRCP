@@ -1,0 +1,624 @@
+﻿@model WebCinema.Models.LoginViewModel
+
+@{
+    ViewBag.Title = "Đăng Nhập";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAV Cinema - Đăng Nhập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: #000;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* ✅ Background với hình cinema đẹp từ Unsplash */
+    .auth-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    .auth-background img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.35) saturate(1.2);
+    }
+
+    .auth-background::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.3) 0%, rgba(0, 0, 0, 0.8) 100%);
+    }
+
+    /* ✅ Animated gradient overlay */
+    .auth-background::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, 
+            rgba(255, 107, 53, 0.2) 0%, 
+            transparent 50%, 
+            rgba(240, 147, 251, 0.2) 100%);
+        animation: gradientShift 8s ease infinite;
+        z-index: 1;
+    }
+
+    @@keyframes gradientShift {
+        0%, 100% { opacity: 0.5; transform: translateX(0) translateY(0); }
+        50% { opacity: 0.8; transform: translateX(-10%) translateY(-10%); }
+    }
+
+    /* ✅ Logo cam nổi bật */
+    .brand-logo {
+        position: fixed;
+        top: 2rem;
+        left: 2rem;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-decoration: none;
+    }
+
+    .brand-logo-icon {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.5);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .brand-logo-icon::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+        transform: rotate(45deg);
+        animation: shine 3s infinite;
+    }
+
+    @@keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .brand-logo:hover .brand-logo-icon {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 15px 40px rgba(255, 107, 53, 0.7);
+    }
+
+    .brand-logo-icon i {
+        font-size: 2rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .brand-logo-text {
+        color: white;
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ✅ Container với glassmorphism */
+    .auth-container {
+        max-width: 500px;
+        width: 100%;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-card {
+        background: rgba(20, 20, 20, 0.92);
+        backdrop-filter: blur(25px) saturate(180%);
+        border-radius: 28px;
+        padding: 4.5rem 3.5rem 3.5rem;
+        box-shadow: 
+            0 30px 90px rgba(0, 0, 0, 0.7),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ff6b35, #f093fb, #ff6b35);
+        background-size: 200% 100%;
+        animation: borderGlow 3s linear infinite;
+    }
+
+    @@keyframes borderGlow {
+        0%, 100% { background-position: 0% 0%; }
+        50% { background-position: 100% 0%; }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .auth-title {
+        font-size: 3rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        line-height: 1.1;
+        animation: titleGlow 3s ease-in-out infinite;
+    }
+
+    @@keyframes titleGlow {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.2); }
+    }
+
+    .auth-subtitle {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1.05rem;
+        font-weight: 300;
+        letter-spacing: 0.5px;
+    }
+
+    /* ✅ Form inputs hiện đại */
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .form-group {
+        position: relative;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 1.4rem 1.3rem 0.9rem;
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        font-size: 1.05rem;
+        color: white;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #ff6b35;
+        background: rgba(255, 107, 53, 0.1);
+        box-shadow: 
+            0 0 0 4px rgba(255, 107, 53, 0.15),
+            0 8px 24px rgba(255, 107, 53, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+        color: transparent;
+    }
+
+    .form-label {
+        position: absolute;
+        left: 1.3rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 1.05rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        font-weight: 400;
+    }
+
+    .form-input:focus + .form-label,
+    .form-input:not(:placeholder-shown) + .form-label {
+        top: 0.7rem;
+        font-size: 0.75rem;
+        color: #ff6b35;
+        font-weight: 600;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.6);
+        padding: 0.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }
+
+    .password-toggle:hover {
+        color: #ff6b35;
+        background: rgba(255, 107, 53, 0.2);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .password-toggle i {
+        font-size: 1.15rem;
+    }
+
+    /* ✅ Button cam nổi bật */
+    .btn-submit {
+        padding: 1.3rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #f093fb 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-top: 1rem;
+        letter-spacing: 1px;
+        font-family: 'Poppins', sans-serif;
+        text-transform: uppercase;
+        box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #f093fb 0%, #ff6b35 100%);
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 
+            0 15px 50px rgba(255, 107, 53, 0.6),
+            0 0 30px rgba(240, 147, 251, 0.4);
+    }
+
+    .btn-submit:active {
+        transform: translateY(-1px) scale(0.98);
+    }
+
+    /* ✅ Form options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: -0.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+
+    .form-checkbox {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #ff6b35;
+    }
+
+    .form-checkbox-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+        cursor: pointer;
+        font-weight: 400;
+    }
+
+    .forgot-link {
+        color: #ff6b35;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .forgot-link:hover {
+        color: #f093fb;
+        text-decoration: underline;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 400;
+    }
+
+    .auth-footer a {
+        color: #ff6b35;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .auth-footer a:hover {
+        color: #f093fb;
+        text-decoration: underline;
+    }
+
+    /* ✅ Alert messages */
+    .success-message,
+    .alert-error {
+        padding: 1.2rem 1.5rem;
+        border-radius: 14px;
+        margin-bottom: 2rem;
+        text-align: center;
+        animation: slideUp 0.6s ease-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+    .success-message {
+        background: rgba(34, 197, 94, 0.2);
+        border: 2px solid #22c55e;
+        color: #86efac;
+    }
+
+    .alert-error {
+        background: rgba(255, 107, 53, 0.2);
+        border: 2px solid #ff6b35;
+        color: #fca5a5;
+    }
+
+    .success-message::before {
+        content: '✓';
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .alert-error::before {
+        content: '!';
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    /* ✅ Responsive */
+    @@media (max-width: 768px) {
+        .brand-logo {
+            top: 1.5rem;
+            left: 1.5rem;
+        }
+
+        .brand-logo-text {
+            display: none;
+        }
+
+        .auth-card {
+            padding: 3.5rem 2.5rem 3rem;
+        }
+
+        .auth-title {
+            font-size: 2.4rem;
+        }
+
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .auth-container {
+            padding: 0 1rem;
+        }
+
+        .auth-card {
+            padding: 3rem 2rem 2.5rem;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<body>
+    <!-- ✅ Background Image - Cinema với màu ấm -->
+    <div class="auth-background">
+        <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1920&q=80" 
+             alt="Cinema Background"
+             loading="eager" />
+    </div>
+
+    <!-- ✅ Logo -->
+    <a href="@Url.Action("Index", "Home")" class="brand-logo">
+        <div class="brand-logo-icon">
+            <i class="fas fa-film"></i>
+        </div>
+        <span class="brand-logo-text">DAV Cinema</span>
+    </a>
+
+    <!-- ✅ Auth Card -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Đăng Nhập</h1>
+                <p class="auth-subtitle">Khám phá thế giới điện ảnh cùng DAV</p>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="success-message">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert-error">
+                    @ViewBag.ErrorMessage
+                </div>
+            }
+
+            @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "auth-form" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    @Html.TextBoxFor(m => m.Email, new { 
+                        @class = "form-input", 
+                        placeholder = " ",
+                        type = "email",
+                        autocomplete = "email"
+                    })
+                    <label class="form-label">Email hoặc số điện thoại</label>
+                </div>
+
+                <div class="form-group">
+                    <div class="password-wrapper">
+                        @Html.PasswordFor(m => m.Password, new
+                        {
+                            @class = "form-input",
+                            placeholder = " ",
+                            id = "password",
+                            autocomplete = "current-password"
+                        })
+                        <label class="form-label">Mật khẩu</label>
+                        <button type="button" id="togglePassword" class="password-toggle">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Đăng Nhập Ngay
+                </button>
+
+                <div class="form-options">
+                    <div class="remember-me">
+                        @Html.CheckBoxFor(m => m.RememberMe, new { @class = "form-checkbox", id = "remember" })
+                        <label class="form-checkbox-label" for="remember">Ghi nhớ đăng nhập</label>
+                    </div>
+                    <a href="@Url.Action("ForgotPassword", "Account")" class="forgot-link">Quên mật khẩu?</a>
+                </div>
+            }
+
+            <div class="auth-footer">
+                Chưa có tài khoản? <a href="@Url.Action("Register", "Account")">Đăng ký ngay</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ✅ Password toggle
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordField = document.getElementById('password');
+            
+            if (togglePassword && passwordField) {
+                togglePassword.addEventListener('click', function () {
+                    const type = passwordField.type === 'password' ? 'text' : 'password';
+                    passwordField.type = type;
+                    
+                    const icon = this.querySelector('i');
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // ✅ Form inputs auto-fill detection
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                if (input.value) {
+                    input.setAttribute('placeholder', ' ');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

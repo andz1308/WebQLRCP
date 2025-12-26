@@ -1,0 +1,95 @@
+﻿@model IEnumerable<WebCinema.Models.Phim>
+
+@{
+    ViewBag.Title = "Qu?n Lý Phim";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-film"></i> Danh Sách Phim</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Phim M?i
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Poster</th>
+                        <th>Tên Phim</th>
+                        <th>??o Di?n</th>
+                        <th>Th?i L??ng</th>
+                        <th>Ngày Kh?i Chi?u</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var movie in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(movie.hinh_anh))
+                                {
+                                    var imgSrc = movie.hinh_anh.StartsWith("~") ? Url.Content(movie.hinh_anh) : movie.hinh_anh;
+                                    <img src="@imgSrc" alt="@movie.ten_phim" style="width: 60px; height: 90px; object-fit: cover; border-radius: 4px;" />
+                                }
+                                else
+                                {
+                                    <div style="width: 60px; height: 90px; background: #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-image" style="color: #999;"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td><strong>@movie.ten_phim</strong></td>
+                            <td>@(movie.Dao_Dien != null ? movie.Dao_Dien.ho_ten : "N/A")</td>
+                            <td>@(movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A")</td>
+                            <td>@(movie.ngay_khoi_chieu.HasValue ? movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = movie.phim_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> S?a
+                                </a>
+                                <button onclick="deleteMovie(@movie.phim_id, '@movie.ten_phim')" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Ch?a có phim nào trong h? th?ng.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteMovie(id, name) {
+            if (confirmDelete('B?n có ch?c ch?n mu?n xóa phim "' + name + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có l?i x?y ra khi xóa phim.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+

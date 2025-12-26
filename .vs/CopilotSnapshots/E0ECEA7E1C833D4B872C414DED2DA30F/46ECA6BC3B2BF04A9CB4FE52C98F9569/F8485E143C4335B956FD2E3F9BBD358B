@@ -1,0 +1,205 @@
+﻿@model WebCinema.Models.Suat_Chieu
+
+@{
+    ViewBag.Title = "Chỉnh Sửa Suất Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-edit"></i> Chỉnh Sửa Suất Chiếu #@Model.suat_chieu_id
+        </h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    <div style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #ff9800; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <h3 style="margin: 0 0 0.8rem 0; color: #f57c00; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-exclamation-triangle"></i> Lưu Ý Quan Trọng
+        </h3>
+        <ul style="margin: 0; padding-left: 1.8rem; color: #555; line-height: 1.8;">
+            <li><strong>Thay đổi Giá Vé</strong> sẽ tự động cập nhật giá <strong>TẤT CẢ</strong> vé trong suất chiếu này</li>
+            <li>Chỉ nên sửa <strong>trước khi bán vé</strong> để tránh nhầm lẫn</li>
+            <li>Hệ thống sẽ tính lại giá dựa trên loại ghế và loại ngày</li>
+        </ul>
+    </div>
+
+    @using (Html.BeginForm("Edit", "ShowtimeManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.suat_chieu_id)
+
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+            <!-- CỘT TRÁI -->
+            <div>
+                <div class="form-group">
+                    <label class="form-label" style="color: #2196f3; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-building"></i> Rạp *
+                    </label>
+                    @Html.DropDownList("cinemaId",
+                        (SelectList)ViewBag.Cinemas,
+                        "-- Chọn rạp --",
+                        new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #2196f3; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-door-open"></i> Phòng Chiếu *
+                    </label>
+                    @Html.DropDownListFor(m => m.phong_chieu_id,
+                        (SelectList)ViewBag.Rooms,
+                        "-- Chọn phòng chiếu --",
+                        new { @class = "form-control", required = "required", id = "roomSelect" })
+                    @Html.ValidationMessageFor(m => m.phong_chieu_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #2196f3; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-calendar-alt"></i> Ngày Chiếu *
+                    </label>
+                    @Html.TextBoxFor(m => m.ngay_chieu,
+                        "{0:yyyy-MM-dd}",
+                        new { @class = "form-control", type = "date", required = "required", id = "ngayChieu" })
+                    @Html.ValidationMessageFor(m => m.ngay_chieu, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #2196f3; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-clock"></i> Ca Chiếu *
+                    </label>
+                    @if (ViewBag.NoShifts == true)
+                    {
+                        <div style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                            <p style="color: #856404; margin: 0;"><strong>Lưu ý:</strong> Chưa có ca chiếu nào.</p>
+                        </div>
+                        @Html.DropDownListFor(m => m.ca_chieu_id,
+                            (SelectList)ViewBag.Shifts,
+                            new { @class = "form-control", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.DropDownListFor(m => m.ca_chieu_id,
+                            (SelectList)ViewBag.Shifts,
+                            "-- Chọn ca chiếu --",
+                            new { @class = "form-control", required = "required" })
+                    }
+                    @Html.ValidationMessageFor(m => m.ca_chieu_id, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI -->
+            <div>
+                <div class="form-group">
+                    <label class="form-label" style="color: #4caf50; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-film"></i> Phim *
+                    </label>
+                    @Html.DropDownListFor(m => m.phim_id,
+                        (SelectList)ViewBag.Movies,
+                        "-- Chọn phim --",
+                        new { @class = "form-control", required = "required" })
+                    @Html.ValidationMessageFor(m => m.phim_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #4caf50; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-money-bill-wave"></i> Giá Vé Gốc *
+                    </label>
+                    @Html.TextBoxFor(m => m.gia_ve,
+                        new { @class = "form-control", type = "number", min = "0", step = "1000", required = "required" })
+                    @Html.ValidationMessageFor(m => m.gia_ve, "", new { @class = "text-danger" })
+                    <small style="color: #666; display: block; margin-top: 0.3rem;">
+                        <i class="fas fa-info-circle"></i> Thay đổi giá sẽ cập nhật TẤT CẢ vé
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #4caf50; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-language"></i> Ngôn Ngữ
+                    </label>
+                    @Html.TextBoxFor(m => m.ngon_ngu, 
+                        new { @class = "form-control", placeholder = "Ví dụ: Vietsub, Thuyết minh" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="color: #9e9e9e; font-size: 1.05rem; font-weight: 600;">
+                        <i class="fas fa-calendar-check"></i> Loại Ngày
+                    </label>
+                    @{
+                        string loaiNgayText = "Tự động";
+                        if (Model.Loai_Ngay != null)
+                        {
+                            loaiNgayText = Model.Loai_Ngay.loai_ngay1;
+                        }
+                    }
+                    <input type="text" class="form-control" value="@loaiNgayText" readonly style="background: #f5f5f5;" />
+                    <small style="color: #666; display: block; margin-top: 0.3rem;">
+                        <i class="fas fa-info-circle"></i> Tự động cập nhật dựa trên ngày chiếu
+                    </small>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="text-align:right; margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e0e0e0;">
+            <button type="submit" class="btn btn-success px-5 py-3" style="font-size: 1.1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);">
+                <i class="fas fa-save"></i> Cập Nhật Suất Chiếu
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var today = new Date().toISOString().split('T')[0];
+            $('#ngayChieu').attr('min', today);
+
+            // Load rooms when cinema changes
+            $('#cinemaSelect').change(function () {
+                var cinemaId = $(this).val();
+                
+                if (cinemaId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRoomsByCinema")',
+                        type: 'GET',
+                        data: { cinemaId: cinemaId },
+                        success: function (response) {
+                            var roomSelect = $('#roomSelect');
+                            roomSelect.empty().append('<option value="">-- Chọn phòng --</option>');
+                            
+                            if (response.success && response.rooms) {
+                                $.each(response.rooms, function (index, room) {
+                                    roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
+                                });
+                            }
+                        },
+                        error: function() {
+                            alert('Không thể tải danh sách phòng. Vui lòng thử lại!');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control:focus {
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+    }
+</style>

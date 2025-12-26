@@ -1,0 +1,109 @@
+﻿@model IEnumerable<WebCinema.Models.Phong_Chieu>
+
+@{
+    ViewBag.Title = "Danh sách Phòng Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    var rapId = ViewBag.RapId;
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-door-open"></i> Danh Sách Phòng Chiếu @(ViewBag.TenRap != null ? $"- {ViewBag.TenRap}" : "")</h2>
+        <div style="display: flex; gap: 1rem;">
+            <a href="@Url.Action("Index", "CinemaManagement")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+            @if (rapId != null)
+            {
+                <a href="@Url.Action("Create", new { rapId = rapId })" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Thêm Phòng Mới
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Create")" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Tạo Phòng Chiếu
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+            @foreach (var item in Model)
+            {
+                <div style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem; transition: all 0.3s ease; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: #2c3e50; margin-bottom: 0.5rem; font-size: 1.3rem;">
+                            <i class="fas fa-film" style="color: #ff6b35;"></i> @item.ten_phong
+                        </h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 0.3rem;">
+                            <i class="fas fa-building"></i> @(item.Rap != null ? item.Rap.ten_rap : "N/A")
+                        </p>
+                        <p style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 0.3rem;">
+                            <i class="fas fa-users"></i> Sức chứa: <strong>@item.suc_chua</strong> ghế
+                        </p>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">
+                            <i class="fas fa-th"></i> Kích thước: <strong>@item.so_hang x @item.so_cot</strong>
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
+                        <a href="@Url.Action("EditLayout", new { id = item.phong_chieu_id })" class="btn btn-primary" style="padding: 0.6rem 1rem; flex: 1;">
+                            <i class="fas fa-edit"></i> Sửa Sơ Đồ
+                        </a>
+                        <button onclick="deleteRoom(@item.phong_chieu_id, '@item.ten_phong')" class="btn btn-danger" style="padding: 0.6rem 1rem;">
+                            <i class="fas fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 8px;">
+            <i class="fas fa-inbox" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+            <p style="color: #999; font-size: 1.1rem;">Chưa có phòng chiếu nào trong hệ thống.</p>
+            @if (rapId != null)
+            {
+                <a href="@Url.Action("Create", new { rapId = rapId })" class="btn btn-primary" style="margin-top: 1rem;">
+                    <i class="fas fa-plus"></i> Thêm Phòng Đầu Tiên
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteRoom(id, name) {
+            if (confirm('Bạn có chắc chắn muốn xóa phòng "' + name + '"? Tất cả ghế và suất chiếu liên quan sẽ bị xóa.')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    .content-card > div:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2) !important;
+    }
+</style>

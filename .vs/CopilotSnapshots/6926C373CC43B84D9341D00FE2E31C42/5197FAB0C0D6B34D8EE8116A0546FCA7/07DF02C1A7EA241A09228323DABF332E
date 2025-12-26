@@ -1,0 +1,636 @@
+﻿@{
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Vé Của Tôi - DAV Cinema";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Tính toán thống kê
+    var allBookings = Model != null ? Model.ToList() : new List<WebCinema.Models.Dat_Ve>();
+    var totalSpent = allBookings.Sum(b => b.tong_tien);
+    var totalTickets = allBookings.SelectMany(b => b.Ves).Count();
+    var upcomingBookings = allBookings.Where(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null && b.Ves.First().Suat_Chieu.ngay_chieu >= DateTime.Now).ToList();
+    var pastBookings = allBookings.Where(b => b.Ves.Any() && b.Ves.First().Suat_Chieu != null && b.Ves.First().Suat_Chieu.ngay_chieu < DateTime.Now).ToList();
+}
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .tickets-page {
+        background: #f5f5f5;
+        min-height: 100vh;
+        padding: 2rem 0 4rem;
+    }
+
+    .tickets-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* Header Section */
+    .tickets-hero {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        color: white;
+        box-shadow: 0 10px 40px rgba(255, 107, 53, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tickets-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .tickets-hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .tickets-hero h1 {
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .tickets-hero p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+        margin: 0;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-card-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card-icon i {
+        font-size: 1.8rem;
+        color: white;
+    }
+
+    .stat-card-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0.5rem 0;
+    }
+
+    .stat-card-label {
+        color: #999;
+        font-size: 0.95rem;
+    }
+
+    /* Tabs */
+    .tickets-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #e0e0e0;
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        padding: 1rem 2rem;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #666;
+        font-size: 1.05rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .tab-button.active {
+        color: #ff6b35;
+        border-bottom-color: #ff6b35;
+    }
+
+    .tab-button:hover {
+        color: #ff6b35;
+    }
+
+    .tab-badge {
+        background: #ff6b35;
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Ticket Card */
+    .ticket-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-left: 5px solid #ff6b35;
+    }
+
+    .ticket-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        transform: translateX(5px);
+    }
+
+    .ticket-card-header {
+        background: linear-gradient(135deg, #fff 0%, #fff3f0 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 2px dashed #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .ticket-booking-id {
+        font-size: 0.9rem;
+        color: #999;
+        font-weight: 600;
+    }
+
+    .ticket-booking-id span {
+        color: #ff6b35;
+        font-size: 1.1rem;
+    }
+
+    .ticket-status-badge {
+        padding: 0.5rem 1.2rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-paid {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-used {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .ticket-card-body {
+        padding: 2rem;
+    }
+
+    .ticket-main-info {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .ticket-poster {
+        width: 120px;
+        height: 160px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .ticket-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .ticket-details h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin: 0 0 1rem 0;
+        font-weight: 700;
+    }
+
+    .ticket-info-row {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 0.7rem 0;
+        color: #666;
+        font-size: 1rem;
+    }
+
+    .ticket-info-row i {
+        color: #ff6b35;
+        width: 20px;
+    }
+
+    .ticket-info-row strong {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .ticket-price-section {
+        text-align: right;
+    }
+
+    .ticket-total-label {
+        color: #999;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .ticket-total-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #ff6b35;
+        line-height: 1;
+    }
+
+    .ticket-seats {
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .seats-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .seats-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+    }
+
+    .seat-badge {
+        background: white;
+        border: 2px solid #ff6b35;
+        color: #ff6b35;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .ticket-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-ticket {
+        padding: 0.9rem 1.8rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+
+    .btn-outline {
+        background: white;
+        color: #666;
+        border: 2px solid #e0e0e0;
+    }
+
+    .btn-outline:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 0.8rem;
+    }
+
+    .empty-state p {
+        color: #999;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .tickets-hero {
+            padding: 2rem;
+        }
+
+        .tickets-hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .ticket-main-info {
+            grid-template-columns: 1fr;
+        }
+
+        .ticket-poster {
+            width: 100%;
+            height: 200px;
+        }
+
+        .ticket-price-section {
+            text-align: left;
+        }
+
+        .ticket-actions {
+            flex-direction: column;
+        }
+
+        .btn-ticket {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Loading Animation */
+    .loading {
+        text-align: center;
+        padding: 3rem;
+    }
+
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #ff6b35;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
+<div class="tickets-page">
+    <div class="tickets-container">
+        <!-- Hero Section -->
+        <div class="tickets-hero">
+            <div class="tickets-hero-content">
+                <h1>
+                    <i class="fas fa-ticket-alt"></i>
+                    Vé Của Tôi
+                </h1>
+                <p>Quản lý tất cả vé xem phim và theo dõi lịch sử đặt vé của bạn</p>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="stat-card-value">@totalTickets</div>
+                <div class="stat-card-label">Tổng số vé đã đặt</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-icon">
+                    <i class="fas fa-film"></i>
+                </div>
+                <div class="stat-card-value">@allBookings.Count</div>
+                <div class="stat-card-label">Tổng số đơn đặt</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-card-value">@totalSpent.ToString("N0") ₫</div>
+                <div class="stat-card-label">Tổng chi tiêu</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-card-value">@upcomingBookings.Count</div>
+                <div class="stat-card-label">Vé sắp tới</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tickets-tabs">
+            <button class="tab-button active" onclick="switchTab('all')">
+                <i class="fas fa-list"></i> Tất cả
+                <span class="tab-badge">@allBookings.Count</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('upcoming')">
+                <i class="fas fa-clock"></i> Sắp tới
+                <span class="tab-badge">@upcomingBookings.Count</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('past')">
+                <i class="fas fa-history"></i> Đã xem
+                <span class="tab-badge">@pastBookings.Count</span>
+            </button>
+        </div>
+
+        <!-- All Tickets Tab -->
+        <div id="all-tab" class="tab-content active">
+            @if (allBookings.Any())
+            {
+                foreach (var booking in allBookings.OrderByDescending(b => b.ngay_tao))
+                {
+                    @Html.Partial("_TicketCard", booking)
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🎬</div>
+                    <h3>Chưa có vé nào</h3>
+                    <p>Bạn chưa đặt vé xem phim nào. Hãy khám phá những bộ phim đang chiếu!</p>
+                    <a href="@Url.Action("Index", "Home")" class="btn-ticket btn-primary">
+                        <i class="fas fa-film"></i> Xem phim ngay
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Upcoming Tickets Tab -->
+        <div id="upcoming-tab" class="tab-content">
+            @if (upcomingBookings.Any())
+            {
+                foreach (var booking in upcomingBookings.OrderBy(b => b.Ves.First().Suat_Chieu.ngay_chieu))
+                {
+                    @Html.Partial("_TicketCard", booking)
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <h3>Không có vé sắp tới</h3>
+                    <p>Bạn không có vé xem phim nào sắp tới</p>
+                    <a href="@Url.Action("Index", "Home")" class="btn-ticket btn-primary">
+                        <i class="fas fa-film"></i> Đặt vé ngay
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Past Tickets Tab -->
+        <div id="past-tab" class="tab-content">
+            @if (pastBookings.Any())
+            {
+                foreach (var booking in pastBookings.OrderByDescending(b => b.Ves.First().Suat_Chieu.ngay_chieu))
+                {
+                    @Html.Partial("_TicketCard", booking)
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🎭</div>
+                    <h3>Chưa xem phim nào</h3>
+                    <p>Bạn chưa có lịch sử xem phim</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Remove active class from all buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected tab
+        document.getElementById(tabName + '-tab').classList.add('active');
+        
+        // Add active class to clicked button
+        event.target.closest('.tab-button').classList.add('active');
+    }
+</script>
+}

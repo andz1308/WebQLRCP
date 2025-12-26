@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace WebCinema.Controllers
+{
+    public class HomeController : Controller
+    {
+        public ActionResult Index()//Trang chủ
+        {
+
+            return View();
+        }
+
+        public ActionResult Detail()//Trang chi tiết phim
+        {
+
+            return View();
+        }
+
+
+
+
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+    }
+}

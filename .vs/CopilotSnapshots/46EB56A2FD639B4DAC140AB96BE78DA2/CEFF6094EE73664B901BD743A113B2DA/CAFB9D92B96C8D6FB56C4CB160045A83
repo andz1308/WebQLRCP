@@ -1,0 +1,468 @@
+﻿@model IEnumerable<WebCinema.Models.Suat_Chieu>
+
+@{
+    ViewBag.Title = "Đặt Vé Offline";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+}
+@{
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+}
+
+<style>
+    .showtimes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .showtime-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* make cards equal height and align buttons */
+    }
+
+        .showtime-card:hover {
+            border-color: #ff6b35;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .showtime-card.past {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .movie-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .showtime-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.95rem;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .time {
+        color: #ff6b35;
+        font-size: 1.3rem;
+    }
+
+    .date {
+        color: #0066cc;
+        font-size: 0.95rem;
+    }
+
+    .seat-info {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .seat-stat {
+        flex: 1;
+        text-align: center;
+    }
+
+    .seat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ff6b35;
+    }
+
+    .seat-label {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.3rem;
+    }
+
+    .btn-book {
+        width: 100%;
+        padding: 0.8rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+        .btn-book:hover {
+            background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-book:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .header-section {
+        margin-bottom: 2rem;
+    }
+
+        .header-section h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+    /* FILTER BAR - HORIZONTAL IMPROVED */
+    .filter-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        border: 1px solid #e0e0e0;
+    }
+
+    .filter-form {
+        width: 100%;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .filter-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .filter-item label {
+        font-weight: 600;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .filter-item input,
+    .filter-item select {
+        padding: 0.65rem 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background: white;
+        transition: border-color 0.3s ease;
+    }
+
+    .filter-item input:focus,
+    .filter-item select:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 5px rgba(255, 107, 53, 0.2);
+    }
+
+    .date-hint {
+        font-size: 0.8rem;
+        color: #999;
+        margin-top: -0.3rem;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 0.8rem;
+        align-items: center;
+    }
+
+    .filter-buttons .btn {
+        padding: 0.65rem 1.2rem;
+        white-space: nowrap;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+    }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+    .badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .badge-green {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-orange {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-red {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Pagination */
+    .pagination-wrapper {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        cursor: pointer;
+    }
+
+        .page-btn.active {
+            background: #ff6b35;
+            color: white;
+            border-color: #ff6b35;
+        }
+</style>
+
+<div class="header-section">
+    <h1><i class="fas fa-ticket-alt"></i> Đặt Vé Offline</h1>
+    <p style="color: #666; margin-top: 0.5rem;">Đặt vé cho khách hàng trực tiếp tại rạp</p>
+</div>
+
+<div class="filter-section">
+    @using (Html.BeginForm("Index", "StaffOfflineBooking", FormMethod.Get, new { area = "Admin", @class = "filter-form" }))
+    {
+        <div class="filter-row">
+            <div class="filter-item">
+                <label for="movieName">Tên phim:</label>
+                <input type="text" id="movieName" name="movieName" value="@(ViewBag.MovieName ?? "")" placeholder="Tìm theo tên phim" />
+            </div>
+
+            <div class="filter-item">
+                <label for="cinemaId">Rạp:</label>
+                @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, "-- Tất cả rạp --", new { id = "cinemaId" })
+            </div>
+
+            <div class="filter-item">
+                <label for="filterDate">Lọc theo ngày:</label>
+                <input type="date" name="date" id="filterDate" value="@(ViewBag.Date ?? "")" />
+                @*<span class="date-hint">dd-mm-yyyy</span>*@
+            </div>
+
+            <div class="filter-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetFilter()">
+                    <i class="fas fa-redo"></i> Tất cả
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="showtimes-grid">
+        @foreach (var showtime in Model)
+        {
+            var isPast = showtime.ngay_chieu < DateTime.Now.Date;
+
+            // ✅ CHỈ TÍNH LÀ ĐÃ BÁN KHI VÉ LIÊN KẾT VỚI DAT_VE.CÓ TRẠNG THÁI "Đã Thanh toán"
+            var bookedCount = ViewBag.BookedCounts != null && ((Dictionary<int,int>)ViewBag.BookedCounts).ContainsKey(showtime.suat_chieu_id)
+                ? ((Dictionary<int,int>)ViewBag.BookedCounts)[showtime.suat_chieu_id]
+                : showtime.Ves.Count(v => v.Dat_Ve_id != null && v.Dat_Ve != null && v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán" && v.trang_thai_ve != "Đã Hủy");
+
+            // Vé đang chờ thanh toán (không nên tính vào đã bán)
+            var pendingCount = ViewBag.PendingCounts != null && ((Dictionary<int,int>)ViewBag.PendingCounts).ContainsKey(showtime.suat_chieu_id)
+                ? ((Dictionary<int,int>)ViewBag.PendingCounts)[showtime.suat_chieu_id]
+                : showtime.Ves.Count(v => v.Dat_Ve_id != null && v.Dat_Ve != null && v.Dat_Ve.trang_thai_Dat_Ve == "Chưa thanh toán");
+
+            var totalSeats = ViewBag.TotalSeatsByShowtime != null && ((Dictionary<int,int>)ViewBag.TotalSeatsByShowtime).ContainsKey(showtime.suat_chieu_id)
+                ? ((Dictionary<int,int>)ViewBag.TotalSeatsByShowtime)[showtime.suat_chieu_id]
+                : (showtime.Phong_Chieu.Ghes.Count());
+
+            // Available = tổng - đã bán (chỉ tính vé đã thanh toán). Không trừ pending.
+            var availableCount = totalSeats - bookedCount;
+
+            var occupancyRate = totalSeats > 0 ? Math.Round((double)bookedCount / totalSeats * 100, 0) : 0;
+
+            <div class="showtime-card @(isPast ? "past" : "")">
+                <div>
+                    <div class="movie-title">@showtime.Phim.ten_phim</div>
+
+                    <div class="showtime-info">
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-calendar"></i> Ngày chiếu:
+                            </span>
+                            <span class="date">@showtime.ngay_chieu.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-clock"></i> Giờ chiếu:
+                            </span>
+                            <span class="time">@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-map-marker-alt"></i> Phòng:
+                            </span>
+                            <span class="info-value">@showtime.Phong_Chieu.ten_phong</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-tag"></i> Giá vé:
+                            </span>
+                            <span class="info-value" style="color: #27ae60;">@showtime.gia_ve.ToString("N0") ₫</span>
+                        </div>
+                    </div>
+
+                    <div class="seat-info">
+                        <div class="seat-stat">
+                            <div class="seat-number" style="color: #27ae60;">@availableCount</div>
+                            <div class="seat-label">Ghế trống</div>
+                        </div>
+                        <div class="seat-stat">
+                            <div class="seat-number" style="color: #e74c3c;">@bookedCount</div>
+                            <div class="seat-label">Đã bán</div>
+                        </div>
+                        <div class="seat-stat">
+                            <div class="seat-number">@occupancyRate%</div>
+                            <div class="seat-label">Lấp đầy</div>
+                        </div>
+                    </div>
+
+                    @if (pendingCount > 0)
+                    {
+                        <div style="margin-bottom: 0.75rem; color: #856404; font-weight: 600;">@pendingCount vé đang chờ thanh toán</div>
+                    }
+                </div>
+
+                <div>
+                    @if (availableCount > 0 && !isPast)
+                    {
+                        <button class="btn-book" onclick="goToSelectSeats(@showtime.suat_chieu_id)">
+                            <i class="fas fa-chair"></i> Chọn Ghế
+                        </button>
+                    }
+                    else if (isPast)
+                    {
+                        <button class="btn-book" disabled style="opacity: 0.6;">
+                            <i class="fas fa-lock"></i> Suất chiếu đã qua
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn-book" disabled style="opacity: 0.6;">
+                            <i class="fas fa-ban"></i> Hết chỗ
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination -->
+
+    if (totalPages > 1)
+    {
+        <div class="pagination-wrapper">
+            @if (currentPage > 1)
+            {
+                <a class="page-btn" href="@Url.Action("Index", new { movieName = ViewBag.MovieName, cinemaId = ViewBag.CinemaId, date = ViewBag.Date, page = currentPage - 1 })">&laquo; Trước</a>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                if (i == currentPage)
+                {
+                    <span class="page-btn active">@i</span>
+                }
+                else if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+                {
+                    <a class="page-btn" href="@Url.Action("Index", new { movieName = ViewBag.MovieName, cinemaId = ViewBag.CinemaId, date = ViewBag.Date, page = i })">@i</a>
+                }
+                else if (i == currentPage - 3 || i == currentPage + 3)
+                {
+                    <span style="padding: 0.5rem 0.75rem; color: #999;">...</span>
+                }
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a class="page-btn" href="@Url.Action("Index", new { movieName = ViewBag.MovieName, cinemaId = ViewBag.CinemaId, date = ViewBag.Date, page = currentPage + 1 })">Sau &raquo;</a>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p style="font-size: 1.1rem;">Không có suất chiếu nào</p>
+    </div>
+}
+
+<script>
+    function goToSelectSeats(showtimeId) {
+        window.location.href = '@Url.Action("SelectSeats", "StaffOfflineBooking")' + '/' + showtimeId;
+    }
+
+    function resetFilter() {
+        var movieInput = document.querySelector('input[name="movieName"]');
+        if (movieInput) movieInput.value = '';
+        var cinemaSelect = document.querySelector('select[name="cinemaId"]');
+        if (cinemaSelect) cinemaSelect.selectedIndex = 0;
+        var dateInput = document.querySelector('input[name="date"]');
+        if (dateInput) dateInput.value = '';
+        document.querySelector('.filter-form').submit();
+    }
+</script>

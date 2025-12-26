@@ -1,0 +1,89 @@
+[2025-12-25 08:12:50] ? BookingExpirationService started
+[2025-12-25 08:14:50] SelectSeats (Fresh DB): showtime=1036, paidBookings=78, bookedCount=0
+[2025-12-25 08:14:58] ✅ Tạo Dat_Ve mới: ID=1217, Trạng thái=Chưa thanh toán
+[2025-12-25 08:14:59] ✅ Sinh QR code: DAVCINEMA-1217-2257-639022472989893161 -> qr_DAVCINEMA-1217-2257-639022472989893161.png
+[2025-12-25 08:14:59] ✅ Cập nhật Dat_Ve: ID=1217, Tổng tiền=108000,00, Vé=1, Đồ ăn=0
+[2025-12-25 08:14:59] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=108000&addInfo=DatVe1217
+[2025-12-25 08:16:01] ✅ Tạo hóa đơn HTML: invoice_1217_20251225_081601.html
+[2025-12-25 08:16:06] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-25 08:16:06] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-25 08:21:40] SelectSeats (Fresh DB): showtime=36, paidBookings=79, bookedCount=0
+[2025-12-25 08:21:47] ✅ Tạo Dat_Ve mới: ID=1218, Trạng thái=Chưa thanh toán
+[2025-12-25 08:21:47] ✅ Sinh QR code: DAVCINEMA-1218-1307-639022477078568548 -> qr_DAVCINEMA-1218-1307-639022477078568548.png
+[2025-12-25 08:21:47] ✅ Cập nhật Dat_Ve: ID=1218, Tổng tiền=90000,00, Vé=1, Đồ ăn=0
+[2025-12-25 08:21:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=90000&addInfo=DatVe1218
+[2025-12-25 08:22:28] ✅ Tạo hóa đơn HTML: invoice_1218_20251225_082228.html
+[2025-12-25 08:22:32] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-25 08:22:32] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-25 09:40:07] Actor 40: Found 1 movies
+[2025-12-25 09:41:03] Actor 12: Found 1 movies
+[2025-12-25 20:46:14] ? BookingExpirationService started
+[2025-12-25 20:54:29] Login success: duyan9088@gmail.com (Customer)
+[2025-12-25 21:03:16] ✅ Sinh QR code: DAVCINEMA-1219-3965-639022933951702898 -> qr_DAVCINEMA-1219-3965-639022933951702898.png
+[2025-12-25 21:03:16] ✅ Tạo đơn đặt online: Booking ID 1219, Trạng thái: Chưa thanh toán, Vé: 1, PromoCode: , Discount: 0
+[2025-12-25 21:03:17] 🔴 GetAvailablePromoCodes ENTRY POINT REACHED
+[2025-12-25 21:03:17] ✅ API GetAvailablePromoCodes called: CustomerId=34
+[2025-12-25 21:03:17] ✅ Found 4 active promos in DB
+[2025-12-25 21:03:17] ✅ Added promo: KM001, applicable=True, reason=
+[2025-12-25 21:03:17] ✅ Added promo: KM004, applicable=True, reason=
+[2025-12-25 21:03:17] ✅ Added promo: k08, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-25 21:03:17] ✅ Added promo: PROMO_3011, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-25 21:03:17] ✅ Returning 4 promos to client
+[2025-12-25 21:03:49] 🔴 ApplyPromoToBooking called: bookingId=1219, promoCode=KM001, requestData={
+  "promo_code": "KM001",
+  "original_total": "90000.0"
+}
+[2025-12-25 21:03:49] ✅ Tính OriginalTotal từ booking: Vé=90000,00, Đồ ăn=0, Total=90000,00
+[2025-12-25 21:03:49] ✅ Áp dụng khuyến mãi KM001 cho booking 1219: 90000,00 → 81000,00₫ (Giảm 9000₫)
+[2025-12-25 21:13:15] ? Found 1 expired bookings to cancel
+[2025-12-25 21:13:15] ? Cancelled expired booking ID=1219, Customer=34, Released 1 seats
+[2025-12-25 21:13:15] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-25 21:16:41] Actor 4: Found 2 movies
+[2025-12-25 21:17:48] ? BookingExpirationService started
+[2025-12-25 21:29:09] SelectSeats (Fresh DB): showtime=1036, paidBookings=80, bookedCount=1
+[2025-12-25 21:29:09] Booked seat ids: 202
+[2025-12-25 21:29:37] ✅ Tạo Dat_Ve mới: ID=1220, Trạng thái=Chưa thanh toán
+[2025-12-25 21:29:38] ✅ Sinh QR code: DAVCINEMA-1220-2306-639022949777733961 -> qr_DAVCINEMA-1220-2306-639022949777733961.png
+[2025-12-25 21:29:38] ✅ Sinh QR code: DAVCINEMA-1220-2307-639022949780321898 -> qr_DAVCINEMA-1220-2307-639022949780321898.png
+[2025-12-25 21:29:38] ✅ Cập nhật Dat_Ve: ID=1220, Tổng tiền=307000,00, Vé=2, Đồ ăn=0
+[2025-12-25 21:29:38] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=307000&addInfo=DatVe1220
+[2025-12-25 21:29:53] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=276300&addInfo=DatVe1220
+[2025-12-25 21:31:56] SelectSeats (Fresh DB): showtime=1036, paidBookings=80, bookedCount=1
+[2025-12-25 21:31:56] Booked seat ids: 202
+[2025-12-25 21:32:27] SelectSeats (Fresh DB): showtime=1034, paidBookings=80, bookedCount=16
+[2025-12-25 21:32:27] Booked seat ids: 454,455,456,457,458,476,477,478,479,480,481,539,540,541,542,543
+[2025-12-25 21:32:41] ✅ Tạo Dat_Ve mới: ID=1221, Trạng thái=Chưa thanh toán
+[2025-12-25 21:32:41] ✅ Sinh QR code: DAVCINEMA-1221-2169-639022951614645787 -> qr_DAVCINEMA-1221-2169-639022951614645787.png
+[2025-12-25 21:32:41] ✅ Sinh QR code: DAVCINEMA-1221-2170-639022951614701167 -> qr_DAVCINEMA-1221-2170-639022951614701167.png
+[2025-12-25 21:32:41] ✅ Cập nhật Dat_Ve: ID=1221, Tổng tiền=271000,00, Vé=2, Đồ ăn=0
+[2025-12-25 21:32:41] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=271000&addInfo=DatVe1221
+[2025-12-25 21:32:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=243900&addInfo=DatVe1221
+[2025-12-25 21:33:18] SelectSeats (Fresh DB): showtime=1034, paidBookings=80, bookedCount=16
+[2025-12-25 21:33:18] Booked seat ids: 454,455,456,457,458,476,477,478,479,480,481,539,540,541,542,543
+[2025-12-25 21:33:26] ✅ Tạo Dat_Ve mới: ID=1222, Trạng thái=Chưa thanh toán
+[2025-12-25 21:33:26] ✅ Sinh QR code: DAVCINEMA-1222-2170-639022952061893893 -> qr_DAVCINEMA-1222-2170-639022952061893893.png
+[2025-12-25 21:33:26] ✅ Sinh QR code: DAVCINEMA-1222-2171-639022952061949094 -> qr_DAVCINEMA-1222-2171-639022952061949094.png
+[2025-12-25 21:33:26] ✅ Cập nhật Dat_Ve: ID=1222, Tổng tiền=271000,00, Vé=2, Đồ ăn=0
+[2025-12-25 21:33:26] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=271000&addInfo=DatVe1222
+[2025-12-25 21:34:16] ✅ Tạo hóa đơn HTML: invoice_1222_20251225_213416.html
+[2025-12-25 21:34:22] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-25 21:34:22] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-25 21:34:54] SelectSeats (Fresh DB): showtime=1034, paidBookings=81, bookedCount=18
+[2025-12-25 21:34:54] Booked seat ids: 454,455,456,457,458,476,477,478,479,480,481,535,536,539,540,541,542,543
+[2025-12-25 21:39:49] ? Found 1 expired bookings to cancel
+[2025-12-25 21:39:49] ? Cancelled expired booking ID=1220, Customer=34, Released 2 seats
+[2025-12-25 21:39:49] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-25 21:46:41] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeCoco
+[2025-12-25 21:47:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeCoco
+[2025-12-25 21:48:44] ✅ Admin ViewInvoice: Booking ID 1223
+[2025-12-25 21:48:47] ✅ Sinh QR code: 17586e3a-30ed-4b90-b336-9d2860e78b7f -> qr_17586e3a-30ed-4b90-b336-9d2860e78b7f.png
+[2025-12-25 21:48:47] ✅ Sinh QR code: 90d4df3c-9a90-4016-b8c3-bfeac15a7c8b -> qr_90d4df3c-9a90-4016-b8c3-bfeac15a7c8b.png
+[2025-12-25 21:53:59] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeAvatar
+[2025-12-25 22:03:52] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeCoco
+[2025-12-25 22:04:12] ✅ Admin ViewInvoice: Booking ID 1224
+[2025-12-25 22:04:12] ✅ Sinh QR code: 643995bb-5808-4327-aa55-91381715c35c -> qr_643995bb-5808-4327-aa55-91381715c35c.png
+[2025-12-25 22:04:12] ✅ Sinh QR code: 76dad1af-bc07-42e1-bcaf-37a2d76131fb -> qr_76dad1af-bc07-42e1-bcaf-37a2d76131fb.png
+[2025-12-25 22:06:58] ✅ Soát vé: 643995bb-5808-4327-aa55-91381715c35c | Rạp: DAV Cinemax Trung Tâm
+[2025-12-25 22:31:34] ? BookingExpirationService started
+[2025-12-25 22:31:54] SelectSeats (Fresh DB): showtime=1036, paidBookings=83, bookedCount=1
+[2025-12-25 22:31:54] Booked seat ids: 202

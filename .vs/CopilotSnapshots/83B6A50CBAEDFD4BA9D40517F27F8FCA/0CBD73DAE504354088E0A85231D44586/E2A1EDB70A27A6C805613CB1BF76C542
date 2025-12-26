@@ -1,0 +1,362 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+using WebCinema.Services;
+using Newtonsoft.Json.Linq;
+
+namespace WebCinema.Controllers.API
+{
+    /// <summary>
+    /// Authentication API - Đăng nhập, đăng ký, cập nhật profile
+    /// </summary>
+    [RoutePrefix("api/auth")]
+    public class AuthApiController : ApiController
+    {
+        private AuthService authService = new AuthService();
+        private CSDLDataContext db = new CSDLDataContext();
+
+        /// <summary>
+        /// POST: api/auth/login
+        /// Đăng nhập và nhận session
+        /// </summary>
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public IHttpActionResult Login([FromBody] JObject data)
+        {
+            try
+            {
+                string email = data["email"]?.Value<string>();
+                string password = data["password"]?.Value<string>();
+
+                // ✅ Validation
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                {
+                    return BadRequest("Email và password không được rỗng");
+                }
+
+                // ✅ Authenticate
+                var auth = authService.Login(email, password);
+                if (auth == null || !auth.IsAuthenticated)
+                {
+                    LoggingHelper.LogWarning($"Failed login: {email}");
+                    return Ok(new { success = false, message = "Email hoặc mật khẩu không đúng" });
+                }
+
+                // ✅ Response
+                object userData;
+                if (auth.Role == "Customer" && auth.Customer != null)
+                {
+                    userData = new
+                    {
+                        user_id = auth.Customer.khach_hang_id,
+                        name = auth.Customer.ho_ten,
+                        email = auth.Customer.email,
+                        phone = auth.Customer.so_dien_thoai,
+                        role = "Customer"
+                    };
+                }
+                else
+                {
+                    userData = new
+                    {
+                        user_id = auth.Employee.nhanvien_id,
+                        name = auth.Employee.ho_ten,
+                        email = auth.Employee.email,
+                        phone = auth.Employee.so_dien_thoai,
+                        role = auth.Role  // Admin hoặc Staff
+                    };
+                }
+
+                LoggingHelper.LogInfo($"Login success: {email} ({auth.Role})");
+                return Ok(new
+                {
+                    success = true,
+                    message = "Đăng nhập thành công",
+                    user = userData
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/auth/register
+        /// Đăng ký khách hàng mới
+        /// </summary>
+        [HttpPost]
+        [Route("register")]
+        [AllowAnonymous]
+        public IHttpActionResult Register([FromBody] JObject data)
+        {
+            try
+            {
+                string email = data["email"]?.Value<string>();
+                string password = data["password"]?.Value<string>();
+                string name = data["name"]?.Value<string>();
+                string phone = data["phone"]?.Value<string>();
+
+                // ✅ Validation
+                if (string.IsNullOrWhiteSpace(email) || 
+                    string.IsNullOrWhiteSpace(password) ||
+                    string.IsNullOrWhiteSpace(name))
+                {
+                    return BadRequest("Các trường bắt buộc không được rỗng");
+                }
+
+                if (password.Length < 6)
+                {
+                    return BadRequest("Mật khẩu phải có ít nhất 6 ký tự");
+                }
+
+                // ✅ Check email already exists
+                var existingCustomer = db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+                if (existingCustomer != null)
+                {
+                    return Ok(new { success = false, message = "Email đã được đăng ký" });
+                }
+
+                // ✅ Register
+                var registerModel = new RegisterViewModel
+                {
+                    Email = email,
+                    Password = password,
+                    ConfirmPassword = password,
+                    FullName = name,
+                    Phone = phone
+                };
+
+                string errorMessage;
+                bool success = authService.Register(registerModel, out errorMessage);
+
+                if (success)
+                {
+                    LoggingHelper.LogInfo($"New customer registered: {email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Đăng ký thành công! Vui lòng đăng nhập"
+                    });
+                }
+
+                return Ok(new { success = false, message = errorMessage });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/auth/profile/{userId}
+        /// Lấy thông tin cá nhân (yêu cầu xác thực)
+        /// </summary>
+        [HttpGet]
+        [Route("profile/{userId}")]
+        [Authorize]
+        public IHttpActionResult GetProfile(int userId)
+        {
+            try
+            {
+                if (userId <= 0)
+                {
+                    return BadRequest("User ID không hợp lệ");
+                }
+
+                // ✅ Lấy thông tin khách hàng
+                var customer = authService.GetCustomerById(userId);
+                if (customer != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        data = new
+                        {
+                            user_id = customer.khach_hang_id,
+                            name = customer.ho_ten,
+                            email = customer.email,
+                            phone = customer.so_dien_thoai,
+                            role = "Customer"
+                        }
+                    });
+                }
+
+                // ✅ Lấy thông tin nhân viên
+                var employee = authService.GetEmployeeById(userId);
+                if (employee != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        data = new
+                        {
+                            user_id = employee.nhanvien_id,
+                            name = employee.ho_ten,
+                            email = employee.email,
+                            phone = employee.so_dien_thoai,
+                            role = "Staff"
+                        }
+                    });
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// PUT: api/auth/profile/{userId}
+        /// Cập nhật thông tin cá nhân (yêu cầu xác thực)
+        /// </summary>
+        [HttpPut]
+        [Route("profile/{userId}")]
+        [Authorize]
+        public IHttpActionResult UpdateProfile(int userId, [FromBody] JObject data)
+        {
+            try
+            {
+                if (userId <= 0)
+                {
+                    return BadRequest("User ID không hợp lệ");
+                }
+
+                string name = data["name"]?.Value<string>();
+                string phone = data["phone"]?.Value<string>();
+
+                // ✅ Update khách hàng
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == userId);
+                if (customer != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(name))
+                        customer.ho_ten = name;
+
+                    if (!string.IsNullOrWhiteSpace(phone))
+                        customer.so_dien_thoai = phone;
+
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"Profile updated: {userId}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Cập nhật thành công"
+                    });
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/auth/change-password
+        /// Đổi mật khẩu (yêu cầu xác thực)
+        /// </summary>
+        [HttpPost]
+        [Route("change-password")]
+        [Authorize]
+        public IHttpActionResult ChangePassword([FromBody] JObject data)
+        {
+            try
+            {
+                string currentPassword = data["current_password"]?.Value<string>();
+                string newPassword = data["new_password"]?.Value<string>();
+
+                if (string.IsNullOrWhiteSpace(currentPassword) || 
+                    string.IsNullOrWhiteSpace(newPassword))
+                {
+                    return BadRequest("Mật khẩu không được rỗng");
+                }
+
+                // ✅ Lấy user từ session
+                if (System.Web.HttpContext.Current?.Session["CustomerId"] == null &&
+                    System.Web.HttpContext.Current?.Session["EmployeeId"] == null)
+                {
+                    return Unauthorized();
+                }
+
+                int? customerId = System.Web.HttpContext.Current?.Session["CustomerId"] as int?;
+                int? employeeId = System.Web.HttpContext.Current?.Session["EmployeeId"] as int?;
+
+                // ✅ Update password cho khách hàng
+                if (customerId.HasValue)
+                {
+                    var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                    if (customer == null)
+                        return NotFound();
+
+                    // Verify current password
+                    var auth = authService.Login(customer.email, currentPassword);
+                    if (auth == null || !auth.IsAuthenticated)
+                        return Ok(new { success = false, message = "Mật khẩu hiện tại không đúng" });
+
+                    // Update password
+                    customer.mat_khau = AuthService.HashPassword(newPassword);
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"Password changed: {customer.email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Đổi mật khẩu thành công"
+                    });
+                }
+
+                // ✅ Update password cho nhân viên
+                if (employeeId.HasValue)
+                {
+                    var employee = db.Nhan_Viens.FirstOrDefault(e => e.nhanvien_id == employeeId);
+                    if (employee == null)
+                        return NotFound();
+
+                    // Verify current password
+                    var auth = authService.Login(employee.email, currentPassword);
+                    if (auth == null || !auth.IsAuthenticated)
+                        return Ok(new { success = false, message = "Mật khẩu hiện tại không đúng" });
+
+                    // Update password
+                    employee.mat_khau = AuthService.HashPassword(newPassword);
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"Password changed: {employee.email}");
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Đổi mật khẩu thành công"
+                    });
+                }
+
+                return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return InternalServerError(ex);
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

@@ -1,0 +1,22 @@
+[2025-11-05 19:44:49] ? BookingExpirationService started
+[2025-11-05 19:45:09] SelectSeats (Fresh DB): showtime=4, paidBookings=1, bookedCount=0
+[2025-11-05 21:06:47] ? BookingExpirationService started
+[2025-11-05 21:07:00] SelectSeats (Fresh DB): showtime=4, paidBookings=1, bookedCount=0
+[2025-11-05 21:07:08] ✅ Tạo Dat_Ve mới: ID=6, Trạng thái=Chưa thanh toán
+[2025-11-05 21:09:50] ✅ Tạo Dat_Ve mới: ID=7, Trạng thái=Chưa thanh toán
+[2025-11-05 21:09:54] ✅ Tạo Dat_Ve mới: ID=8, Trạng thái=Chưa thanh toán
+[2025-11-05 21:10:50] ? BookingExpirationService started
+[2025-11-05 21:12:06] SelectSeats (Fresh DB): showtime=4, paidBookings=1, bookedCount=0
+[2025-11-05 21:12:19] ✅ Tạo Dat_Ve mới: ID=9, Trạng thái=Chưa thanh toán
+[2025-11-05 21:12:19] ✅ Cập nhật Dat_Ve: ID=9, Tổng tiền=160040,00, Vé=2, Đồ ăn=0
+[2025-11-05 21:18:42] ? BookingExpirationService started
+[2025-11-05 21:19:05] SelectSeats (Fresh DB): showtime=4, paidBookings=1, bookedCount=0
+[2025-11-05 22:30:18] ? BookingExpirationService started
+[2025-11-05 22:39:35] ? BookingExpirationService started
+[2025-11-05 22:43:06] ? BookingExpirationService started
+[2025-11-05 22:44:01] ? BookingExpirationService stopped
+[2025-11-05 22:49:06] ? BookingExpirationService started
+[2025-11-05 23:11:47] ? BookingExpirationService started
+[2025-11-05 23:13:19] SelectSeats (Fresh DB): showtime=4, paidBookings=1, bookedCount=0
+[2025-11-05 23:13:29] ✅ Tạo Dat_Ve mới: ID=10, Trạng thái=Chưa thanh toán
+[2025-11-05 23:13:29] ✅ Cập nhật Dat_Ve: ID=10, Tổng tiền=160040,00, Vé=2, Đồ ăn=0

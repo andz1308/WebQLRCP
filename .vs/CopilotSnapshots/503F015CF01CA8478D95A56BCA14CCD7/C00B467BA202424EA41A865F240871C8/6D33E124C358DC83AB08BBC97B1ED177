@@ -1,0 +1,124 @@
+﻿using System;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Services;
+
+namespace WebCinema.Controllers
+{
+    public class AccountController : Controller
+    {
+        private AuthService authService = new AuthService();
+
+        // GET: Account/Login
+        public ActionResult Login()
+        {
+            return View();
+        }
+
+        // POST: Account/Login
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(LoginViewModel model, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                var customer = authService.Login(model.Email, model.Password);
+                
+                if (customer != null)
+                {
+                    // Store user info in session
+                    Session["CustomerId"] = customer.khach_hang_id;
+                    Session["CustomerName"] = customer.ho_ten;
+                    Session["CustomerEmail"] = customer.email;
+
+                    // Set cookie if remember me is checked
+                    if (model.RememberMe)
+                    {
+                        HttpCookie userCookie = new HttpCookie("UserAuth");
+                        userCookie["Email"] = customer.email;
+                        userCookie.Expires = DateTime.Now.AddDays(30);
+                        Response.Cookies.Add(userCookie);
+                    }
+
+                    // Redirect to return URL or home
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                    
+                    return RedirectToAction("Index", "Home");
+                }
+                
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng");
+            }
+
+            return View(model);
+        }
+
+        // GET: Account/Register
+        public ActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Account/Register
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string errorMessage;
+                bool success = authService.Register(model, out errorMessage);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                    return RedirectToAction("Login");
+                }
+                
+                ModelState.AddModelError("", errorMessage);
+            }
+
+            return View(model);
+        }
+
+        // GET: Account/Logout
+        public ActionResult Logout()
+        {
+            // Clear session
+            Session.Clear();
+            Session.Abandon();
+
+            // Clear cookie
+            if (Request.Cookies["UserAuth"] != null)
+            {
+                HttpCookie userCookie = new HttpCookie("UserAuth");
+                userCookie.Expires = DateTime.Now.AddDays(-1);
+                Response.Cookies.Add(userCookie);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        // GET: Account/Profile
+        new public ActionResult Profile()
+        {
+            if (Session["CustomerId"] == null)
+            {
+                return RedirectToAction("Login", new { returnUrl = Url.Action("Profile") });
+            }
+
+            int customerId = (int)Session["CustomerId"];
+            var customer = authService.GetCustomerById(customerId);
+
+            if (customer == null)
+            {
+                return RedirectToAction("Logout");
+            }
+
+            return View(customer);
+        }
+    }
+}

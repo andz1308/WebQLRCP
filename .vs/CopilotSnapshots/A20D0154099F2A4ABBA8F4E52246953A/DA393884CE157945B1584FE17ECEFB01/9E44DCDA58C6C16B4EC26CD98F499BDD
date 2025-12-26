@@ -1,0 +1,504 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+using System.Collections.Generic;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin,Staff")]
+    public class ShowtimeManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ShowtimeManagement
+        public ActionResult Index(int? movieId, int? cinemaId, DateTime? date, int? pageNumber)
+        {
+            var showtimes = db.Suat_Chieus.AsQueryable();
+
+            if (movieId.HasValue)
+                showtimes = showtimes.Where(sc => sc.phim_id == movieId.Value);
+
+            if (cinemaId.HasValue)
+                showtimes = showtimes.Where(sc => sc.Phong_Chieu != null && sc.Phong_Chieu.rap_id == cinemaId.Value);
+
+            if (date.HasValue)
+            {
+                var targetDate = date.Value.Date;
+                showtimes = showtimes.Where(sc => sc.ngay_chieu.Date == targetDate);
+            }
+
+            var result = showtimes
+                .OrderByDescending(sc => sc.ngay_chieu)
+                .ThenBy(sc => sc.ca_chieu_id)
+                .ToList();
+
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", movieId);
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", cinemaId);
+            ViewBag.MovieId = movieId;
+            ViewBag.CinemaId = cinemaId;
+            ViewBag.Date = date.HasValue ? date.Value.ToString("yyyy-MM-dd") : null;
+            ViewBag.PageNumber = pageNumber ?? 1;
+
+            SetShiftViewBag();
+
+            return View(result);
+        }
+
+        public ActionResult Create()
+        {
+            ViewBag.Movies = new SelectList(
+                db.Phims.Where(p => p.trang_thai == "Đang chiếu"), 
+                "phim_id", 
+                "ten_phim");
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap");
+            ViewBag.Rooms = new SelectList(new List<Phong_Chieu>(), "phong_chieu_id", "ten_phong");
+
+            SetShiftViewBag();
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Suat_Chieu showtime, int cinemaId)
+        {
+            try
+            {
+                if (ModelState.ContainsKey("loai_ngay_id"))
+                    ModelState["loai_ngay_id"].Errors.Clear();
+
+                if (ModelState.IsValid)
+                {
+                    if (!db.Phong_Chieus.Any(pc => pc.rap_id == cinemaId))
+                    {
+                        TempData["ErrorMessage"] = "Rạp này chưa có phòng chiếu.";
+                        SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                        return View(showtime);
+                    }
+
+                    if (db.Suat_Chieus.Any(sc => sc.phong_chieu_id == showtime.phong_chieu_id &&
+                          sc.ngay_chieu == showtime.ngay_chieu &&
+                          sc.ca_chieu_id == showtime.ca_chieu_id))
+                    {
+                        TempData["ErrorMessage"] = "Suất chiếu này đã tồn tại.";
+                        SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                        return View(showtime);
+                    }
+
+                    // ✅ XÁC ĐỊNH LOẠI NGÀY: CUỐI TUẦN hoặc NGÀY THƯỜNG
+                    DayOfWeek ngay = showtime.ngay_chieu.DayOfWeek;
+                    bool isCuoiTuan = (ngay == DayOfWeek.Saturday || ngay == DayOfWeek.Sunday);
+                    
+                    // Tìm loại ngày phù hợp
+                    var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => 
+                        (isCuoiTuan && (ln.loai_ngay1.Contains("Cuối tuần") || ln.loai_ngay1.Contains("cuối tuần"))) ||
+                        (!isCuoiTuan && (ln.loai_ngay1.Contains("Thường") || ln.loai_ngay1.Contains("thường")))
+                    );
+                    
+                    // Nếu không tìm thấy, tạo mới
+                    if (loaiNgay == null)
+                    {
+                        loaiNgay = new Loai_Ngay
+                        {
+                            loai_ngay1 = isCuoiTuan ? "Cuối tuần" : "Ngày thường",
+                            phu_phi = isCuoiTuan ? 20m : 0m // Cuối tuần +20%, thường 0%
+                        };
+                        db.Loai_Ngays.InsertOnSubmit(loaiNgay);
+                        db.SubmitChanges();
+                    }
+                    
+                    showtime.loai_ngay_id = loaiNgay.loai_ngay_id;
+
+                    db.Suat_Chieus.InsertOnSubmit(showtime);
+
+                    int soVe = TaoVeAoChoSuatChieu(showtime);
+
+                    db.SubmitChanges();
+                    TempData["SuccessMessage"] = $"Thêm suất chiếu cùng {soVe} vé thành công!";
+
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message + (ex.InnerException != null ? " - " + ex.InnerException.Message : "");
+            }
+
+            SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+            return View(showtime);
+        }
+
+        private int TaoVeAoChoSuatChieu(Suat_Chieu showtime)
+        {
+            decimal giaGoc = showtime.gia_ve;
+            var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => ln.loai_ngay_id == showtime.loai_ngay_id);
+            
+            // Default value if loaiNgay not found
+            decimal heSoNgay = loaiNgay?.phu_phi ?? 0m;
+
+            // Ensure we use non-nullable phu_phi for seat types
+            var loaiGheDict = db.Loai_Ghes.ToDictionary(lg => lg.loaighe_id, lg => lg.phu_phi ?? 0m);
+
+            var gheList = db.Ghes.Where(g =>
+                g.phong_chieu_id == showtime.phong_chieu_id &&
+                g.trang_thai != 0
+            ).ToList();
+
+            List<Ve> list = new List<Ve>();
+            int ticketIndex = 0;
+
+            foreach (var ghe in gheList)
+            {
+                decimal phuPhiGhe = loaiGheDict.ContainsKey(ghe.loai_ghe_id) ? loaiGheDict[ghe.loai_ghe_id] : 0m;
+                decimal giaVe = giaGoc + giaGoc * heSoNgay / 100 + giaGoc * phuPhiGhe / 100;
+
+                // Generate a unique QR code for the ticket
+                // Format: SHOWTIME_ID-SEAT_ID-TIMESTAMP-INDEX
+                string uniqueQRCode = GenerateUniqueQRCode(showtime.suat_chieu_id, ghe.ghe_id, ticketIndex);
+
+                list.Add(new Ve
+                {
+                    ghe_id = ghe.ghe_id,
+                    Dat_Ve_id = null,
+                    ma_qr_code = uniqueQRCode,  // Generate unique QR code instead of NULL
+                    trang_thai_ve = "Chưa sử dụng",  // **ĐÚNG TRẠNG THÁI**
+                    gia_ve = giaVe,
+                    Suat_Chieu = showtime
+                });
+                ticketIndex++;
+            }
+
+            db.Ves.InsertAllOnSubmit(list);
+            return list.Count;
+        }
+
+        /// <summary>
+        /// Generate a unique QR code for each ticket
+        /// </summary>
+        private string GenerateUniqueQRCode(int suatChieuId, int gheId, int index)
+        {
+            // Create a unique identifier combining showtime, seat, and index
+            // Format: QRCODE_TIMESTAMP_SHOWTIMEID_SEATID_INDEX
+            long timestamp = DateTime.Now.Ticks;
+            return $"QR{timestamp}_{suatChieuId}_{gheId}_{index}";
+        }
+
+        // ✅ Hàm tính trạng thái suất chiếu
+        private string GetShowtimeStatus(Suat_Chieu showtime)
+        {
+            DateTime now = DateTime.Now;
+            DateTime showtimeStart = showtime.ngay_chieu.Add(showtime.Ca_Chieu.gio_bat_dau);
+            DateTime showtimeEnd = showtime.ngay_chieu.Add(showtime.Ca_Chieu.gio_ket_thuc);
+
+            if (now > showtimeEnd)
+                return "Đã Chiếu";
+            else if (now >= showtimeStart && now <= showtimeEnd)
+                return "Đang Chiếu";
+            else
+                return "Sắp Diễn Ra";
+        }
+
+        public ActionResult Edit(int id)
+        {
+            var showtime = db.Suat_Chieus.FirstOrDefault(sc => sc.suat_chieu_id == id);
+            if (showtime == null)
+                return HttpNotFound();
+
+            // ✅ Kiểm tra trạng thái phim phải "Sắp Diễn Ra" hoặc "Đang Chiếu" mới cho sửa
+            string status = GetShowtimeStatus(showtime);
+            if (status == "Đã Chiếu")
+            {
+                TempData["ErrorMessage"] = "Không thể sửa suất chiếu đã chiếu!";
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", showtime.phim_id);
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", showtime.Phong_Chieu?.rap_id ?? 0);
+            
+            var cinemaId = showtime.Phong_Chieu?.rap_id ?? 0;
+            ViewBag.Rooms = cinemaId > 0 
+                ? new SelectList(db.Phong_Chieus.Where(pc => pc.rap_id == cinemaId),
+                    "phong_chieu_id", "ten_phong", showtime.phong_chieu_id)
+                : new SelectList(new List<Phong_Chieu>(), "phong_chieu_id", "ten_phong");
+
+            SetShiftViewBag(showtime.ca_chieu_id);
+
+            return View(showtime);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, FormCollection form)
+        {
+            try
+            {
+                var sc = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == id);
+                if (sc == null)
+                    return HttpNotFound();
+
+                // ✅ Kiểm tra trạng thái trước khi cho sửa
+                string status = GetShowtimeStatus(sc);
+                if (status == "Đã Chiếu")
+                {
+                    TempData["ErrorMessage"] = "Không thể sửa suất chiếu đã chiếu!";
+                    return RedirectToAction("Index");
+                }
+
+                sc.phim_id = int.Parse(form["phim_id"]);
+                sc.phong_chieu_id = int.Parse(form["phong_chieu_id"]);
+                sc.ca_chieu_id = int.Parse(form["ca_chieu_id"]);
+
+                if (!string.IsNullOrEmpty(form["ngay_chieu"]))
+                {
+                    sc.ngay_chieu = DateTime.Parse(form["ngay_chieu"]);
+                    
+                    // ✅ XÁC ĐỊNH LOẠI NGÀY: CUỐI TUẦN hoặc NGÀY THƯỜNG
+                    bool isCuoiTuan = (sc.ngay_chieu.DayOfWeek == DayOfWeek.Saturday || 
+                                       sc.ngay_chieu.DayOfWeek == DayOfWeek.Sunday);
+                    
+                    var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => 
+                        (isCuoiTuan && (ln.loai_ngay1.Contains("Cuối tuần") || ln.loai_ngay1.Contains("cuối tuần"))) ||
+                        (!isCuoiTuan && (ln.loai_ngay1.Contains("Thường") || ln.loai_ngay1.Contains("thường")))
+                    );
+                    
+                    if (loaiNgay == null)
+                    {
+                        loaiNgay = new Loai_Ngay
+                        {
+                            loai_ngay1 = isCuoiTuan ? "Cuối tuần" : "Ngày thường",
+                            phu_phi = isCuoiTuan ? 20m : 0m
+                        };
+                        db.Loai_Ngays.InsertOnSubmit(loaiNgay);
+                        db.SubmitChanges();
+                    }
+                    
+                    sc.loai_ngay_id = loaiNgay.loai_ngay_id;
+                }
+
+                decimal? newPrice = null;
+                if (!string.IsNullOrEmpty(form["gia_ve"]))
+                {
+                    newPrice = decimal.Parse(form["gia_ve"]);
+                    sc.gia_ve = newPrice.Value;
+                }
+
+                if (!string.IsNullOrEmpty(form["ngon_ngu"]))
+                    sc.ngon_ngu = form["ngon_ngu"];
+
+                // **QUAN TRỌNG: Cập nhật giá tất cả ghế nếu giá suất chiếu thay đổi**
+                if (newPrice.HasValue)
+                {
+                    UpdateAllSeatPricesForShowtime(sc, newPrice.Value);
+                }
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật thành công! Giá tất cả ghế đã được cập nhật.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message + (ex.InnerException != null ? " - " + ex.InnerException.Message : "");
+                return RedirectToAction("Edit", new { id });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật giá tất cả ghế cho một suất chiếu dựa trên giá gốc và loại ghế
+        /// </summary>
+        private void UpdateAllSeatPricesForShowtime(Suat_Chieu showtime, decimal basePrice)
+        {
+            try
+            {
+                // Lấy hệ số ngày
+                var loaiNgay = db.Loai_Ngays.FirstOrDefault(ln => ln.loai_ngay_id == showtime.loai_ngay_id);
+                decimal heSoNgay = loaiNgay?.phu_phi ?? 0m;
+
+                // Lấy tất cả vé của suất chiếu này
+                var tickets = db.Ves.Where(v => v.suat_chieu_id == showtime.suat_chieu_id).ToList();
+
+                foreach (var ticket in tickets)
+                {
+                    var ghe = ticket.Ghe;
+                    decimal phuPhiGhe = ghe.Loai_Ghe?.phu_phi ?? 0m;
+
+                    // Công thức: Giá = Giá gốc + (Giá gốc * Hệ số ngày / 100) + (Giá gốc * Phụ phí ghế / 100)
+                    decimal newPrice = basePrice + (basePrice * heSoNgay / 100) + (basePrice * phuPhiGhe / 100);
+
+                    ticket.gia_ve = newPrice;
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var sc = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == id);
+                if (sc == null)
+                    return Json(new { success = false, message = "Suất chiếu không tồn tại" });
+
+                // ✅ Kiểm tra: chỉ xóa được suất chiếu "Đã Chiếu"
+                string status = GetShowtimeStatus(sc);
+                if (status != "Đã Chiếu")
+                    return Json(new { success = false, message = "Chỉ có thể xóa suất chiếu đã chiếu!" });
+
+                // Xóa tất cả vé của suất chiếu này
+                var tickets = db.Ves.Where(v => v.suat_chieu_id == id).ToList();
+                db.Ves.DeleteAllOnSubmit(tickets);
+
+                db.Suat_Chieus.DeleteOnSubmit(sc);
+                db.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetRoomsByCinema(int cinemaId)
+        {
+            var rooms = db.Phong_Chieus
+                .Where(pc => pc.rap_id == cinemaId)
+                .Select(pc => new { value = pc.phong_chieu_id, text = pc.ten_phong })
+                .ToList();
+
+            return Json(new { success = true, rooms }, JsonRequestBehavior.AllowGet);
+        }
+
+        // ✅ API: Lấy danh sách CA CHIẾU còn trống theo Phòng + Ngày
+        [HttpGet]
+        public JsonResult GetAvailableShifts(int roomId, string date)
+        {
+            try
+            {
+                DateTime selectedDate = DateTime.Parse(date);
+                
+                // Lấy tất cả ca chiếu
+                var allShifts = db.Ca_Chieus.ToList();
+                
+                // Lấy các ca đã có suất chiếu trong phòng này vào ngày đó
+                var bookedShiftIds = db.Suat_Chieus
+                    .Where(sc => sc.phong_chieu_id == roomId && sc.ngay_chieu == selectedDate)
+                    .Select(sc => sc.ca_chieu_id)
+                    .ToList();
+                
+                // Lọc ra ca còn trống
+                var availableShifts = allShifts
+                    .Where(ca => !bookedShiftIds.Contains(ca.ca_chieu_id))
+                    .Select(ca => new
+                    {
+                        value = ca.ca_chieu_id,
+                        text = $"{ca.gio_bat_dau.ToString(@"hh\:mm")} - {ca.gio_ket_thuc.ToString(@"hh\:mm")}"
+                    })
+                    .ToList();
+                
+                return Json(new { success = true, shifts = availableShifts }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // ✅ API: Lấy danh sách PHIM chưa có suất chiếu tại Ca + Phòng + Ngày đó
+        [HttpGet]
+        public JsonResult GetAvailableMovies(int roomId, int shiftId, string date)
+        {
+            try
+            {
+                DateTime selectedDate = DateTime.Parse(date);
+                
+                // Lấy tất cả phim
+                var allMovies = db.Phims.ToList();
+                
+                // ✅ ĐIỀU KIỆN MỚI: Lấy các phim đã có suất chiếu BẤT KỲ CA NÀO trong ngày đó
+                // (không quan tâm ca chiếu cụ thể, chỉ cần cùng phòng + cùng ngày)
+                var bookedMovieIds = db.Suat_Chieus
+                    .Where(sc => sc.phong_chieu_id == roomId 
+                              && sc.ngay_chieu == selectedDate)
+                    .Select(sc => sc.phim_id)
+                    .Distinct()
+                    .ToList();
+                
+                // Lọc ra phim chưa có suất chiếu trong ngày đó
+                var availableMovies = allMovies
+                    .Where(p => !bookedMovieIds.Contains(p.phim_id))
+                    .Select(p => new
+                    {
+                        value = p.phim_id,
+                        text = p.ten_phim + " (" + (p.thoi_luong ?? 0) + " phút)"
+                    })
+                    .ToList();
+                
+                return Json(new { success = true, movies = availableMovies }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private void SetShiftViewBag(int? selected = null)
+        {
+            try
+            {
+                var shifts = db.Ca_Chieus
+                    .AsEnumerable()
+                    .Select(ca => new
+                    {
+                        ca.ca_chieu_id,
+                        ten_ca = $"{ca.gio_bat_dau.ToString(@"hh\:mm")} - {ca.gio_ket_thuc.ToString(@"hh\:mm")}"
+                    })
+                    .ToList();
+
+                if (shifts.Any())
+                {
+                    ViewBag.Shifts = new SelectList(shifts, "ca_chieu_id", "ten_ca", selected);
+                }
+                else
+                {
+                    // If no shifts exist, create an empty SelectList with a placeholder
+                    ViewBag.Shifts = new SelectList(new List<SelectListItem> 
+                    { 
+                        new SelectListItem { Text = "-- Chưa có ca chiếu --", Value = "" } 
+                    }, "Value", "Text");
+                    ViewBag.NoShifts = true;
+                }
+            }
+            catch
+            {
+                ViewBag.Shifts = new SelectList(new List<SelectListItem>(), "Value", "Text");
+                ViewBag.NoShifts = true;
+            }
+        }
+
+        private void SetCreateViewBag(int? cinemaId, int? roomId)
+        {
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim");
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", cinemaId);
+            ViewBag.Rooms = new SelectList(db.Phong_Chieus.Where(pc => pc.rap_id == cinemaId),
+                "phong_chieu_id", "ten_phong", roomId);
+
+            SetShiftViewBag();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) db.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+}

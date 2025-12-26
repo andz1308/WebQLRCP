@@ -1,0 +1,123 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Services;
+using WebCinema.Models;
+
+namespace WebCinema.Controllers
+{
+    public class HomeController : Controller
+    {
+        private MovieService movieService = new MovieService();
+
+        public ActionResult Index()//Trang chủ
+        {
+            // Lấy danh sách phim đang chiếu
+            var movies = movieService.GetNowShowingMovies();
+            
+            // Tạo danh sách ViewModel để truyền thêm thông tin
+            var movieViewModels = movies.Select(m => new MovieViewModel
+            {
+                Movie = m,
+                Genres = movieService.GetMovieGenres(m.phim_id),
+                AverageRating = movieService.GetAverageRating(m.phim_id),
+                RatingCount = movieService.GetRatingCount(m.phim_id),
+                // Resolve image path here so view doesn't need to mutate values
+                ImagePath = ResolveImagePath(m.hinh_anh)
+            })
+            .Take(8)
+            .ToList();
+
+            return View(movieViewModels);
+        }
+
+        public ActionResult Detail(int? id)//Trang chi tiết phim
+        {
+            // Nếu không có id thì chuyển hướng về trang chính (tránh lỗi khi truy cập /Home/Detail trực tiếp)
+            if (!id.HasValue)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var vm = movieService.GetMovieDetailViewModel(id.Value);
+            if (vm == null) return HttpNotFound();
+
+            // Resolve image path for detail view as well
+            vm.ImagePath = ResolveImagePath(vm.ImagePath);
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        public JsonResult Search(string q)
+        {
+            try
+            {
+                var term = (q ?? string.Empty).Trim();
+                if (string.IsNullOrEmpty(term))
+                {
+                    return Json(new object[0], JsonRequestBehavior.AllowGet);
+                }
+
+                // Only movies that have future or today showtimes
+                var nowShowing = movieService.GetNowShowingMovies();
+                var results = nowShowing
+                    .Where(m => m.ten_phim != null && m.ten_phim.IndexOf(term, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .Where(m => {
+                        var sts = movieService.GetMovieShowtimes(m.phim_id) ?? new List<Suat_Chieu>();
+                        return sts.Any(sc => sc.ngay_chieu >= DateTime.Today);
+                    })
+                    .Select(m => new {
+                        id = m.phim_id,
+                        name = m.ten_phim,
+                        image = ResolveImagePath(m.hinh_anh)
+                    })
+                    .Take(8)
+                    .ToList();
+
+                return Json(results, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                // Never throw to client; return empty
+                return Json(new object[0], JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private string ResolveImagePath(string rawPath)
+        {
+            if (string.IsNullOrEmpty(rawPath)) return null;
+
+            // If already an absolute URL
+            if (rawPath.StartsWith("http", StringComparison.OrdinalIgnoreCase) || rawPath.StartsWith("//"))
+            {
+                return rawPath;
+            }
+
+            // If virtual path like ~/...
+            if (rawPath.StartsWith("~"))
+            {
+                return Url.Content(rawPath);
+            }
+
+            // Else assume stored filename in Content/images/movies/
+            return Url.Content("~/Content/images/movies/" + rawPath);
+        }
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+    }
+}

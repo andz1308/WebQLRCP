@@ -1,0 +1,232 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Services;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class HomeController : Controller
+    {
+        private MovieService movieService = new MovieService();
+        private CSDLDataContext db = new CSDLDataContext();
+
+        public ActionResult Index(int? cinemaId, int? genreId)//Trang chủ
+        {
+            // Lấy danh sách phim đang chiếu
+            var movies = movieService.GetNowShowingMovies();
+            
+            // **Lọc theo rạp nếu có**
+            if (cinemaId.HasValue && cinemaId.Value > 0)
+            {
+                var roomIds = db.Phong_Chieus
+                    .Where(pc => pc.rap_id == cinemaId.Value)
+                    .Select(pc => pc.phong_chieu_id)
+                    .ToList();
+
+                var today = DateTime.Today;
+                var movieIdsInCinema = db.Suat_Chieus
+                    .Where(sc => roomIds.Contains(sc.phong_chieu_id) && sc.ngay_chieu >= today)
+                    .Select(sc => sc.phim_id)
+                    .Distinct()
+                    .ToList();
+
+                movies = movies.Where(m => movieIdsInCinema.Contains(m.phim_id)).ToList();
+            }
+
+            // **Lọc theo thể loại nếu có**
+            if (genreId.HasValue && genreId.Value > 0)
+            {
+                var movieIdsWithGenre = db.Phim_LoaiPhims
+                    .Where(plp => plp.loaiphim_id == genreId.Value)
+                    .Select(plp => plp.phim_id)
+                    .ToList();
+
+                movies = movies.Where(m => movieIdsWithGenre.Contains(m.phim_id)).ToList();
+            }
+
+            // Tạo danh sách ViewModel để truyền thêm thông tin
+            var movieViewModels = movies.Select(m => new MovieViewModel
+            {
+                Movie = m,
+                Genres = movieService.GetMovieGenres(m.phim_id),
+                AverageRating = movieService.GetAverageRating(m.phim_id),
+                RatingCount = movieService.GetRatingCount(m.phim_id),
+                ImagePath = ResolveImagePath(m.hinh_anh)
+            })
+            .ToList();
+
+            // ✅ Lấy danh sách tất cả rạp chiếu
+            var cinemas = db.Raps.OrderBy(r => r.ten_rap).ToList();
+            ViewBag.Cinemas = cinemas;
+
+            // ✅ Lấy danh sách thể loại
+            var genres = db.Loai_Phims.OrderBy(g => g.ten_loai).ToList();
+            ViewBag.Genres = genres;
+
+            // Lưu giá trị filter hiện tại
+            ViewBag.SelectedCinemaId = cinemaId;
+            ViewBag.SelectedGenreId = genreId;
+
+            return View(movieViewModels);
+        }
+
+        // ✅ Hiển thị phim đang chiếu theo rạp
+        public ActionResult CinemaMovies(int? cinemaId)
+        {
+            if (!cinemaId.HasValue)
+            {
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                var cinema = db.Raps.FirstOrDefault(r => r.rap_id == cinemaId.Value);
+                if (cinema == null)
+                {
+                    return HttpNotFound();
+                }
+
+                // Lấy tất cả phòng chiếu của rạp này
+                var roomIds = db.Phong_Chieus
+                    .Where(pc => pc.rap_id == cinemaId.Value)
+                    .Select(pc => pc.phong_chieu_id)
+                    .ToList();
+
+                // Lấy các phim có suất chiếu trong các phòng của rạp này (từ hôm nay trở đi)
+                var today = DateTime.Today;
+                var movieIdsWithShowtimes = db.Suat_Chieus
+                    .Where(sc => roomIds.Contains(sc.phong_chieu_id) && sc.ngay_chieu >= today)
+                    .Select(sc => sc.phim_id)
+                    .Distinct()
+                    .ToList();
+
+                // Lấy thông tin chi tiết các phim
+                var movies = db.Phims
+                    .Where(p => movieIdsWithShowtimes.Contains(p.phim_id))
+                    .OrderBy(p => p.ten_phim)
+                    .ToList();
+
+                // Tạo ViewModel
+                var movieViewModels = movies.Select(m => new MovieViewModel
+                {
+                    Movie = m,
+                    Genres = movieService.GetMovieGenres(m.phim_id),
+                    AverageRating = movieService.GetAverageRating(m.phim_id),
+                    RatingCount = movieService.GetRatingCount(m.phim_id),
+                    ImagePath = ResolveImagePath(m.hinh_anh)
+                }).ToList();
+
+                ViewBag.CinemaName = cinema.ten_rap;
+                ViewBag.CinemaId = cinemaId.Value;
+
+                return View(movieViewModels);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi tải danh sách phim.";
+                return RedirectToAction("Index");
+            }
+        }
+
+        public ActionResult Detail(int? id)//Trang chi tiết phim
+        {
+            // Nếu không có id thì chuyển hướng về trang chính (tránh lỗi khi truy cập /Home/Detail trực tiếp)
+            if (!id.HasValue)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var vm = movieService.GetMovieDetailViewModel(id.Value);
+            if (vm == null) return HttpNotFound();
+
+            // Resolve image path for detail view as well
+            vm.ImagePath = ResolveImagePath(vm.ImagePath);
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        public JsonResult Search(string q)
+        {
+            try
+            {
+                var term = (q ?? string.Empty).Trim();
+                if (string.IsNullOrEmpty(term))
+                {
+                    return Json(new object[0], JsonRequestBehavior.AllowGet);
+                }
+
+                // Only movies that have future or today showtimes
+                var nowShowing = movieService.GetNowShowingMovies();
+                var results = nowShowing
+                    .Where(m => m.ten_phim != null && m.ten_phim.IndexOf(term, StringComparison.CurrentCultureIgnoreCase) >= 0)
+                    .Where(m => {
+                        var sts = movieService.GetMovieShowtimes(m.phim_id) ?? new List<Suat_Chieu>();
+                        return sts.Any(sc => sc.ngay_chieu >= DateTime.Today);
+                    })
+                    .Select(m => new {
+                        id = m.phim_id,
+                        name = m.ten_phim,
+                        image = ResolveImagePath(m.hinh_anh)
+                    })
+                    .Take(8)
+                    .ToList();
+
+                return Json(results, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                // Never throw to client; return empty
+                return Json(new object[0], JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private string ResolveImagePath(string rawPath)
+        {
+            if (string.IsNullOrEmpty(rawPath)) return null;
+
+            // If already an absolute URL
+            if (rawPath.StartsWith("http", StringComparison.OrdinalIgnoreCase) || rawPath.StartsWith("//"))
+            {
+                return rawPath;
+            }
+
+            // If virtual path like ~/...
+            if (rawPath.StartsWith("~"))
+            {
+                return Url.Content(rawPath);
+            }
+
+            // Else assume stored filename in Content/images/movies/
+            return Url.Content("~/Content/images/movies/" + rawPath);
+        }
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

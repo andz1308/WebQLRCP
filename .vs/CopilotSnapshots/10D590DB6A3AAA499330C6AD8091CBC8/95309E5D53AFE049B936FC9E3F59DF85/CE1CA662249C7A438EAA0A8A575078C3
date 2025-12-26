@@ -1,0 +1,62 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using WebCinema.Models;
+
+namespace WebCinema.Infrastructure
+{
+    public class SessionCartManager
+    {
+        private const string CartSessionKey = "ShoppingCart";
+
+        public static List<CartItem> GetCart()
+        {
+            var cart = HttpContext.Current.Session[CartSessionKey] as List<CartItem>;
+            if (cart == null)
+            {
+                cart = new List<CartItem>();
+                HttpContext.Current.Session[CartSessionKey] = cart;
+            }
+            return cart;
+        }
+
+        public static void AddToCart(CartItem item)
+        {
+            var cart = GetCart();
+            cart.Add(item);
+            HttpContext.Current.Session[CartSessionKey] = cart;
+        }
+
+        public static void RemoveFromCart(string cartItemId)
+        {
+            var cart = GetCart();
+            var item = cart.FirstOrDefault(c => c.CartItemId == cartItemId);
+            if (item != null)
+            {
+                cart.Remove(item);
+                HttpContext.Current.Session[CartSessionKey] = cart;
+            }
+        }
+
+        public static void ClearCart()
+        {
+            HttpContext.Current.Session[CartSessionKey] = new List<CartItem>();
+        }
+
+        public static int GetCartCount()
+        {
+            return GetCart().Count;
+        }
+
+        public static decimal GetCartTotal()
+        {
+            return GetCart().Sum(item => item.TotalPrice);
+        }
+
+        public static CartItem GetCartItem(string cartItemId)
+        {
+            return GetCart().FirstOrDefault(c => c.CartItemId == cartItemId);
+        }
+    }
+}

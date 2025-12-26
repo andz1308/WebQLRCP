@@ -1,0 +1,219 @@
+﻿@model WebCinema.Models.CSDLDataContext
+
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>@ViewBag.TotalMovies</h3>
+            <p>T?ng S? Phim</p>
+        </div>
+        <div class="stat-icon orange">
+            <i class="fas fa-film"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>@ViewBag.TotalUsers</h3>
+            <p>T?ng Ng??i Dùng</p>
+        </div>
+        <div class="stat-icon blue">
+            <i class="fas fa-users"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>@ViewBag.TotalBookings</h3>
+            <p>T?ng ??n ??t</p>
+        </div>
+        <div class="stat-icon green">
+            <i class="fas fa-ticket-alt"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>@((ViewBag.TotalRevenue ?? 0m).ToString("N0")) ?</h3>
+            <p>T?ng Doanh Thu</p>
+        </div>
+        <div class="stat-icon purple">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Stats -->
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-calendar-alt"></i> Th?ng Kê Tháng Này</h2>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>@((ViewBag.MonthlyRevenue ?? 0m).ToString("N0")) ?</h3>
+                <p>Doanh Thu Tháng @DateTime.Now.Month</p>
+            </div>
+            <div class="stat-icon orange">
+                <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3>@(ViewBag.MonthlyBookings ?? 0)</h3>
+                <p>??n ??t Tháng @DateTime.Now.Month</p>
+            </div>
+            <div class="stat-icon blue">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Chart -->
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-chart-bar"></i> Doanh Thu 7 Ngày G?n Nh?t</h2>
+    </div>
+    <canvas id="revenueChart" height="80"></canvas>
+</div>
+
+<!-- Top Movies -->
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-trophy"></i> Top 5 Phim Có Doanh Thu Cao Nh?t</h2>
+    </div>
+    
+    @if (ViewBag.TopMovies != null && ((System.Collections.IList)ViewBag.TopMovies).Count > 0)
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên Phim</th>
+                    <th>S? Vé Bán</th>
+                    <th>Doanh Thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ 
+                    int index = 1;
+                    var db = new WebCinema.Models.CSDLDataContext();
+                    foreach (dynamic item in ViewBag.TopMovies)
+                    {
+                        // Capture dynamic properties into strongly-typed locals to avoid using dynamic inside LINQ expression trees
+                        int phimId = item.PhimId != null ? Convert.ToInt32(item.PhimId) : 0;
+                        int soVe = item.SoVe != null ? Convert.ToInt32(item.SoVe) : 0;
+                        decimal tongDoanhThu = item.TongDoanhThu != null ? Convert.ToDecimal(item.TongDoanhThu) : 0m;
+
+                        var phim = db.Phims.FirstOrDefault(p => p.phim_id == phimId);
+                        <tr>
+                            <td><strong>@index</strong></td>
+                            <td>@(phim != null ? phim.ten_phim : "N/A")</td>
+                            <td>@soVe</td>
+                            <td><strong style="color: #27ae60;">@(tongDoanhThu.ToString("N0")) ?</strong></td>
+                        </tr>
+                        index++;
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Ch?a có d? li?u th?ng kê.</p>
+    }
+</div>
+
+<!-- Quick Actions -->
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-bolt"></i> Thao Tác Nhanh</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <a href="@Url.Action("Create", "MovieManagement")" class="btn btn-primary" style="text-align: center;">
+            <i class="fas fa-plus"></i> Thêm Phim M?i
+        </a>
+        <a href="@Url.Action("Index", "BookingManagement")" class="btn btn-success" style="text-align: center;">
+            <i class="fas fa-list"></i> Xem ??n ??t
+        </a>
+        <a href="@Url.Action("Index", "UserManagement")" class="btn btn-secondary" style="text-align: center;">
+            <i class="fas fa-users"></i> Qu?n Lý User
+        </a>
+        <a href="@Url.Action("Index", "CinemaManagement")" class="btn btn-primary" style="text-align: center;">
+            <i class="fas fa-building"></i> Qu?n Lý R?p
+        </a>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Revenue Chart
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+        var dailyRevenue = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.DailyRevenue));
+        
+        var labels = dailyRevenue.map(function(item) {
+            var date = new Date(item.Date);
+            return date.getDate() + '/' + (date.getMonth() + 1);
+        });
+        
+        var data = dailyRevenue.map(function(item) {
+            return item.Revenue;
+        });
+
+        var revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Doanh Thu (VN?)',
+                    data: data,
+                    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                    borderColor: '#ff6b35',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ff6b35',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Doanh thu: ' + context.parsed.y.toLocaleString('vi-VN') + ' ?';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' ?';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,260 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+using System.Collections.Generic;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin,Staff")]
+    public class ShowtimeManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ShowtimeManagement
+        public ActionResult Index(int? movieId, int? cinemaId, DateTime? date, int? pageNumber)
+        {
+            var showtimes = db.Suat_Chieus.AsQueryable();
+
+            if (movieId.HasValue)
+                showtimes = showtimes.Where(sc => sc.phim_id == movieId.Value);
+
+            if (cinemaId.HasValue)
+                showtimes = showtimes.Where(sc => sc.Phong_Chieu != null && sc.Phong_Chieu.rap_id == cinemaId.Value);
+
+            if (date.HasValue)
+            {
+                var targetDate = date.Value.Date;
+                showtimes = showtimes.Where(sc => sc.ngay_chieu.Date == targetDate);
+            }
+
+            var result = showtimes
+                .OrderByDescending(sc => sc.ngay_chieu)
+                .ThenBy(sc => sc.ca_chieu_id)
+                .ToList();
+
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", movieId);
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", cinemaId);
+            ViewBag.MovieId = movieId;
+            ViewBag.CinemaId = cinemaId;
+            ViewBag.Date = date.HasValue ? date.Value.ToString("yyyy-MM-dd") : null;
+            ViewBag.PageNumber = pageNumber ?? 1;
+
+            SetShiftViewBag();
+
+            return View(result);
+        }
+
+        public ActionResult Create()
+        {
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim");
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap");
+            ViewBag.Rooms = new SelectList(new List<Phong_Chieu>(), "phong_chieu_id", "ten_phong");
+
+            SetShiftViewBag();
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Suat_Chieu showtime, int cinemaId)
+        {
+            try
+            {
+                if (ModelState.ContainsKey("loai_ngay_id"))
+                    ModelState["loai_ngay_id"].Errors.Clear();
+
+                if (ModelState.IsValid)
+                {
+                    if (!db.Phong_Chieu.Any(pc => pc.rap_id == cinemaId))
+                    {
+                        TempData["ErrorMessage"] = "Rạp này chưa có phòng chiếu.";
+                        SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                        return View(showtime);
+                    }
+
+                    if (db.Suat_Chieus.Any(sc => sc.phong_chieu_id == showtime.phong_chieu_id &&
+                          sc.ngay_chieu == showtime.ngay_chieu &&
+                          sc.ca_chieu_id == showtime.ca_chieu_id))
+                    {
+                        TempData["ErrorMessage"] = "Suất chiếu này đã tồn tại.";
+                        SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                        return View(showtime);
+                    }
+
+                    DayOfWeek ngay = showtime.ngay_chieu.DayOfWeek;
+                    showtime.loai_ngay_id = (ngay == DayOfWeek.Saturday || ngay == DayOfWeek.Sunday) ? 2 : 1;
+
+                    db.Suat_Chieus.InsertOnSubmit(showtime);
+
+                    int soVe = TaoVeAoChoSuatChieu(showtime);
+
+                    db.SubmitChanges();
+                    TempData["SuccessMessage"] = $"Thêm suất chiếu cùng {soVe} vé thành công!";
+
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+            }
+
+            SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+            return View(showtime);
+        }
+
+        private int TaoVeAoChoSuatChieu(Suat_Chieu showtime)
+        {
+            decimal giaGoc = showtime.gia_ve;
+            var loaiNgay = db.Loai_Ngays.Single(ln => ln.loai_ngay_id == showtime.loai_ngay_id);
+            decimal heSoNgay = loaiNgay.phu_phi;
+
+            var loaiGheDict = db.Loai_Ghes.ToDictionary(lg => lg.loaighe_id, lg => lg.phu_phi);
+
+            var gheList = db.Ghes.Where(g =>
+                g.phong_chieu_id == showtime.phong_chieu_id &&
+                g.trang_thai != 0
+            ).ToList();
+
+            List<Ve> list = new List<Ve>();
+
+            foreach (var ghe in gheList)
+            {
+                decimal phuPhiGhe = loaiGheDict[ghe.loai_ghe_id];
+                decimal giaVe = giaGoc + giaGoc * heSoNgay / 100 + giaGoc * phuPhiGhe / 100;
+
+                list.Add(new Ve
+                {
+                    ghe_id = ghe.ghe_id,
+                    Dat_Ve_id = null,
+                    ma_qr_code = null,
+                    trang_thai_ve = "Chưa bán",
+                    gia_ve = giaVe,
+                    Suat_Chieu = showtime
+                });
+            }
+
+            db.Ves.InsertAllOnSubmit(list);
+            return list.Count;
+        }
+
+        public ActionResult Edit(int id)
+        {
+            var showtime = db.Suat_Chieus.FirstOrDefault(sc => sc.suat_chieu_id == id);
+            if (showtime == null)
+                return HttpNotFound();
+
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim", showtime.phim_id);
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", showtime.Phong_Chieu.rap_id);
+            ViewBag.Rooms = new SelectList(db.Phong_Chieu.Where(pc => pc.rap_id == showtime.Phong_Chieu.rap_id),
+                "phong_chieu_id", "ten_phong", showtime.phong_chieu_id);
+
+            SetShiftViewBag(showtime.ca_chieu_id);
+
+            return View(showtime);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, FormCollection form)
+        {
+            try
+            {
+                var sc = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == id);
+                if (sc == null)
+                    return HttpNotFound();
+
+                sc.phim_id = int.Parse(form["phim_id"]);
+                sc.phong_chieu_id = int.Parse(form["phong_chieu_id"]);
+                sc.ca_chieu_id = int.Parse(form["ca_chieu_id"]);
+
+                if (!string.IsNullOrEmpty(form["ngay_chieu"]))
+                {
+                    sc.ngay_chieu = DateTime.Parse(form["ngay_chieu"]);
+                    sc.loai_ngay_id = (sc.ngay_chieu.DayOfWeek == DayOfWeek.Saturday ||
+                                       sc.ngay_chieu.DayOfWeek == DayOfWeek.Sunday) ? 2 : 1;
+                }
+
+                if (!string.IsNullOrEmpty(form["gia_ve"]))
+                    sc.gia_ve = decimal.Parse(form["gia_ve"]);
+
+                if (!string.IsNullOrEmpty(form["ngon_ngu"]))
+                    sc.ngon_ngu = form["ngon_ngu"];
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi: " + ex.Message;
+                return RedirectToAction("Edit", new { id });
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var sc = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == id);
+                if (sc == null)
+                    return Json(new { success = false });
+
+                db.Suat_Chieus.DeleteOnSubmit(sc);
+                db.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult GetRoomsByCinema(int cinemaId)
+        {
+            var rooms = db.Phong_Chieu
+                .Where(pc => pc.rap_id == cinemaId)
+                .Select(pc => new { value = pc.phong_chieu_id, text = pc.ten_phong })
+                .ToList();
+
+            return Json(new { success = true, rooms }, JsonRequestBehavior.AllowGet);
+        }
+
+        private void SetShiftViewBag(int? selected = null)
+        {
+            ViewBag.Shifts = new SelectList(
+                db.Ca_Chieus.Select(ca => new
+                {
+                    ca.ca_chieu_id,
+                    ten_ca = $"{(ca.gio_bat_dau?.ToString(@"hh\:mm") ?? "N/A")} - {(ca.gio_ket_thuc?.ToString(@"hh\:mm") ?? "N/A")}"
+                })
+                .ToList(),
+                "ca_chieu_id",
+                "ten_ca",
+                selected
+            );
+        }
+
+        private void SetCreateViewBag(int? cinemaId, int? roomId)
+        {
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim");
+            ViewBag.Cinemas = new SelectList(db.Raps, "rap_id", "ten_rap", cinemaId);
+            ViewBag.Rooms = new SelectList(db.Phong_Chieu.Where(pc => pc.rap_id == cinemaId),
+                "phong_chieu_id", "ten_phong", roomId);
+
+            SetShiftViewBag();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) db.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+}

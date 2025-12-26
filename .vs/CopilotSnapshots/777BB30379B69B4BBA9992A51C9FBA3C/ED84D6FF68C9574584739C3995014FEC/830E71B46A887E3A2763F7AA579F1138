@@ -1,0 +1,182 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class ProducerManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ProducerManagement
+        public ActionResult Index(string searchTerm)
+        {
+            var producers = db.Nha_San_Xuats.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                producers = producers.Where(p => p.ten_nha_san_xuat.Contains(searchTerm));
+            }
+
+            var result = producers.OrderBy(p => p.ten_nha_san_xuat).ToList();
+            ViewBag.SearchTerm = searchTerm;
+            return View(result);
+        }
+
+        // GET: Admin/ProducerManagement/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Admin/ProducerManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Nha_San_Xuat producer, HttpPostedFileBase imageFile, string imageUrl)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Handle image upload or URL
+                    if (imageFile != null && imageFile.ContentLength > 0)
+                    {
+                        var fileName = Path.GetFileName(imageFile.FileName);
+                        var uploadDir = Server.MapPath("~/Content/images/producers");
+
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+
+                        var path = Path.Combine(uploadDir, fileName);
+                        imageFile.SaveAs(path);
+                        // Nha_San_XuAt doesn't have logo property, skip
+                    }
+                    else if (!string.IsNullOrEmpty(imageUrl))
+                    {
+                        // Nha_San_XuAt doesn't have logo property, skip
+                    }
+
+                    db.Nha_San_Xuats.InsertOnSubmit(producer);
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Thêm nhà sản xuất thành công!";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            return View(producer);
+        }
+
+        // GET: Admin/ProducerManagement/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var producer = db.Nha_San_Xuats.FirstOrDefault(p => p.nha_san_xuat_id == id);
+            if (producer == null)
+            {
+                return HttpNotFound();
+            }
+            return View(producer);
+        }
+
+        // POST: Admin/ProducerManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, Nha_San_Xuat producer, HttpPostedFileBase imageFile, string imageUrl)
+        {
+            try
+            {
+                var existingProducer = db.Nha_San_Xuats.FirstOrDefault(p => p.nha_san_xuat_id == id);
+                if (existingProducer == null)
+                {
+                    return HttpNotFound();
+                }
+
+                existingProducer.ten_nha_san_xuat = producer.ten_nha_san_xuat;
+                existingProducer.quoc_gia = producer.quoc_gia;
+
+                // Handle image upload or URL
+                if (imageFile != null && imageFile.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(imageFile.FileName);
+                    var uploadDir = Server.MapPath("~/Content/images/producers");
+
+                    if (!Directory.Exists(uploadDir))
+                    {
+                        Directory.CreateDirectory(uploadDir);
+                    }
+
+                    var path = Path.Combine(uploadDir, fileName);
+                    imageFile.SaveAs(path);
+                    // Nha_San_XuAt doesn't have logo property, skip
+                }
+                else if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    // Nha_San_XuAt doesn't have logo property, skip
+                }
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cập nhật nhà sản xuất thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
+            }
+
+            return View(producer);
+        }
+
+        // POST: Admin/ProducerManagement/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var producer = db.Nha_San_Xuats.FirstOrDefault(p => p.nha_san_xuat_id == id);
+                if (producer == null)
+                {
+                    return Json(new { success = false, message = "Nhà sản xuất không tồn tại." });
+                }
+
+                // Check if producer has movies
+                if (producer.Phims.Any())
+                {
+                    return Json(new { success = false, message = "Không thể xóa nhà sản xuất đã có phim." });
+                }
+
+                db.Nha_San_Xuats.DeleteOnSubmit(producer);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa nhà sản xuất thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

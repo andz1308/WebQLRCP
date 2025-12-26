@@ -1,0 +1,659 @@
+﻿@model WebCinema.Models.Khuyen_Mai
+
+@{
+    ViewBag.Title = "Tạo Mã Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    var allFoods = ViewBag.AllFoods as List<WebCinema.Models.Do_An>;
+    var selectedFoodIds = ViewBag.SelectedFoodIds as List<int>;
+    var suggestedCode = ViewBag.SuggestedCode as string;
+
+    // --- LOGIC KHỞI TẠO GIÁ TRỊ (QUAN TRỌNG) ---
+    // Nếu Model có dữ liệu (từ đề xuất), lấy giá trị ra. Nếu không, để mặc định.
+    var initMoTa = Model != null ? Model.mo_ta : "";
+    var initGiaTri = Model != null && Model.gia_tri_giam > 0 ? Model.gia_tri_giam.ToString("0.##") : "";
+    var initSoLuong = Model != null ? Model.so_luong_con_lai.ToString() : "100";
+    var initPhamVi = Model != null ? Model.pham_vi_ap_dung : 0;
+
+    // Ngày bắt đầu/kết thúc mặc định
+    var today = DateTime.Now.ToString("yyyy-MM-dd");
+    var nextWeek = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
+
+    var initBatDau = Model != null && Model.ngay_bat_dau != DateTime.MinValue ? Model.ngay_bat_dau.ToString("yyyy-MM-dd") : today;
+    var initKetThuc = Model != null && Model.ngay_ket_thuc != DateTime.MinValue ? Model.ngay_ket_thuc.ToString("yyyy-MM-dd") : nextWeek;
+}
+
+<div class="create-promo-container">
+    <div class="page-header">
+        <div class="header-content">
+            <a href="@Url.Action("Index", "Promo")" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="header-title">
+                <i class="fas fa-ticket-alt"></i>
+                <h2>Tạo Mã Khuyến Mãi Mới</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-wrapper">
+        @using (Html.BeginForm("Create", "Promo", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-info-circle"></i>
+                    <h3>Thông Tin Cơ Bản</h3>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ma_khuyen_mai">
+                            <i class="fas fa-tag"></i> Mã Khuyến Mãi <span class="required">*</span>
+                        </label>
+                        <input type="text" id="ma_khuyen_mai" name="ma_khuyen_mai" value="@suggestedCode"
+                               placeholder="Ví dụ: SUMMER2024" required maxlength="20" class="form-control" />
+                        <small class="form-hint">Mã duy nhất để khách hàng sử dụng</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trang_thai">
+                            <i class="fas fa-toggle-on"></i> Trạng Thái
+                        </label>
+                        <select id="trang_thai" name="trang_thai" class="form-control">
+                            <option value="Hoạt động">Hoạt Động</option>
+                            <option value="Ngừng hoạt động">Ngừng Hoạt Động</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="mo_ta">
+                        <i class="fas fa-align-left"></i> Mô Tả <span class="required">*</span>
+                    </label>
+                    <textarea id="mo_ta" name="mo_ta" placeholder="Mô tả chi tiết..." required class="form-control" rows="3">@initMoTa</textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-percentage"></i>
+                    <h3>Thiết Lập Giảm Giá</h3>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="loai_giam_gia">
+                            <i class="fas fa-calculator"></i> Loại Giảm Giá <span class="required">*</span>
+                        </label>
+                        <select id="loai_giam_gia" name="loai_giam_gia" class="form-control">
+                            <option value="%">Theo Phần Trăm (%)</option>
+                            <option value="VND">Theo Tiền Mặt (VND)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gia_tri_giam">
+                            <i class="fas fa-dollar-sign"></i> Giá Trị Giảm <span class="required">*</span>
+                        </label>
+                        <input type="number" id="gia_tri_giam" name="gia_tri_giam" value="@initGiaTri"
+                               placeholder="0" min="0" step="0.01" required class="form-control" />
+                        <small class="form-hint">Nhập số tiền hoặc phần trăm giảm</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="so_luong_con_lai">
+                            <i class="fas fa-box"></i> Số Lượng Mã <span class="required">*</span>
+                        </label>
+                        <input type="number" id="so_luong_con_lai" name="so_luong_con_lai" value="@initSoLuong"
+                               placeholder="100" min="1" required class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Phạm Vi Áp Dụng</h3>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>
+                        <i class="fas fa-bullseye"></i> Chọn Phạm Vi <span class="required">*</span>
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="pham_vi_ap_dung" value="0" onchange="toggleFoodSelection()" @(initPhamVi == 0 ? "checked" : "") />
+                            <div class="radio-content">
+                                <i class="fas fa-shopping-cart"></i>
+                                <div><strong>Toàn Bộ Đơn Hàng</strong><small>Áp dụng cho tổng giá trị đơn hàng</small></div>
+                            </div>
+                        </label>
+
+                        <label class="radio-option">
+                            <input type="radio" name="pham_vi_ap_dung" value="1" onchange="toggleFoodSelection()" @(initPhamVi == 1 ? "checked" : "") />
+                            <div class="radio-content">
+                                <i class="fas fa-utensils"></i>
+                                <div><strong>Món Ăn Cụ Thể</strong><small>Chỉ áp dụng cho các món được chọn</small></div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="foodSelectionArea" class="food-selection-area" style="display:@(initPhamVi == 1 ? "block" : "none");">
+                    <div class="selection-header">
+                        <i class="fas fa-list-check"></i>
+                        <span>Chọn các món ăn được áp dụng khuyến mãi</span>
+                    </div>
+
+                    @if (allFoods != null && allFoods.Any())
+                    {
+                        <div class="food-grid">
+                            @foreach (var food in allFoods)
+                            {
+                                // ✅ SỬA: Logic check món ăn từ đề xuất
+                                bool isChecked = selectedFoodIds != null && selectedFoodIds.Contains(food.Do_An_id);
+                                <label class="food-checkbox">
+                                    <input type="checkbox" name="selectedFoods" value="@food.Do_An_id" @(isChecked ? "checked" : "") />
+                                    <span class="checkbox-custom"></span>
+                                    <span class="food-name">@food.ten_san_pham</span>
+                                </label>}
+                        </div> }
+                    else
+                    {
+                        <div class="no-food">
+                            <i class="fas fa-box-open"></i>
+                            <p>Chưa có món ăn nào trong hệ thống</p>
+                        </div>}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <i class="fas fa-calendar"></i>
+                    <h3>Thời Gian Áp DỤng</h3>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ngay_bat_dau">
+                            <i class="fas fa-calendar-plus"></i> Ngày Bắt Đầu
+                        </label>
+                        <input type="date" id="ngay_bat_dau" name="ngay_bat_dau" value="@initBatDau" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ngay_ket_thuc">
+                            <i class="fas fa-calendar-check"></i> Ngày Kết Thúc
+                        </label>
+                        <input type="date" id="ngay_ket_thuc" name="ngay_ket_thuc" value="@initKetThuc" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-submit">
+                    <i class="fas fa-check"></i> Lưu & Kích Hoạt
+                </button>
+                <a href="@Url.Action("Index", "Promo")" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Hủy Bỏ
+                </a>
+            </div>}
+    </div>
+</div>
+
+<style>
+    /* Container */
+    .create-promo-container {
+        padding: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Page Header */
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .back-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: white;
+        color: #ff6b35;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: 2px solid #ffe8dc;
+    }
+
+        .back-btn:hover {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            color: white;
+            transform: translateX(-3px);
+            border-color: #ff6b35;
+        }
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+        .header-title i {
+            font-size: 2rem;
+            color: #ff6b35;
+        }
+
+        .header-title h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+    /* Form Wrapper */
+    .form-wrapper {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+        overflow: hidden;
+        border: 2px solid #ffe8dc;
+    }
+
+    /* Form Section */
+    .form-section {
+        padding: 2rem;
+        border-bottom: 1px solid #ffe8dc;
+    }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #fff5f0;
+    }
+
+        .section-header i {
+            font-size: 1.5rem;
+            color: #ff6b35;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+    /* Form Groups */
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+            .form-group label i {
+                color: #ff9966;
+                font-size: 0.9rem;
+            }
+
+    .required {
+        color: #ff6b35;
+        margin-left: 0.25rem;
+    }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        border: 2px solid #ffe8dc;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff9966;
+            box-shadow: 0 0 0 3px rgba(255, 153, 102, 0.1);
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+    }
+
+    .form-hint {
+        display: block;
+        margin-top: 0.4rem;
+        font-size: 0.8rem;
+        color: #999;
+    }
+
+    /* Radio Group */
+    .radio-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .radio-option {
+        position: relative;
+        cursor: pointer;
+    }
+
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+    .radio-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        border: 2px solid #ffe8dc;
+        border-radius: 12px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .radio-option input[type="radio"]:checked + .radio-content {
+        border-color: #ff9966;
+        background: linear-gradient(135deg, rgba(255, 153, 102, 0.05) 0%, rgba(255, 107, 53, 0.05) 100%);
+    }
+
+    .radio-content:hover {
+        border-color: #ff9966;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+    }
+
+    .radio-content i {
+        font-size: 2rem;
+        color: #ff6b35;
+    }
+
+    .radio-content strong {
+        display: block;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .radio-content small {
+        color: #666;
+        font-size: 0.85rem;
+    }
+
+    /* Food Selection Area */
+    .food-selection-area {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+        border-radius: 12px;
+        border: 2px dashed #ff9966;
+        animation: slideDown 0.3s ease;
+    }
+
+    @@keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .selection-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+        .selection-header i {
+            color: #ff6b35;
+            font-size: 1.2rem;
+        }
+
+    .food-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 0.75rem;
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+        .food-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .food-grid::-webkit-scrollbar-track {
+            background: #fff5f0;
+            border-radius: 10px;
+        }
+
+        .food-grid::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+            border-radius: 10px;
+        }
+
+            .food-grid::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            }
+
+    .food-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: white;
+        border: 2px solid #ffe8dc;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .food-checkbox:hover {
+            border-color: #ff9966;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
+        }
+
+        .food-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #ffe8dc;
+        border-radius: 4px;
+        position: relative;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .food-checkbox input[type="checkbox"]:checked + .checkbox-custom {
+        background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+        border-color: #ff6b35;
+    }
+
+        .food-checkbox input[type="checkbox"]:checked + .checkbox-custom::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.75rem;
+        }
+
+    .food-name {
+        font-size: 0.9rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .no-food {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #999;
+    }
+
+        .no-food i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+            color: #ff9966;
+        }
+
+        .no-food p {
+            margin: 0;
+        }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, #fff5f0 0%, #ffe8dc 100%);
+    }
+
+    .btn {
+        flex: 1;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #ff9966 0%, #ff6b35 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+    .btn-cancel {
+        background: white;
+        color: #666;
+        border: 2px solid #ffe8dc;
+    }
+
+        .btn-cancel:hover {
+            background: #fff5f0;
+            border-color: #dc3545;
+            color: #dc3545;
+            transform: translateY(-3px);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .create-promo-container {
+            padding: 1rem;
+        }
+
+        .form-section {
+            padding: 1.5rem;
+        }
+
+        .radio-group {
+            grid-template-columns: 1fr;
+        }
+
+        .food-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    function toggleFoodSelection() {
+        var radios = document.querySelectorAll('input[name="pham_vi_ap_dung"]');
+        var selectedValue = null;
+
+        radios.forEach(radio => {
+            if (radio.checked) selectedValue = radio.value;
+        });
+
+        var area = document.getElementById('foodSelectionArea');
+        if (selectedValue === '1') {
+            area.style.display = 'block';
+        } else {
+            area.style.display = 'none';
+            // Optional: Uncheck all if hidden
+            // var checkboxes = area.querySelectorAll('input[type="checkbox"]');
+            // checkboxes.forEach(cb => cb.checked = false);
+        }
+    }
+
+    // Khởi chạy 1 lần để đảm bảo UI đúng
+    toggleFoodSelection();
+</script>

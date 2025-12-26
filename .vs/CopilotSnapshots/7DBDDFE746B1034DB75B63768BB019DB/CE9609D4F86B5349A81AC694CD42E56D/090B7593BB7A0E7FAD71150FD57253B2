@@ -1,0 +1,317 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class InvoiceController : Controller
+    {
+        private CSDLDataContext db;
+
+        public InvoiceController()
+        {
+            try
+            {
+                var connString = System.Configuration.ConfigurationManager.ConnectionStrings["CSDLConnectionString"]?.ConnectionString;
+                if (!string.IsNullOrEmpty(connString))
+                {
+                    db = new CSDLDataContext(connString);
+                }
+                else
+                {
+                    db = new CSDLDataContext();
+                }
+            }
+            catch
+            {
+                db = new CSDLDataContext();
+            }
+        }
+
+        // GET: Invoice
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// GET: Trang hóa đơn cho một đơn đặt vé
+        /// </summary>
+        [HttpGet]
+        public ActionResult ViewInvoice(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                // Kiểm tra quyền truy cập
+                var customerId = Session["CustomerId"] as int? ?? 0;
+                if (booking.khach_hang_id != customerId && !User.IsInRole("Admin"))
+                {
+                    return new HttpUnauthorizedResult();
+                }
+
+                var tickets = booking.Ves.ToList();
+                var firstTicket = tickets.FirstOrDefault();
+                var showtime = firstTicket?.Suat_Chieu;
+
+                // Tính toán thông tin hóa đơn
+                decimal ticketTotal = tickets.Sum(t => t.gia_ve);
+                decimal foodTotal = 0;
+                List<dynamic> foodItems = new List<dynamic>();
+
+                foreach (var foodOrder in booking.DonHang_DoAns)
+                {
+                    var food = foodOrder.Do_An;
+                    decimal unitPrice = food.gia ?? 0m;
+                    decimal itemTotal = unitPrice * foodOrder.so_luong;
+                    foodTotal += itemTotal;
+
+                    foodItems.Add(new
+                    {
+                        FoodId = food.Do_An_id,
+                        FoodName = food.ten_san_pham,
+                        Price = unitPrice,
+                        Quantity = foodOrder.so_luong,
+                        TotalPrice = itemTotal
+                    });
+                }
+
+                ViewBag.Booking = booking;
+                ViewBag.Showtime = showtime;
+                ViewBag.Tickets = tickets;
+                ViewBag.FoodItems = foodItems;
+                ViewBag.TicketTotal = ticketTotal;
+                ViewBag.FoodTotal = foodTotal;
+                ViewBag.GrandTotal = ticketTotal + foodTotal;
+                ViewBag.InvoiceDate = DateTime.Now;
+
+                LoggingHelper.LogInfo($"✅ Xem hóa đơn: Booking ID {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi xem hóa đơn";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// POST: Bắt đầu thanh toán VNPAY
+        /// </summary>
+        [HttpPost]
+        public ActionResult InitiatePayment(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                // Kiểm tra trạng thái đơn hàng
+                if (booking.trang_thai_Dat_Ve != "Chưa thanh toán")
+                {
+                    return Json(new { success = false, message = "Đơn hàng đã được thanh toán hoặc bị hủy" });
+                }
+
+                // Tạo URL thanh toán
+                var paymentGateway = new PaymentGateway();
+                string orderInfo = $"Thanh toán vé xem phim - Mã đơn: {bookingId}";
+                string paymentUrl = paymentGateway.CreatePaymentUrl(booking.tong_tien, orderInfo, booking.khach_hang_id.ToString());
+
+                LoggingHelper.LogInfo($"✅ Khởi tạo thanh toán VNPAY: Booking ID {bookingId}, Amount {booking.tong_tien}");
+                return Json(new { success = true, redirectUrl = paymentUrl });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra khi khởi tạo thanh toán" });
+            }
+        }
+
+        /// <summary>
+        /// GET: VNPAY Callback - Xử lý kết quả thanh toán từ VNPAY
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentCallback()
+        {
+            try
+            {
+                // Lấy dữ liệu từ query string
+                var responseData = new Dictionary<string, string>();
+                foreach (string key in Request.QueryString.Keys)
+                {
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        responseData[key] = Request.QueryString[key];
+                    }
+                }
+
+                var paymentGateway = new PaymentGateway();
+                var paymentResponse = paymentGateway.VerifyPayment(responseData);
+
+                if (!paymentResponse.IsValid)
+                {
+                    LoggingHelper.LogWarning($"❌ Chữ ký thanh toán không hợp lệ");
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = "Chữ ký không hợp lệ" });
+                }
+
+                // Lấy mã đơn hàng từ OrderInfo
+                string orderInfo = paymentResponse.OrderInfo;
+                int bookingId = ExtractBookingIdFromOrderInfo(orderInfo);
+
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    LoggingHelper.LogWarning($"❌ Không tìm thấy đơn hàng: {bookingId}");
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = "Không tìm thấy đơn hàng" });
+                }
+
+                if (paymentResponse.Success)
+                {
+                    // ✅ Thanh toán thành công
+                    booking.trang_thai_Dat_Ve = "Đã Thanh toán";
+                    db.SubmitChanges();
+
+                    // Cập nhật trạng thái vé
+                    var tickets = booking.Ves.ToList();
+                    foreach (var ticket in tickets)
+                    {
+                        ticket.trang_thai_ve = "Chưa sử dụng";
+                    }
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"✅ Thanh toán VNPAY thành công: Booking {bookingId}, Giao dịch {paymentResponse.TransactionNo}");
+                    return RedirectToAction("PaymentSuccess", "Invoice", new { bookingId = bookingId, transactionNo = paymentResponse.TransactionNo });
+                }
+                else
+                {
+                    // ❌ Thanh toán thất bại
+                    LoggingHelper.LogWarning($"❌ Thanh toán VNPAY thất bại: Booking {bookingId}, Mã {paymentResponse.ResponseCode}");
+                    return RedirectToAction("PaymentFailed", "Invoice", new { message = paymentResponse.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return RedirectToAction("PaymentFailed", "Invoice", new { message = "Có lỗi xảy ra khi xử lý thanh toán" });
+            }
+        }
+
+        /// <summary>
+        /// GET: Trang thanh toán thành công
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentSuccess(int bookingId, string transactionNo)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                var tickets = booking.Ves.ToList();
+                var showtime = tickets.FirstOrDefault()?.Suat_Chieu;
+
+                ViewBag.Booking = booking;
+                ViewBag.Showtime = showtime;
+                ViewBag.Tickets = tickets;
+                ViewBag.TransactionNo = transactionNo;
+
+                LoggingHelper.LogInfo($"✅ Hiển thị trang thanh toán thành công: Booking {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// GET: Trang thanh toán thất bại
+        /// </summary>
+        [HttpGet]
+        public ActionResult PaymentFailed(string message)
+        {
+            ViewBag.ErrorMessage = message ?? "Thanh toán thất bại. Vui lòng thử lại";
+            LoggingHelper.LogWarning($"⚠️ Hiển thị trang thanh toán thất bại: {message}");
+            return View();
+        }
+
+        /// <summary>
+        /// In hóa đơn PDF
+        /// </summary>
+        [HttpGet]
+        public ActionResult PrintInvoice(int bookingId)
+        {
+            try
+            {
+                var booking = db.Dat_Ves.FirstOrDefault(b => b.Dat_Ve_id == bookingId);
+                if (booking == null)
+                {
+                    return HttpNotFound("Không tìm thấy đơn hàng");
+                }
+
+                ViewBag.Booking = booking;
+                ViewBag.Tickets = booking.Ves.ToList();
+                ViewBag.FoodItems = booking.DonHang_DoAns.ToList();
+
+                LoggingHelper.LogInfo($"✅ In hóa đơn: Booking {bookingId}");
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        /// <summary>
+        /// Helper: Trích xuất Booking ID từ OrderInfo
+        /// </summary>
+        private int ExtractBookingIdFromOrderInfo(string orderInfo)
+        {
+            try
+            {
+                // Format: "Thanh toán vé xem phim - Mã đơn: {bookingId}"
+                if (string.IsNullOrEmpty(orderInfo))
+                    return 0;
+
+                int lastColonIndex = orderInfo.LastIndexOf(":");
+                if (lastColonIndex != -1 && lastColonIndex < orderInfo.Length - 1)
+                {
+                    string bookingIdStr = orderInfo.Substring(lastColonIndex + 1).Trim();
+                    if (int.TryParse(bookingIdStr, out int bookingId))
+                    {
+                        return bookingId;
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

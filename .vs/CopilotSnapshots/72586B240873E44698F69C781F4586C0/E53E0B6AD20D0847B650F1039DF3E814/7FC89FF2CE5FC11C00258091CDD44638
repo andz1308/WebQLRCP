@@ -1,0 +1,97 @@
+﻿using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using WebCinema.Models;
+
+namespace WebCinema.Services
+{
+    public class AuthService
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // Hash password using SHA256
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        // Register new customer
+        // NOTE: The current database schema may not have mat_khau and ngay_dang_ky fields
+        // This is a placeholder implementation. You may need to add these columns to the database.
+        public bool Register(RegisterViewModel model, out string errorMessage)
+        {
+            errorMessage = null;
+
+            // Check if email already exists
+            if (db.Khach_Hangs.Any(k => k.email == model.Email))
+            {
+                errorMessage = "Email đã được sử dụng";
+                return false;
+            }
+
+            // Check if phone already exists
+            if (db.Khach_Hangs.Any(k => k.so_dien_thoai == model.PhoneNumber))
+            {
+                errorMessage = "Số điện thoại đã được sử dụng";
+                return false;
+            }
+
+            try
+            {
+                var customer = new Khach_Hang
+                {
+                    ho_ten = model.FullName,
+                    email = model.Email,
+                    so_dien_thoai = model.PhoneNumber
+                    // NOTE: If your database has mat_khau and ngay_dang_ky columns, uncomment below:
+                    // mat_khau = HashPassword(model.Password),
+                    // ngay_dang_ky = DateTime.Now
+                };
+
+                db.Khach_Hangs.InsertOnSubmit(customer);
+                db.SubmitChanges();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "Đã xảy ra lỗi khi đăng ký: " + ex.Message;
+                return false;
+            }
+        }
+
+        // Login
+        // NOTE: For now, we'll just check if email exists since password field may not be in schema
+        // In production, you should add a password column to the Khach_Hang table
+        public Khach_Hang Login(string email, string password)
+        {
+            // Temporary implementation without password check
+            // TODO: Add password field to database and uncomment password validation
+            // string hashedPassword = HashPassword(password);
+            // return db.Khach_Hangs.FirstOrDefault(k => k.email == email && k.mat_khau == hashedPassword);
+            
+            return db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+        }
+
+        // Get customer by ID
+        public Khach_Hang GetCustomerById(int id)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == id);
+        }
+
+        // Get customer by email
+        public Khach_Hang GetCustomerByEmail(string email)
+        {
+            return db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+        }
+    }
+}

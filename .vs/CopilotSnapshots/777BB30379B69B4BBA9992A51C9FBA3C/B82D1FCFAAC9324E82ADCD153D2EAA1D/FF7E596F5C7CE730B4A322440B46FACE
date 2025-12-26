@@ -1,0 +1,101 @@
+﻿@model WebCinema.Models.Khach_Hang
+
+@{
+    ViewBag.Title = "Chi Tiết Người Dùng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-user"></i> Chi Tiết Người Dùng</h2>
+        <div>
+            <a href="@Url.Action("Edit", new { id = Model.khach_hang_id })" class="btn btn-secondary" style="margin-right: 0.5rem;">
+                <i class="fas fa-edit"></i> Chỉnh Sửa
+            </a>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+        <!-- User Info -->
+        <div style="background: #f8f9fa; padding: 2rem; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%); margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: bold;">
+                    @Model.ho_ten.Substring(0, 1).ToUpper()
+                </div>
+                <h3 style="margin-top: 1rem; color: #2c3e50;">@Model.ho_ten</h3>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d;">Email:</strong>
+                <p style="margin: 0.5rem 0;">@Model.email</p>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d;">Số Điện Thoại:</strong>
+                <p style="margin: 0.5rem 0;">@(Model.so_dien_thoai ?? "N/A")</p>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d;">Ngày Đăng Ký:</strong>
+                <p style="margin: 0.5rem 0;">@(Model.ngay_dang_ky.HasValue ? Model.ngay_dang_ky.Value.ToString("dd/MM/yyyy") : "N/A")</p>
+            </div>
+        </div>
+
+        <!-- Statistics & Recent Activity -->
+        <div>
+            <!-- Stats -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: linear-gradient(135deg, #3498db 0%, #5dade2 100%); color: white; padding: 1.5rem; border-radius: 12px;">
+                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">Tổng Đơn Đặt</div>
+                    <div style="font-size: 2rem; font-weight: bold;">@ViewBag.TotalBookings</div>
+                </div>
+
+                <div style="background: linear-gradient(135deg, #27ae60 0%, #52be80 100%); color: white; padding: 1.5rem; border-radius: 12px;">
+                    <div style="font-size: 0.9rem; margin-bottom: 0.5rem;">Tổng Chi Tiêu</div>
+                    <div style="font-size: 2rem; font-weight: bold;">@string.Format("{0:N0}đ", ViewBag.TotalSpent)</div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div style="background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; color: #2c3e50;"><i class="fas fa-ticket-alt"></i> Đơn Đặt Gần Đây</h3>
+                
+                @if (ViewBag.RecentBookings != null && ((List<WebCinema.Models.Dat_Ve>)ViewBag.RecentBookings).Any())
+                {
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã Đơn</th>
+                                <th>Ngày Tạo</th>
+                                <th>Tổng Tiền</th>
+                                <th>Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in (List<WebCinema.Models.Dat_Ve>)ViewBag.RecentBookings)
+                            {
+                                <tr>
+                                    <td><strong>#@booking.datve_id</strong></td>
+                                    <td>@booking.ngay_tao.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@string.Format("{0:N0}đ", booking.tong_tien)</td>
+                                    <td>
+                                        <span style="padding: 0.3rem 0.8rem; background: @(booking.trang_thai == "Đã thanh toán" ? "#27ae60" : "#f39c12"); color: white; border-radius: 4px; font-size: 0.85rem;">
+                                            @booking.trang_thai
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p style="text-align: center; color: #999; padding: 2rem;">Chưa có đơn đặt nào.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

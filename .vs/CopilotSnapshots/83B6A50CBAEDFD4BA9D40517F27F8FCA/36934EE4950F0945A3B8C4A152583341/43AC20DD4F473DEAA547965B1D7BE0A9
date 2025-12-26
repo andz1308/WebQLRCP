@@ -1,0 +1,421 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+using Newtonsoft.Json.Linq;
+
+namespace WebCinema.Controllers.API
+{
+    /// <summary>
+    /// Staff API - Nhân viên có thể quản lý đặt vé offline, xem doanh thu, soát vé
+    /// </summary>
+    [RoutePrefix("api/staff")]
+    public class StaffApiController : ApiController
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        /// <summary>
+        /// GET: api/staff/dashboard/{staffId}
+        /// Lấy thống kê dashboard cho nhân viên
+        /// </summary>
+        [HttpGet]
+        [Route("dashboard/{staffId}")]
+        public IHttpActionResult GetDashboard(int staffId)
+        {
+            try
+            {
+                // Tổng vé bán
+                int totalTickets = db.Ves
+                    .Where(v => v.Dat_Ve_id != null && v.Dat_Ve.trang_thai_Dat_Ve == "Đã Thanh toán")
+                    .Count();
+
+                // Tổng doanh thu
+                decimal totalRevenue = db.Dat_Ves
+                    .Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán")
+                    .Sum(b => b.tong_tien) ?? 0;
+
+                // Doanh thu tháng này
+                var currentMonth = DateTime.Now.Month;
+                var currentYear = DateTime.Now.Year;
+                decimal monthlyRevenue = db.Dat_Ves
+                    .Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán" &&
+                                b.ngay_tao.HasValue &&
+                                b.ngay_tao.Value.Month == currentMonth &&
+                                b.ngay_tao.Value.Year == currentYear)
+                    .Sum(b => b.tong_tien) ?? 0;
+
+                // Đơn hàng tháng này
+                int monthlyBookings = db.Dat_Ves
+                    .Where(b => b.trang_thai_Dat_Ve == "Đã Thanh toán" &&
+                                b.ngay_tao.HasValue &&
+                                b.ngay_tao.Value.Month == currentMonth &&
+                                b.ngay_tao.Value.Year == currentYear)
+                    .Count();
+
+                // Vé đã soát
+                int ticketsVerified = db.Ves
+                    .Where(v => v.trang_thai_ve == "Đã sử dụng")
+                    .Count();
+
+                // Vé chưa soát
+                int ticketsPending = db.Ves
+                    .Where(v => v.trang_thai_ve == "Chưa sử dụng" && v.Dat_Ve_id != null)
+                    .Count();
+
+                var dashboard = new
+                {
+                    total_tickets = totalTickets,
+                    total_revenue = totalRevenue,
+                    monthly_revenue = monthlyRevenue,
+                    monthly_bookings = monthlyBookings,
+                    tickets_verified = ticketsVerified,
+                    tickets_pending = ticketsPending
+                };
+
+                LoggingHelper.LogInfo($"✅ Staff Dashboard: ID {staffId}");
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy thống kê thành công",
+                    data = dashboard
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// GET: api/staff/showtimes?date={date}
+        /// Lấy danh sách suất chiếu để đặt vé offline
+        /// </summary>
+        [HttpGet]
+        [Route("showtimes")]
+        public IHttpActionResult GetShowtimesForBooking(string date = "")
+        {
+            try
+            {
+                var query = db.Suat_Chieus
+                    .Where(s => s.ngay_chieu >= DateTime.Now.Date)
+                    .AsQueryable();
+
+                if (!string.IsNullOrEmpty(date) && DateTime.TryParse(date, out DateTime filterDate))
+                {
+                    query = query.Where(s => s.ngay_chieu.Date == filterDate.Date);
+                }
+
+                var showtimes = query
+                    .OrderBy(s => s.ngay_chieu)
+                    .ThenBy(s => s.Ca_Chieu.gio_bat_dau)
+                    .Select(s => new
+                    {
+                        showtime_id = s.suat_chieu_id,
+                        movie_title = s.Phim.ten_phim,
+                        cinema = s.Phong_Chieu.Rap.ten_rap,
+                        room = s.Phong_Chieu.ten_phong,
+                        date = s.ngay_chieu.ToString("yyyy-MM-dd"),
+                        start_time = s.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm"),
+                        price = s.gia_ve,
+                        total_seats = s.Phong_Chieu.Ghes.Count(),
+                        booked_seats = s.Ves.Count(v => v.Dat_Ve_id != null),
+                        available_seats = s.Phong_Chieu.Ghes.Count() - s.Ves.Count(v => v.Dat_Ve_id != null)
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách suất chiếu thành công",
+                    data = showtimes
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// GET: api/staff/seats/{showtimeId}
+        /// Lấy danh sách ghế của một suất chiếu
+        /// </summary>
+        [HttpGet]
+        [Route("seats/{showtimeId}")]
+        public IHttpActionResult GetSeats(int showtimeId)
+        {
+            try
+            {
+                var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
+                if (showtime == null)
+                {
+                    return Ok(new { success = false, message = "Suất chiếu không tồn tại" });
+                }
+
+                var bookedSeats = db.Ves
+                    .Where(v => v.suat_chieu_id == showtimeId && v.Dat_Ve_id != null)
+                    .Select(v => v.ghe_id)
+                    .ToList();
+
+                var seats = showtime.Phong_Chieu.Ghes
+                    .OrderBy(g => g.hang)
+                    .ThenBy(g => g.cot)
+                    .Select(g => new
+                    {
+                        seat_id = g.ghe_id,
+                        seat_number = g.so_ghe,
+                        row = g.hang,
+                        column = g.cot,
+                        status = bookedSeats.Contains(g.ghe_id) ? "booked" : (g.trang_thai == 0 ? "aisle" : "available"),
+                        price = showtime.gia_ve
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách ghế thành công",
+                    data = new
+                    {
+                        showtime_id = showtimeId,
+                        rows = showtime.Phong_Chieu.so_hang,
+                        columns = showtime.Phong_Chieu.so_cot,
+                        seats = seats
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/staff/create-booking
+        /// Tạo đơn đặt vé offline
+        /// </summary>
+        [HttpPost]
+        [Route("create-booking")]
+        public IHttpActionResult CreateOfflineBooking([FromBody] JObject data)
+        {
+            try
+            {
+                int showtimeId = data["showtime_id"]?.Value<int>() ?? 0;
+                var seatIds = data["seat_ids"]?.ToObject<List<int>>() ?? new List<int>();
+                string customerName = data["customer_name"]?.Value<string>();
+                string customerPhone = data["customer_phone"]?.Value<string>();
+                string paymentMethod = data["payment_method"]?.Value<string>() ?? "cash";
+
+                if (string.IsNullOrEmpty(customerName) || string.IsNullOrEmpty(customerPhone))
+                {
+                    return Ok(new { success = false, message = "Tên khách hàng và số điện thoại không được rỗng" });
+                }
+
+                if (seatIds.Count == 0)
+                {
+                    return Ok(new { success = false, message = "Phải chọn ít nhất 1 ghế" });
+                }
+
+                var showtime = db.Suat_Chieus.FirstOrDefault(s => s.suat_chieu_id == showtimeId);
+                if (showtime == null)
+                {
+                    return Ok(new { success = false, message = "Suất chiếu không tồn tại" });
+                }
+
+                // Kiểm tra ghế đã đặt
+                var bookedSeats = db.Ves
+                    .Where(v => v.suat_chieu_id == showtimeId && v.Dat_Ve_id != null)
+                    .Select(v => v.ghe_id)
+                    .ToList();
+
+                var conflictSeats = seatIds.Where(s => bookedSeats.Contains(s)).ToList();
+                if (conflictSeats.Any())
+                {
+                    return Ok(new { success = false, message = $"Ghế {string.Join(", ", conflictSeats)} đã được đặt" });
+                }
+
+                // Tính tổng tiền vé
+                decimal ticketTotal = seatIds.Count * (showtime.gia_ve ?? 0);
+
+                // Tìm hoặc tạo khách hàng
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.so_dien_thoai == customerPhone);
+                if (customer == null)
+                {
+                    customer = new Khach_Hang
+                    {
+                        ho_ten = customerName,
+                        so_dien_thoai = customerPhone
+                    };
+                    db.Khach_Hangs.InsertOnSubmit(customer);
+                    db.SubmitChanges();
+                }
+
+                // Tạo đơn đặt
+                var booking = new Dat_Ve
+                {
+                    khach_hang_id = customer.khach_hang_id,
+                    ngay_tao = DateTime.Now,
+                    trang_thai_Dat_Ve = "Đã Thanh toán",
+                    tong_tien = ticketTotal,
+                    phuong_thuc_thanh_toan = paymentMethod
+                };
+
+                db.Dat_Ves.InsertOnSubmit(booking);
+                db.SubmitChanges();
+
+                // Tạo vé
+                foreach (var seatId in seatIds)
+                {
+                    var ticket = new Ve
+                    {
+                        suat_chieu_id = showtimeId,
+                        ghe_id = seatId,
+                        Dat_Ve_id = booking.Dat_Ve_id,
+                        gia_ve = showtime.gia_ve ?? 0,
+                        trang_thai_ve = "Chưa sử dụng",
+                        ma_qr_code = Guid.NewGuid().ToString()
+                    };
+                    db.Ves.InsertOnSubmit(ticket);
+                }
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Tạo đơn đặt offline: Booking ID {booking.Dat_Ve_id}, KH: {customerName}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Tạo đơn đặt thành công",
+                    data = new
+                    {
+                        booking_id = booking.Dat_Ve_id,
+                        total_amount = booking.tong_tien,
+                        status = booking.trang_thai_Dat_Ve
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// GET: api/staff/bookings?status={status}
+        /// Lấy danh sách đơn đặt
+        /// </summary>
+        [HttpGet]
+        [Route("bookings")]
+        public IHttpActionResult GetBookings(string status = "")
+        {
+            try
+            {
+                var query = db.Dat_Ves.AsQueryable();
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    query = query.Where(b => b.trang_thai_Dat_Ve == status);
+                }
+
+                var bookings = query
+                    .OrderByDescending(b => b.ngay_tao)
+                    .Select(b => new
+                    {
+                        booking_id = b.Dat_Ve_id,
+                        customer_name = b.Khach_Hang.ho_ten,
+                        customer_phone = b.Khach_Hang.so_dien_thoai,
+                        created_at = b.ngay_tao.HasValue ? b.ngay_tao.Value.ToString("yyyy-MM-dd HH:mm") : "N/A",
+                        status = b.trang_thai_Dat_Ve,
+                        total_amount = b.tong_tien,
+                        tickets_count = b.Ves.Count
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Lấy danh sách đơn đặt thành công",
+                    data = bookings
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// POST: api/staff/verify-ticket
+        /// Soát vé (quét QR code)
+        /// </summary>
+        [HttpPost]
+        [Route("verify-ticket")]
+        public IHttpActionResult VerifyTicket([FromBody] JObject data)
+        {
+            try
+            {
+                string qrCode = data["qr_code"]?.Value<string>();
+
+                if (string.IsNullOrEmpty(qrCode))
+                {
+                    return Ok(new { success = false, message = "Mã QR không được rỗng" });
+                }
+
+                var ticket = db.Ves.FirstOrDefault(v => v.ma_qr_code == qrCode.Trim());
+                if (ticket == null)
+                {
+                    return Ok(new { success = false, message = "Mã QR không tồn tại" });
+                }
+
+                if (ticket.trang_thai_ve == "Đã sử dụng")
+                {
+                    return Ok(new { success = false, message = "Vé này đã được sử dụng rồi" });
+                }
+
+                // Cập nhật trạng thái vé
+                ticket.trang_thai_ve = "Đã sử dụng";
+                db.SubmitChanges();
+
+                var showtime = ticket.Suat_Chieu;
+                var booking = ticket.Dat_Ve;
+
+                LoggingHelper.LogInfo($"✅ Soát vé: {qrCode}");
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Vé hợp lệ",
+                    data = new
+                    {
+                        movie_title = showtime.Phim.ten_phim,
+                        customer_name = booking.Khach_Hang.ho_ten,
+                        seat_number = ticket.Ghe.so_ghe,
+                        date = showtime.ngay_chieu.ToString("yyyy-MM-dd"),
+                        time = showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Ok(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

@@ -1,0 +1,125 @@
+﻿using System;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+
+namespace WebCinema.Controllers
+{
+    public class EvaluateController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Evaluate
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        // POST: Evaluate/SubmitReview
+        [HttpPost]
+        public ActionResult SubmitReview(int phim_id, int diem_rating, string noi_dung)
+        {
+            try
+            {
+                // Check if user is logged in (no default value, must be authenticated)
+                if (Session["CustomerId"] == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập để đánh giá phim!" });
+                }
+
+                var khachHangId = (int)Session["CustomerId"];
+
+                // Validate rating
+                if (diem_rating < 1 || diem_rating > 5)
+                {
+                    return Json(new { success = false, message = "Điểm đánh giá phải từ 1-5 sao!" });
+                }
+
+                // Check if user already reviewed this movie
+                var existingReview = db.Danh_Gias.FirstOrDefault(d =>
+                    d.phim_id == phim_id &&
+                    d.khach_hang_id == khachHangId &&
+                    !d.noi_dung.Contains("[AdminReply]") &&
+                    !d.noi_dung.Contains("[ParentID:"));
+
+                if (existingReview != null)
+                {
+                    return Json(new { success = false, message = "Bạn đã đánh giá phim này rồi!" });
+                }
+
+                // Create new review
+                var review = new Danh_Gia
+                {
+                    phim_id = phim_id,
+                    khach_hang_id = khachHangId,
+                    diem_rating = diem_rating,
+                    noi_dung = noi_dung,
+                    ngay_Danh_Gia = DateTime.Now
+                };
+
+                db.Danh_Gias.InsertOnSubmit(review);
+                db.SubmitChanges();
+
+                // Get user info for response
+                var user = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == khachHangId);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Cảm ơn bạn đã đánh giá!",
+                    review = new
+                    {
+                        userName = user?.ho_ten ?? "Khách hàng",
+                        rating = diem_rating,
+                        content = noi_dung,
+                        date = DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // POST: Evaluate/CheckUserReview
+        [HttpPost]
+        public ActionResult CheckUserReview(int phim_id)
+        {
+            try
+            {
+                // Check if user is logged in
+                if (Session["CustomerId"] == null)
+                {
+                    return Json(new { canReview = false, hasReviewed = false, notLoggedIn = true });
+                }
+
+                var khachHangId = (int)Session["CustomerId"];
+
+                var hasReviewed = db.Danh_Gias.Any(d =>
+                    d.phim_id == phim_id &&
+                    d.khach_hang_id == khachHangId &&
+                    !d.noi_dung.Contains("[AdminReply]") &&
+                    !d.noi_dung.Contains("[ParentID:"));
+
+                return Json(new { canReview = !hasReviewed, hasReviewed = hasReviewed, notLoggedIn = false });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { canReview = false, hasReviewed = false, error = ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

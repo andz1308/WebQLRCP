@@ -1,0 +1,180 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using WebCinema.Infrastructure;
+using WebCinema.Models;
+
+namespace WebCinema.Controllers.API
+{
+    /// <summary>
+    /// Authentication API - Đăng nhập, Đăng ký, Xác thực
+    /// </summary>
+    [RoutePrefix("api/auth")]
+    public class AuthApiController : BaseApiController
+    {
+        /// <summary>
+        /// POST: api/auth/login
+        /// Đăng nhập bằng email và mật khẩu
+        /// </summary>
+        [HttpPost]
+        [Route("login")]
+        [AllowAnonymous]
+        public IHttpActionResult Login([FromBody] dynamic loginData)
+        {
+            try
+            {
+                string email = loginData.email;
+                string password = loginData.password;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                {
+                    return ApiResponse(false, "Email và mật khẩu không được rỗng");
+                }
+
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.email == email);
+                if (customer == null)
+                {
+                    return ApiResponse(false, "Email không tồn tại");
+                }
+
+                // Kiểm tra mật khẩu (cần thêm hashing nếu còn dùng plain text)
+                if (customer.GetType().GetProperty("password")?.GetValue(customer) as string != password)
+                {
+                    return ApiResponse(false, "Mật khẩu không đúng");
+                }
+
+                var customerData = new
+                {
+                    customer_id = customer.khach_hang_id,
+                    name = customer.ho_ten,
+                    email = customer.email,
+                    phone = customer.so_dien_thoai,
+                    created_at = customer.GetType().GetProperty("ngay_tao_tai_khoan")?.GetValue(customer)
+                };
+
+                LoggingHelper.LogInfo($"✅ Đăng nhập thành công: {email}");
+                return ApiResponse(true, "Đăng nhập thành công", customerData);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return ApiResponse(false, "Lỗi đăng nhập: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// POST: api/auth/register
+        /// Đăng ký tài khoản mới
+        /// </summary>
+        [HttpPost]
+        [Route("register")]
+        [AllowAnonymous]
+        public IHttpActionResult Register([FromBody] dynamic registerData)
+        {
+            try
+            {
+                string name = registerData.name;
+                string email = registerData.email;
+                string password = registerData.password;
+                string phone = registerData.phone;
+
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                {
+                    return ApiResponse(false, "Email và mật khẩu không được rỗng");
+                }
+
+                // Kiểm tra email đã tồn tại
+                if (db.Khach_Hangs.Any(k => k.email == email))
+                {
+                    return ApiResponse(false, "Email đã được đăng ký");
+                }
+
+                var newCustomer = new Khach_Hang
+                {
+                    ho_ten = name ?? "Khách hàng",
+                    email = email,
+                    so_dien_thoai = phone
+                };
+
+                db.Khach_Hangs.InsertOnSubmit(newCustomer);
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Đăng ký thành công: {email}");
+                return ApiResponse(true, "Đăng ký thành công", new { customer_id = newCustomer.khach_hang_id });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return ApiResponse(false, "Lỗi đăng ký: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// GET: api/auth/profile/{customerId}
+        /// Lấy thông tin khách hàng
+        /// </summary>
+        [HttpGet]
+        [Route("profile/{customerId}")]
+        public IHttpActionResult GetProfile(int customerId)
+        {
+            try
+            {
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                {
+                    return ApiResponse(false, "Khách hàng không tồn tại");
+                }
+
+                var profileData = new
+                {
+                    customer_id = customer.khach_hang_id,
+                    name = customer.ho_ten,
+                    email = customer.email,
+                    phone = customer.so_dien_thoai
+                };
+
+                return ApiResponse(true, "Lấy thông tin thành công", profileData);
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return ApiResponse(false, "Lỗi: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// PUT: api/auth/profile/{customerId}
+        /// Cập nhật thông tin khách hàng
+        /// </summary>
+        [HttpPut]
+        [Route("profile/{customerId}")]
+        public IHttpActionResult UpdateProfile(int customerId, [FromBody] dynamic updateData)
+        {
+            try
+            {
+                var customer = db.Khach_Hangs.FirstOrDefault(k => k.khach_hang_id == customerId);
+                if (customer == null)
+                {
+                    return ApiResponse(false, "Khách hàng không tồn tại");
+                }
+
+                if (!string.IsNullOrEmpty((string)updateData.name))
+                    customer.ho_ten = updateData.name;
+
+                if (!string.IsNullOrEmpty((string)updateData.phone))
+                    customer.so_dien_thoai = updateData.phone;
+
+                db.SubmitChanges();
+
+                LoggingHelper.LogInfo($"✅ Cập nhật profile: {customerId}");
+                return ApiResponse(true, "Cập nhật thành công");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return ApiResponse(false, "Lỗi: " + ex.Message);
+            }
+        }
+    }
+}

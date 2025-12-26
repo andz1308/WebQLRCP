@@ -1,0 +1,485 @@
+﻿@using WebCinema.Areas.Admin.Controllers
+@model ManagerDashboardViewModel
+
+@{
+    ViewBag.Title = "Quản Lý Nhập Kho & Khuyến Mãi";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-clipboard-list"></i> Quản Lý Nhập Kho & Khuyến Mãi</h1>
+    <div class="header-actions">
+        <a href="@Url.Action("Promotions")" class="btn btn-warning">
+            <i class="fas fa-percent"></i> Phiếu Khuyến Mãi
+        </a>
+    </div>
+</div>
+
+<!-- === THÊM: Tồn Kho Chi Tiết Theo Rạp === -->
+<div>
+    <h2 style="font-size: 1.5rem; color: var(--color-dark-blue); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; font-weight: 700;">
+        <i class="fas fa-boxes"></i> Tồn Kho Chi Tiết Theo Rạp
+    </h2>
+</div>
+
+<div class="cinema-grid" style="margin-bottom: 3rem;">
+    @if (ViewBag.CinemaStocks != null)
+    {
+        foreach (var rap in (List<WebCinema.Areas.Admin.Controllers.CinemaStockViewModel>)ViewBag.CinemaStocks)
+        {
+            <div class="cinema-card">
+                <div class="cinema-card-header">
+                    <div class="cinema-info">
+                        <i class="fas fa-building cinema-icon"></i>
+                        <h3 class="cinema-name">@rap.TenRap</h3>
+                    </div>
+                    <span class="total-badge">@rap.TongSoLuong món</span>
+                </div>
+
+                <div class="cinema-card-body">
+                    @if (rap.DanhSachMon.Count > 0)
+                    {
+                        <div class="product-list">
+                            @foreach (var item in rap.DanhSachMon)
+                            {
+                                <div class="product-item">
+                                    <div class="product-name">@item.TenMon</div>
+                                    <div class="product-info">
+                                        <span class="product-quantity
+                                            @(item.SoLuong <= 0 ? "quantity-danger" :
+                                              item.SoLuong < 20 ? "quantity-warning" : "quantity-success")">
+                                            @item.SoLuong
+                                        </span>
+                                        @if (item.TrangThai == "Hết hàng")
+                                        {
+                                            <span class="status-badge status-danger">Hết</span>
+                                        }
+                                        else if (item.TrangThai == "Sắp hết")
+                                        {
+                                            <span class="status-badge status-warning">Thiếu</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-success">Ok</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>Kho rạp này đang trống</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Filter Section -->
+<div class="content-card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-filter"></i> Bộ Lọc</h2>
+    </div>
+    <div style="padding: 1.5rem;">
+        @using (Html.BeginForm("Index", "ManagerPurchaseOrder", FormMethod.Get, new { area = "Admin" }))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-control">
+                        <option value="">-- Tất cả --</option>
+                        <option value="Chờ duyệt" @(ViewBag.SelectedStatus == "Chờ duyệt" ? "selected" : "")>Chờ duyệt</option>
+                        <option value="Đã duyệt" @(ViewBag.SelectedStatus == "Đã duyệt" ? "selected" : "")>Đã duyệt</option>
+                        <option value="Đã nhập" @(ViewBag.SelectedStatus == "Đã nhập" ? "selected" : "")>Đã nhập</option>
+                        <option value="Đã hủy" @(ViewBag.SelectedStatus == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" name="fromDate" class="form-control" value="@(ViewBag.FromDate != null ? ((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd") : "")" />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" name="toDate" class="form-control" value="@(ViewBag.ToDate != null ? ((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd") : "")" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Phiếu Nhập Kho -->
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-file-invoice"></i> Phiếu Nhập Kho</h2>
+        <span class="badge badge-primary">@ViewBag.TotalItems phiếu</span>
+    </div>
+
+    @if (Model.DSNhapKho != null && Model.DSNhapKho.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 80px;">Mã Phiếu</th>
+                    <th>Rạp</th>
+                    <th>Nhà Cung Cấp</th>
+                    <th>Ngày Nhập</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th style="width: 180px;">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.DSNhapKho)
+                {
+                    <tr>
+                        <td><strong>#@p.phieu_nhap_id</strong></td>
+                        <td>@(p.Rap != null ? p.Rap.ten_rap : "N/A")</td>
+                        <td>@(p.Nha_Cung_Cap != null ? p.Nha_Cung_Cap.ten_ncc : "N/A")</td>
+                        <td>@p.ngay_nhap.ToString("dd/MM/yyyy")</td>
+                        <td><strong style="color: var(--color-success);">@((p.tong_tien ?? 0).ToString("N0")) đ</strong></td>
+                        <td>
+                            @if (p.trang_thai == "Chờ duyệt")
+                            {
+                                <span style="color: var(--color-warning); font-weight: 600;"><i class="fas fa-clock"></i> Chờ duyệt</span>
+                            }
+                            else if (p.trang_thai == "Đã duyệt")
+                            {
+                                <span style="color: #17a2b8; font-weight: 600;"><i class="fas fa-check"></i> Đã duyệt</span>
+                            }
+                            else if (p.trang_thai == "Đã nhập")
+                            {
+                                <span style="color: var(--color-success); font-weight: 600;"><i class="fas fa-check-circle"></i> Đã nhập</span>
+                            }
+                            else if (p.trang_thai == "Đã hủy")
+                            {
+                                <span style="color: var(--color-danger); font-weight: 600;"><i class="fas fa-ban"></i> Đã hủy</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="@Url.Action("Details", new { id = p.phieu_nhap_id })" class="btn btn-sm" style="background: #17a2b8; color: white;" title="Chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (p.trang_thai == "Chờ duyệt")
+                                {
+                                    <button onclick="approveImport(@p.phieu_nhap_id)" class="btn btn-sm btn-success" title="Duyệt">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button onclick="rejectImport(@p.phieu_nhap_id)" class="btn btn-sm btn-danger" title="Từ chối">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        @if (ViewBag.TotalPages > 1)
+        {
+            <div class="pagination-container" style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; padding: 2rem;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = ViewBag.CurrentPage - 1 })"
+                       class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+
+                <span style="color: var(--color-text); font-weight: 600;">
+                    Trang @ViewBag.CurrentPage / @ViewBag.TotalPages
+                </span>
+
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { status = ViewBag.SelectedStatus, fromDate = ViewBag.FromDate, toDate = ViewBag.ToDate, page = ViewBag.CurrentPage + 1 })"
+                       class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; color: var(--color-text-light);">
+            <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p style="font-size: 1.1rem;">Chưa có phiếu nhập kho nào.</p>
+        </div>
+    }
+</div>
+
+<style>
+    /* Cinema Grid Layout */
+    .cinema-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Cinema Card */
+    .cinema-card {
+        background: var(--color-white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .cinema-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+    /* Cinema Card Header */
+    .cinema-card-header {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .cinema-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .cinema-icon {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .cinema-name {
+        margin: 0;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .total-badge {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        color: white;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Cinema Card Body */
+    .cinema-card-body {
+        padding: 1.25rem;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+        .cinema-card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .cinema-card-body::-webkit-scrollbar-track {
+            background: var(--color-light-gray);
+            border-radius: 10px;
+        }
+
+        .cinema-card-body::-webkit-scrollbar-thumb {
+            background: var(--color-dark-gray);
+            border-radius: 10px;
+        }
+
+            .cinema-card-body::-webkit-scrollbar-thumb:hover {
+                background: var(--color-text);
+            }
+
+    /* Product List */
+    .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--color-light-gray);
+        border-radius: 8px;
+        transition: background 0.2s ease;
+    }
+
+        .product-item:hover {
+            background: var(--color-medium-gray);
+        }
+
+    .product-name {
+        font-weight: 500;
+        color: var(--color-text);
+        font-size: 0.95rem;
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .product-quantity {
+        font-weight: 700;
+        font-size: 1rem;
+        min-width: 35px;
+        text-align: center;
+    }
+
+    .quantity-success {
+        color: var(--color-success);
+    }
+
+    .quantity-warning {
+        color: var(--color-warning);
+    }
+
+    .quantity-danger {
+        color: var(--color-danger);
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--color-text-light);
+    }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--color-dark-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-sm {
+        padding: 0.5rem 0.9rem;
+        font-size: 0.875rem;
+        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-sm:hover {
+            transform: translateY(-2px);
+        }
+
+    .badge-primary {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .cinema-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@section scripts {
+    <script>
+        function approveImport(id) {
+            if (confirm('Xác nhận duyệt phiếu nhập kho này?')) {
+                $.post('@Url.Action("Approve")', { id: id }, function (res) {
+                    if (res.success) {
+                        alert(res.message);
+                        location.reload();
+                    } else {
+                        alert(res.message);
+                    }
+                });
+            }
+        }
+
+        function rejectImport(id) {
+            var reason = prompt('Nhập lý do từ chối:');
+            if (reason) {
+                $.post('@Url.Action("Reject")', { id: id, reason: reason }, function (res) {
+                    if (res.success) {
+                        alert(res.message);
+                        location.reload();
+                    } else {
+                        alert(res.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

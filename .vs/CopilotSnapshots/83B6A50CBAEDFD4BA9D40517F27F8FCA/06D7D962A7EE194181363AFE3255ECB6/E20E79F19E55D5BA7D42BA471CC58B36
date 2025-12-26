@@ -1,0 +1,484 @@
+﻿@{
+    ViewBag.Title = "Thanh Toán Thành Công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    var booking = ViewBag.Booking as WebCinema.Models.Dat_Ve;
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
+    var foodItems = ViewBag.FoodItems as List<dynamic>;
+    var ticketTotal = (decimal)ViewBag.TicketTotal;
+    var foodTotal = (decimal)ViewBag.FoodTotal;
+    var grandTotal = (decimal)ViewBag.GrandTotal;
+    var qrCodeUrl = ViewBag.QRCodeUrl as string;
+}
+
+<style>
+    .success-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .success-header {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .success-header h1 {
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .success-message {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    .invoice-box {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .invoice-header-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .invoice-header-section h2 {
+        margin: 0;
+        color: #333;
+        font-size: 1.5rem;
+    }
+
+    .invoice-body {
+        padding: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 600;
+    }
+
+    .ticket-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .ticket-section h3 {
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .ticket-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .ticket-item {
+        background: #f9f9f9;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        padding: 0.8rem;
+        text-align: center;
+        color: #667eea;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .food-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 2rem;
+    }
+
+    .food-table th {
+        background: #f0f0f0;
+        padding: 0.8rem;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .food-table td {
+        padding: 0.8rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .total-section {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+    }
+
+    .total-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .total-final {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.4rem;
+        font-weight: bold;
+        padding-top: 1rem;
+        border-top: 2px solid rgba(255,255,255,0.3);
+        margin-top: 1rem;
+    }
+
+    /* ? QR Code Display Section */
+    .qr-display-section {
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .qr-display-section h3 {
+        color: #333;
+        margin-top: 0;
+        font-size: 1.1rem;
+    }
+
+    .qr-display-container {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        display: inline-block;
+        margin: 1rem 0;
+    }
+
+    .qr-display-container img {
+        max-width: 250px;
+        height: auto;
+        border-radius: 6px;
+    }
+
+    .qr-note {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 1rem;
+        font-style: italic;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .btn-print {
+        padding: 0.8rem 2rem;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-print:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-home {
+        padding: 0.8rem 2rem;
+        background: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-home:hover {
+        background: #7f8c8d;
+        transform: translateY(-2px);
+    }
+
+    /* PRINT: hide layout and print only invoice box */
+    @@media print {
+        /* hide everything */
+        body * {
+            visibility: hidden !important;
+        }
+        /* show only invoice-box and its contents */
+        .invoice-box, .invoice-box * {
+            visibility: visible !important;
+        }
+        /* position invoice-box at top-left for printing */
+        .invoice-box {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        /* remove margins for printed page */
+        .success-container { margin: 0 !important; padding: 0 !important; }
+        .action-buttons { display: none !important; }
+    }
+</style>
+
+<div class="success-container">
+    <!-- ? Success Header -->
+    <div class="success-header">
+        <h1><i class="fas fa-check-circle"></i> Thanh Toán Thành Công!</h1>
+        <p class="success-message">Ðơn hàng của bạn đã được xác nhận. @*Vé sẽ được gửi qua email của bạn.*@</p>
+    </div>
+
+    @if (booking != null)
+    {
+        <!-- ? Invoice Box -->
+        <div class="invoice-box">
+            <div class="invoice-header-section">
+                <h2 style="text-align: center; "><i class="fas fa-receipt"></i> HÓA ÐƠN ÐẶT VÉ</h2>
+            </div>
+
+            <div class="invoice-body">
+                <!-- Thông Tin Hóa Ðon -->
+                <div class="info-grid">
+                    <div>
+                        <div class="info-item">
+                            <span class="info-label">Mã Ðơn Hàng:</span>
+                            <span class="info-value">#@booking.Dat_Ve_id</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ngày Tạo:</span>
+                            <span class="info-value">@(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Trạng Thái:</span>
+                            <span class="info-value" style="color: #27ae60;"> Ðã Thanh Toán</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-item">
+                            <span class="info-label">Khách Hàng:</span>
+                            <span class="info-value">@booking.Khach_Hang.ho_ten</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">@booking.Khach_Hang.email</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Số Ðiễn Thoại:</span>
+                            <span class="info-value">@(booking.Khach_Hang.so_dien_thoai ?? "N/A")</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (showtime != null)
+                {
+                    <!-- Thông Tin Phim & Su?t Chi?u -->
+                    <div class="info-grid">
+                        <div>
+                            <div class="info-item">
+                                <span class="info-label">Tên Phim:</span>
+                                <span class="info-value">@showtime.Phim.ten_phim</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Rạp:</span>
+                                <span class="info-value">@showtime.Phong_Chieu.Rap.ten_rap</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-item">
+                                <span class="info-label">Phòng:</span>
+                                <span class="info-value">@showtime.Phong_Chieu.ten_phong</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Ngày & Giờ Chiếu:</span>
+                                <span class="info-value">@showtime.ngay_chieu.ToString("dd/MM/yyyy") lúc @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh Sách Vé -->
+                    <div class="ticket-section">
+                        <h3><i class="fas fa-ticket-alt"></i> Danh Sách Vé (@tickets.Count vé)</h3>
+                        <div class="ticket-list">
+                            @foreach (var ticket in tickets)
+                            {
+                                <div class="ticket-item">@ticket.Ghe.so_ghe</div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Mã QR của Vé -->
+                    <div class="ticket-section">
+                        <h3><i class="fas fa-qrcode"></i> Mã QR Vé</h3>
+                        <div class="qr-ticket-list">
+                            @foreach (var ticket in tickets)
+                            {
+                                <div class="qr-ticket-item">
+                                    <div class="qr-seat">@ticket.Ghe.so_ghe</div>
+                                    <div class="qr-code">@(ticket.ma_qr_code ?? "N/A")</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- Danh Sách Ð? An (n?u có) -->
+                @if (foodItems != null && foodItems.Count > 0)
+                {
+                    <div class="ticket-section">
+                        <h3><i class="fas fa-utensils"></i> Ðồ Ăn & Thức Uống</h3>
+                        <table class="food-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40%;">Tên Sản Phẩm</th>
+                                    <th style="width: 10%;">Số Lượng</th>
+                                    <th style="width: 8%;">Ðơn Giá</th>
+                                    <th style="width: 10%;">Thành Tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in foodItems)
+                                {
+                                    string foodName = "N/A";
+                                    int quantity = 0;
+                                    decimal price = 0m;
+                                    decimal totalPrice = 0m;
+
+                                    try
+                                    {
+                                        var t = item.GetType();
+                                        var nameProp = t.GetProperty("FoodName");
+                                        var qtyProp = t.GetProperty("Quantity");
+                                        var priceProp = t.GetProperty("Price");
+                                        var totalProp = t.GetProperty("TotalPrice");
+
+                                        if (nameProp != null) { foodName = (nameProp.GetValue(item, null) ?? "N/A").ToString(); }
+                                        if (qtyProp != null) { int.TryParse((qtyProp.GetValue(item, null) ?? 0).ToString(), out quantity); }
+                                        if (priceProp != null) { decimal.TryParse((priceProp.GetValue(item, null) ?? 0).ToString(), out price); }
+                                        if (totalProp != null) { decimal.TryParse((totalProp.GetValue(item, null) ?? 0).ToString(), out totalPrice); }
+                                    }
+                                    catch { }
+
+                                    <tr>
+                                        <td>@foodName</td>
+                                        <td style="text-align: center; font-weight: 600;">@quantity</td>
+                                        <td style="text-align: center; color: #7f8c8d;">@price.ToString("N0") đ</td>
+                                        <td style="text-align: center; color: #667eea; font-weight: 700;">@totalPrice.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <!-- Tóm Tắt Chi Phí -->
+                <div class="total-section">
+                    <div class="total-item">
+                        <span>Tiền Vé (@(tickets != null ? tickets.Count : 0) vé):</span>
+                        <span>@ticketTotal.ToString("N0") đ</span>
+                    </div>
+                    @if (foodTotal > 0)
+                    {
+                        <div class="total-item">
+                            <span>Ðồ Ăn & Thức Uống:</span>
+                            <span>@foodTotal.ToString("N0") đ</span>
+                        </div>
+                    }
+                    <div class="total-final">
+                        <span>TỔNG CỘNG</span>
+                        <span>@grandTotal.ToString("N0") đ</span>
+                    </div>
+                </div>
+
+                <!-- QR Code Display (Ðể In) -->
+                @if (!string.IsNullOrEmpty(qrCodeUrl))
+                {
+                    <div class="qr-display-section">
+                        <h3><i class="fas fa-qrcode"></i> Mã QR Chuyển Khoản</h3>
+                        <p style="color: #666; margin-top: 0.5rem;">Lưu mã QR này đã có thể chuyển khoản lại nếu cần</p>
+
+                        <div class="qr-display-container">
+                            <img src="@qrCodeUrl" alt="QR Code Payment" />
+                        </div>
+
+                        <div class="qr-note">
+                             Mã QR này được lưu trên hóa đơn khi bạn in ra
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> In Hóa Ðơn
+            </button>
+            <a href="@Url.Action("Index", "Home")" class="btn-home">
+                <i class="fas fa-home"></i> Quay Về Trang Chủ
+            </a>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        // Auto-focus on print dialog when page loads
+        $(document).ready(function () {
+            // Optional: Auto-open print dialog
+            // window.print();
+        });
+    </script>
+}

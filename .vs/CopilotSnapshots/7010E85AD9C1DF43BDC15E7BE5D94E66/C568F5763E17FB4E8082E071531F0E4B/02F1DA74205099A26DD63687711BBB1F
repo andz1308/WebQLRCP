@@ -1,0 +1,145 @@
+﻿@model WebCinema.Models.Phieu_De_Xuat_Khuyen_Mai
+@using WebCinema.Areas.Admin.Controllers
+
+@{
+    ViewBag.Title = "Chi Tiết Phiếu Đề Xuất";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+
+    var details = ViewBag.Details as IEnumerable<PromotionDetailViewModel>;
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-file-alt"></i> Chi Tiết Phiếu #DX-@Model.de_xuat_id</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="content-card mb-3">
+            <div class="card-header bg-light">
+                <h3 class="card-title m-0">Thông Tin Chung</h3>
+            </div>
+            <div class="p-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Ngày tạo:</strong>
+                    <span>@Model.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <strong>Trạng thái:</strong>
+                    @if (Model.trang_thai == "Chờ duyệt")
+                    {<span class="badge badge-warning">Chờ duyệt</span> }
+                    else if (Model.trang_thai == "Đã duyệt")
+                    { <span class="badge badge-success">Đã duyệt</span> }
+                    else
+                    { <span class="badge badge-danger">Từ chối</span>}
+                </div>
+
+                <div class="alert alert-warning mt-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong style="font-size:1.1rem;">Mức Giảm Đề Xuất:</strong>
+                        <span class="badge badge-danger p-2" style="font-size:1.2rem;">-@Model.muc_giam_gia%</span>
+                    </div>
+                    <hr style="border-top:1px dashed #ccc; margin:10px 0;" />
+                    <div class="small">
+                        <em>Áp dụng cho tất cả các món trong danh sách bên phải.</em>
+                        @if ((Model.so_luong_ton ?? 0) > 0)
+                        {
+                            <div class="mt-1 text-dark">
+                                <i class="fas fa-filter"></i> Điều kiện lọc: Tồn kho > @Model.so_luong_ton
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Lý do:</strong></label>
+                    <div class="bg-light p-2 rounded border">@Model.ly_do</div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ghi_chu_quan_ly))
+                {
+                    <div class="form-group mt-3">
+                        <label class="text-danger"><strong><i class="fas fa-user-tie"></i> Phản hồi từ Quản lý:</strong></label>
+                        <div class="alert alert-info">@Model.ghi_chu_quan_ly</div>
+                    </div>
+                }
+
+                @if (Model.ngay_duyet.HasValue)
+                {
+                    <div class="text-right text-muted small mt-2">
+                        Duyệt ngày: @Model.ngay_duyet.Value.ToString("dd/MM/yyyy")
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="content-card">
+            <div class="card-header bg-light">
+                <h3 class="card-title m-0">Danh Sách Sản Phẩm (@(details != null ? details.Count() : 0) món)</h3>
+            </div>
+
+            <table class="data-table table-hover">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Tên Món Ăn</th>
+                        <th>Loại</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (details != null)
+                    {
+                        int i = 1;
+                        foreach (var item in details)
+                        {
+                            <tr>
+                                <td class="text-center text-muted">@(i++)</td>
+                                <td>
+                                    <strong>@item.da.ten_san_pham</strong>
+                                </td>
+                                <td><span class="badge badge-secondary">@item.da.loai</span></td>
+
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+</style>

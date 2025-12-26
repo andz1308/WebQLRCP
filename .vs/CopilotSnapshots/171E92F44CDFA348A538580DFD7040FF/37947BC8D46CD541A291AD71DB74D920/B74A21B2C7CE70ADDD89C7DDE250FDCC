@@ -1,0 +1,246 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class UserManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/UserManagement
+        public ActionResult Index(string searchTerm, string role)
+        {
+            var users = db.Khach_Hangs.AsQueryable();
+
+            // Search filter
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                users = users.Where(u => u.ho_ten.Contains(searchTerm) || 
+                                        u.email.Contains(searchTerm) || 
+                                        u.so_dien_thoai.Contains(searchTerm));
+            }
+
+            var result = users.OrderByDescending(u => u.ngay_dang_ky).ToList();
+
+            ViewBag.SearchTerm = searchTerm;
+            return View(result);
+        }
+
+        // GET: Admin/UserManagement/Details/5
+        public ActionResult Details(int id)
+        {
+            var user = db.Khach_Hangs.FirstOrDefault(u => u.khach_hang_id == id);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+
+            ViewBag.TotalBookings = user.Dat_Ves.Count();
+            ViewBag.TotalSpent = user.Dat_Ves.Sum(d => (decimal?)d.tong_tien) ?? 0;
+            ViewBag.RecentBookings = user.Dat_Ves.OrderByDescending(d => d.ngay_tao).Take(5).ToList();
+
+            return View(user);
+        }
+
+        // GET: Admin/UserManagement/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Admin/UserManagement/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(Khach_Hang user, string password)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Check if email already exists
+                    if (db.Khach_Hangs.Any(u => u.email == user.email))
+                    {
+                        ModelState.AddModelError("email", "Email ?ã t?n t?i.");
+                        return View(user);
+                    }
+
+                    // Hash password
+                    user.mat_khau = HashPassword(password);
+                    user.ngay_dang_ky = DateTime.Now;
+
+                    db.Khach_Hangs.InsertOnSubmit(user);
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Thêm ng??i dùng thành công!";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có l?i x?y ra: " + ex.Message;
+            }
+
+            return View(user);
+        }
+
+        // GET: Admin/UserManagement/Edit/5
+        public ActionResult Edit(int id)
+        {
+            var user = db.Khach_Hangs.FirstOrDefault(u => u.khach_hang_id == id);
+            if (user == null)
+            {
+                return HttpNotFound();
+            }
+            return View(user);
+        }
+
+        // POST: Admin/UserManagement/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, FormCollection form)
+        {
+            try
+            {
+                var user = db.Khach_Hangs.FirstOrDefault(u => u.khach_hang_id == id);
+                if (user == null)
+                {
+                    return HttpNotFound();
+                }
+
+                user.ho_ten = form["ho_ten"];
+                user.email = form["email"];
+                user.so_dien_thoai = form["so_dien_thoai"];
+
+                // Update password if provided
+                if (!string.IsNullOrEmpty(form["password"]))
+                {
+                    user.mat_khau = HashPassword(form["password"]);
+                }
+
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "C?p nh?t ng??i dùng thành công!";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có l?i x?y ra: " + ex.Message;
+            }
+
+            return RedirectToAction("Edit", new { id });
+        }
+
+        // POST: Admin/UserManagement/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var user = db.Khach_Hangs.FirstOrDefault(u => u.khach_hang_id == id);
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "Ng??i dùng không t?n t?i." });
+                }
+
+                // Check if user has bookings
+                if (user.Dat_Ves.Any())
+                {
+                    return Json(new { success = false, message = "Không th? xóa ng??i dùng ?ã có ??n ??t vé." });
+                }
+
+                db.Khach_Hangs.DeleteOnSubmit(user);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa ng??i dùng thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có l?i x?y ra: " + ex.Message });
+            }
+        }
+
+        // Manage Staff
+        public ActionResult Staff()
+        {
+            var staff = db.Nhan_Viens.ToList();
+            return View(staff);
+        }
+
+        // GET: Admin/UserManagement/CreateStaff
+        public ActionResult CreateStaff()
+        {
+            ViewBag.Roles = new SelectList(db.Roles, "role_id", "ten_role");
+            return View();
+        }
+
+        // POST: Admin/UserManagement/CreateStaff
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateStaff(Nhan_Vien staff, string password)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    // Check if email already exists
+                    if (db.Nhan_Viens.Any(nv => nv.email == staff.email))
+                    {
+                        ModelState.AddModelError("email", "Email ?ã t?n t?i.");
+                        ViewBag.Roles = new SelectList(db.Roles, "role_id", "ten_role", staff.role_id);
+                        return View(staff);
+                    }
+
+                    staff.mat_khau = HashPassword(password);
+                    staff.ngay_vao_lam = DateTime.Now;
+                    staff.trang_thai = "Ho?t ??ng";
+
+                    db.Nhan_Viens.InsertOnSubmit(staff);
+                    db.SubmitChanges();
+
+                    TempData["SuccessMessage"] = "Thêm nhân viên thành công!";
+                    return RedirectToAction("Staff");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có l?i x?y ra: " + ex.Message;
+            }
+
+            ViewBag.Roles = new SelectList(db.Roles, "role_id", "ten_role", staff.role_id);
+            return View(staff);
+        }
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));
+                }
+                return builder.ToString();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

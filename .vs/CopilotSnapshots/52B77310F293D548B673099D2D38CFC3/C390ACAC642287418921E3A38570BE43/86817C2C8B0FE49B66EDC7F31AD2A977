@@ -1,0 +1,278 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace WebCinema.Models
+{
+    #region Dashboard ViewModels
+
+    /// <summary>
+    /// ViewModel tổng quát cho Dashboard Admin
+    /// </summary>
+    public class AdminDashboardViewModel
+    {
+        // 1.1. Dashboard tổng hợp
+        public DashboardSummaryViewModel Summary { get; set; }
+
+        // 1.2. Thống kê theo rạp
+        public List<CinemaStatisticViewModel> CinemaStatistics { get; set; }
+
+        // 1.3. Thống kê theo phim
+        public MovieStatisticsViewModel MovieStatistics { get; set; }
+
+        // 1.4. Thống kê đồ ăn & combo
+        public FoodStatisticsViewModel FoodStatistics { get; set; }
+
+        // 1.5. Thống kê khách hàng
+        public CustomerStatisticsViewModel CustomerStatistics { get; set; }
+
+        // 1.6. Thống kê nhân viên
+        public StaffStatisticsViewModel StaffStatistics { get; set; }
+
+        // Filters
+        public DateTime? FilterDate { get; set; }
+        public int? FilterMonth { get; set; }
+        public int? FilterYear { get; set; }
+    }
+
+    #endregion
+
+    #region 1.1. Dashboard Tổng Hợp
+
+    public class DashboardSummaryViewModel
+    {
+        // Hôm nay
+        public decimal TongDoanhThuHomNay { get; set; }
+        public int TongVeBanHomNay { get; set; }
+        public int TongVeHuyHomNay { get; set; }
+        public decimal TongDoanhThuComboHomNay { get; set; }
+        public int SoKhachMoiDangKyHomNay { get; set; }
+        public int SoSuatChieuHomNay { get; set; }
+
+        // Tổng hệ thống (toàn thời gian hoặc theo filter)
+        public decimal TongDoanhThuHeThong { get; set; }
+        public int TongVeBanHeThong { get; set; }
+        public int TongKhachHang { get; set; }
+        public int TongPhim { get; set; }
+        public int TongRap { get; set; }
+    }
+
+    #endregion
+
+    #region 1.2. Thống Kê Theo Rạp
+
+    public class CinemaStatisticViewModel
+    {
+        public int RapId { get; set; }
+        public string TenRap { get; set; }
+        public string DiaChi { get; set; }
+
+        // Doanh thu
+        public decimal DoanhThuVe { get; set; }
+        public decimal DoanhThuDoAn { get; set; }
+        public decimal TongDoanhThu { get; set; }
+
+        // Vé bán ra
+        public int SoVeBan { get; set; }
+        public int SoVeHuy { get; set; }
+
+        // Tỷ lệ lấp đầy
+        public int TongSoGhe { get; set; }
+        public int SoGheDaBan { get; set; }
+        public decimal TyLeLapDay { get; set; } // %
+
+        // Suất chiếu
+        public int SoSuatChieu { get; set; }
+
+        // Xếp hạng
+        public int XepHangDoanhThu { get; set; }
+        public int XepHangSoVe { get; set; }
+    }
+
+    #endregion
+
+    #region 1.3. Thống Kê Theo Phim
+
+    public class MovieStatisticsViewModel
+    {
+        // Top phim doanh thu cao
+        public List<MovieRevenueViewModel> TopPhimDoanhThuCao { get; set; }
+
+        // Phim bán chạy nhất
+        public List<MovieRevenueViewModel> TopPhimBanChay { get; set; }
+
+        // Phim bị ế
+        public List<MovieRevenueViewModel> PhimBiE { get; set; }
+
+        // Suất chiếu hoạt động tốt
+        public List<ShowtimePerformanceViewModel> SuatChieuTotNhat { get; set; }
+
+        // So sánh phim giữa các rạp
+        public List<MovieCinemaComparisonViewModel> SoSanhPhimTheoRap { get; set; }
+    }
+
+    public class MovieRevenueViewModel
+    {
+        public int PhimId { get; set; }
+        public string TenPhim { get; set; }
+        public string AnhBia { get; set; }
+        public int SoVeBan { get; set; }
+        public decimal DoanhThuVe { get; set; }
+        public decimal DoanhThuDoAn { get; set; }
+        public decimal TongDoanhThu { get; set; }
+        public int SoSuatChieu { get; set; }
+        public decimal TyLeLapDay { get; set; }
+    }
+
+    public class ShowtimePerformanceViewModel
+    {
+        public int SuatChieuId { get; set; }
+        public string TenPhim { get; set; }
+        public string TenRap { get; set; }
+        public string TenPhong { get; set; }
+        public DateTime NgayChieu { get; set; }
+        public TimeSpan GioChieu { get; set; }
+        public int SoVeBan { get; set; }
+        public int TongSoGhe { get; set; }
+        public decimal TyLeLapDay { get; set; }
+        public decimal DoanhThu { get; set; }
+    }
+
+    public class MovieCinemaComparisonViewModel
+    {
+        public int PhimId { get; set; }
+        public string TenPhim { get; set; }
+        public List<CinemaRevenueDetail> ChiTietTheoRap { get; set; }
+    }
+
+    public class CinemaRevenueDetail
+    {
+        public int RapId { get; set; }
+        public string TenRap { get; set; }
+        public int SoVeBan { get; set; }
+        public decimal DoanhThu { get; set; }
+        public int SoSuatChieu { get; set; }
+    }
+
+    #endregion
+
+    #region 1.4. Thống Kê Đồ Ăn & Combo
+
+    public class FoodStatisticsViewModel
+    {
+        // Món bán chạy nhất toàn hệ thống
+        public List<FoodItemStatViewModel> MonBanChayNhat { get; set; }
+
+        // Doanh thu đồ ăn theo rạp
+        public List<FoodRevenueByCinemaViewModel> DoanhThuDoAnTheoRap { get; set; }
+
+        // Tỷ lệ khách mua combo
+        public decimal TyLeKhachMuaCombo { get; set; }
+        public int TongKhachMuaVe { get; set; }
+        public int SoKhachMuaCombo { get; set; }
+
+        // Tổng tiền giảm qua mã khuyến mãi
+        public decimal TongTienGiamKhuyenMai { get; set; }
+        public int SoLuotSuDungKhuyenMai { get; set; }
+    }
+
+    public class FoodItemStatViewModel
+    {
+        public int DoAnId { get; set; }
+        public string TenSanPham { get; set; }
+        public string HinhAnh { get; set; }
+        public int SoLuongBan { get; set; }
+        public decimal Gia { get; set; }
+        public decimal TongDoanhThu { get; set; }
+        public string LoaiDoAn { get; set; }
+    }
+
+    public class FoodRevenueByCinemaViewModel
+    {
+        public int RapId { get; set; }
+        public string TenRap { get; set; }
+        public decimal TongDoanhThuDoAn { get; set; }
+        public int SoLuongMonBan { get; set; }
+        public List<FoodItemStatViewModel> TopMonBanChay { get; set; }
+    }
+
+    #endregion
+
+    #region 1.5. Thống Kê Khách Hàng
+
+    public class CustomerStatisticsViewModel
+    {
+        // Tổng khách
+        public int TongKhachDangKy { get; set; }
+        public int KhachMoiTrongThang { get; set; }
+        public int KhachVIP { get; set; } // Khách có điểm tích lũy cao
+
+        // Top khách mua nhiều
+        public List<TopCustomerViewModel> TopKhachMuaNhieu { get; set; }
+
+        // Phân tích hành vi
+        public decimal SoTienTrungBinhMoiDon { get; set; }
+        public decimal SoVeTrungBinhMoiKhach { get; set; }
+    }
+
+    public class TopCustomerViewModel
+    {
+        public int KhachHangId { get; set; }
+        public string HoTen { get; set; }
+        public string Email { get; set; }
+        public string SoDienThoai { get; set; }
+        public int SoDonDat { get; set; }
+        public int SoVeMua { get; set; }
+        public decimal TongChiTieu { get; set; }
+        public int DiemTichLuy { get; set; }
+    }
+
+    #endregion
+
+    #region 1.6. Thống Kê Nhân Viên
+
+    public class StaffStatisticsViewModel
+    {
+        // Tổng quan
+        public int TongNhanVien { get; set; }
+        public int NhanVienDangLamViec { get; set; }
+
+        // Chi tiết hoạt động
+        public List<StaffActivityViewModel> HoatDongNhanVien { get; set; }
+    }
+
+    public class StaffActivityViewModel
+    {
+        public int NhanVienId { get; set; }
+        public string HoTen { get; set; }
+        public string TenRap { get; set; }
+        public string ChucVu { get; set; }
+
+        // Hoạt động bán vé
+        public int SoVeBan { get; set; }
+        public decimal DoanhThuBanVe { get; set; }
+
+        // Giao dịch
+        public int SoGiaoDichThanhCong { get; set; }
+        public int SoGiaoDichThatBai { get; set; }
+
+        // Hỗ trợ khách hàng
+        public int SoKhachDuocHoTro { get; set; }
+
+        // Lỗi thao tác (nếu có tracking)
+        public int SoLoiThaoTac { get; set; }
+    }
+
+    #endregion
+
+    #region Helper ViewModels
+
+    public class RevenueChartDataViewModel
+    {
+        public List<string> Labels { get; set; }
+        public List<decimal> DoanhThuVe { get; set; }
+        public List<decimal> DoanhThuDoAn { get; set; }
+        public List<decimal> TongDoanhThu { get; set; }
+    }
+
+    #endregion
+}

@@ -1,0 +1,160 @@
+﻿@model WebCinema.Models.Nhan_Vien
+
+@{
+    ViewBag.Title = "Thêm Nhân Viên";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-user-plus"></i> Thêm Nhân Viên Mới</h1>
+    <a href="@Url.Action("Staff")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+    </a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-edit"></i> Thông Tin Nhân Viên</h2>
+    </div>
+
+    @using (Html.BeginForm("CreateStaff", "UserManagement", FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-grid">
+            <div class="form-group">
+                @Html.LabelFor(m => m.ho_ten, "Họ Tên *", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.ho_ten, new { @class = "form-input", placeholder = "Nhập họ tên", required = "required" })
+                @Html.ValidationMessageFor(m => m.ho_ten, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.email, "Email *", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.email, new { @class = "form-input", type = "email", placeholder = "Nhập email", required = "required" })
+                @Html.ValidationMessageFor(m => m.email, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                @Html.Label("password", "Mật Khẩu *", new { @class = "form-label" })
+                <input type="password" name="password" class="form-input" placeholder="Nhập mật khẩu" required />
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.so_dien_thoai, "Số Điện Thoại", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.so_dien_thoai, new { @class = "form-input", placeholder = "Nhập số điện thoại" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.ngay_sinh, "Ngày Sinh", new { @class = "form-label" })
+                @Html.TextBoxFor(m => m.ngay_sinh, new { @class = "form-input", type = "date" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.gioi_tinh, "Giới Tính", new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.gioi_tinh, new SelectList(new[] { "Nam", "Nữ", "Khác" }), "-- Chọn giới tính --", new { @class = "form-input" })
+            </div>
+
+            <div class="form-group full-width">
+                @Html.LabelFor(m => m.dia_chi, "Địa Chỉ", new { @class = "form-label" })
+                @Html.TextAreaFor(m => m.dia_chi, new { @class = "form-input", rows = "3", placeholder = "Nhập địa chỉ" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(m => m.role_id, "Chức Vụ *", new { @class = "form-label" })
+                @Html.DropDownListFor(m => m.role_id, (SelectList)ViewBag.Roles, "-- Chọn chức vụ --", new { @class = "form-input", required = "required" })
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Lưu Nhân Viên
+            </button>
+            <a href="@Url.Action("Staff")" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+        </div>
+    }
+</div>
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .form-input {
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 1rem;
+        border-top: 2px solid #e0e0e0;
+    }
+
+    .text-danger {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    @@media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

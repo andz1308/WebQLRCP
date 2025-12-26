@@ -1,0 +1,523 @@
+﻿﻿@model WebCinema.Models.Phong_Chieu
+
+@{
+    ViewBag.Title = "Chọn Ghế";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutStaff.cshtml";
+
+    var bookedCsv = ViewBag.BookedSeats as string;
+    var bookedList = !string.IsNullOrEmpty(bookedCsv) ? bookedCsv.Split(',').Select(int.Parse).ToList() : new List<int>();
+    var seatPrice = ViewBag.TicketPrice != null ? (decimal)ViewBag.TicketPrice : 0m;
+    var seats = Model.Ghes.OrderBy(g => g.hang).ThenBy(g => g.cot).ToList();
+}
+
+<style>
+    /* CSS cũ giữ nguyên */
+    .seat-selection { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+    .screen-area { text-align:center; margin-bottom: 1.5rem; }
+    .screen { background: linear-gradient(180deg,#2c3e50 0%,#34495e 100%); color:white; padding:10px 60px; border-radius:0 0 50% 50%; display:inline-block; font-weight:bold; }
+    .seat-map { display: grid; grid-template-columns: repeat(@Model.so_cot, 45px); gap:8px; justify-content:center; margin-bottom:2rem; }
+    .seat { width:45px; height:45px; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:bold; cursor:pointer; position:relative; box-shadow:0 2px 5px rgba(0,0,0,0.15); line-height:1; padding:0; border:none; overflow:hidden; text-align:center; vertical-align:middle; z-index:1; }
+    .seat::before { content: ""; position:absolute; bottom:-2px; left:15%; right:15%; height:2px; background:inherit; filter:brightness(0.8); border-radius:0 0 2px 2px; pointer-events:none; z-index:0; }
+    .seat-label { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-weight:700; line-height:1; pointer-events:none; z-index:2; }
+    .seat.available { background: linear-gradient(135deg,#3498db 0%,#2980b9 100%); color:white; }
+    .seat.available:hover { transform:translateY(-5px) scale(1.05); box-shadow:0 8px 15px rgba(52,152,219,0.4); }
+    .seat.selected { background: linear-gradient(135deg,#ff6b35 0%,#ff8555 100%); color:white; transform:translateY(-3px); }
+    .seat.booked { background:#7f8c8d !important; color:#bdc3c7 !important; cursor:not-allowed !important; opacity:0.5; pointer-events:none; }
+    .seat.vip { background: linear-gradient(135deg,#e74c3c 0%,#c0392b 100%); color:white; }
+    .seat.selected.vip { background: linear-gradient(135deg,#ff6b35 0%,#ff8555 100%); }
+    .seat.couple { background: linear-gradient(135deg,#e83e8c 0%,#d6296d 100%); color:white; width:95px; }
+    .seat.aisle { background:transparent; box-shadow:none; cursor:default; }
+    .seat.aisle::before { display:none; }
+    .legend { display:flex; justify-content:center; gap:2rem; margin-bottom:1rem; padding:1rem; background:#f8f9fa; border-radius:8px; }
+    .legend-item { display:flex; align-items:center; gap:0.5rem; }
+    .legend-seat { width:30px; height:30px; border-radius:8px 8px 0 0; display:inline-block; }
+    .legend-seat.available { background: linear-gradient(135deg,#3498db 0%,#2980b9 100%); }
+    .legend-seat.selected { background: linear-gradient(135deg,#ff6b35 0%,#ff8555 100%); }
+    .legend-seat.booked { background:#95a5a6; }
+    .summary { display:flex; justify-content:space-between; align-items:center; padding:1rem; background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+    .summary .info { display:flex; gap:2rem; }
+    .summary .total { font-size:1.4rem; font-weight:700; color:#ff6b35; }
+    .payment-option input:checked + .option-box { border-color: #27ae60 !important; background-color: #eafaf1; color: #27ae60; box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2); }
+    /* Tối ưu thanh chọn khuyến mãi: làm cả cụm có thể click, căn chiều cao nút */
+    #promoPicker { cursor: pointer; }
+    #promoPicker .form-control[readonly] { background-color: #fff; }
+    #promoPicker .btn { height: calc(1.5em + .75rem + 2px); }
+    #promoDescDisplay { cursor: pointer; }
+    @@media (max-width:768px) { .seat-map { grid-template-columns: repeat(@Model.so_cot, 35px); gap:5px; } .seat { width:35px; height:35px; } }
+</style>
+
+<div class="seat-selection">
+    <div class="screen-area"><div class="screen">MÀN HÌNH</div></div>
+    <div class="legend">
+        <div class="legend-item"><span class="legend-seat available"></span><span>Ghế trống</span></div>
+        <div class="legend-item"><span class="legend-seat selected"></span><span>Ghế đang chọn</span></div>
+        <div class="legend-item"><span class="legend-seat booked"></span><span>Ghế đã đặt</span></div>
+    </div>
+
+    <div class="seat-map" id="seatMap">
+        @foreach (var seat in seats)
+        {
+            var isAisle = seat.trang_thai == 0;
+            var isBooked = bookedList.Contains(seat.ghe_id);
+            var classes = isAisle ? "seat aisle" : isBooked ? "seat booked" : "seat available";
+            if (!isAisle && !isBooked && seat.loai_ghe_id == 2) { classes += " vip"; }
+
+            <div class="@classes" data-seat-id="@seat.ghe_id" data-seat-name="@seat.so_ghe"
+                 data-seat-price="@seatPrice" data-aisle="@(isAisle ? "true" : "false")"
+                 data-booked="@(isBooked ? "true" : "false")">
+                @if (!isAisle)
+                {<span class="seat-label">@seat.so_ghe</span>}
+            </div>
+        }
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 360px; gap:1.5rem;">
+        <div>
+            <div style="background:white; padding:1rem; border-radius:8px; margin-bottom:1rem;">
+                <h3 style="margin:0 0 0.5rem 0;">Thông tin khách hàng</h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+                    <input type="text" id="customerName" placeholder="Tên khách hàng" style="padding:0.6rem; border:1px solid #ddd; border-radius:6px;" />
+                    <input type="tel" id="customerPhone" placeholder="Số điện thoại" style="padding:0.6rem; border:1px solid #ddd; border-radius:6px;" />
+                </div>
+            </div>
+
+            <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <h3 style="margin:0 0 0.5rem 0;">Đặt đồ ăn</h3>
+                <div id="foodList" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0.75rem;">
+                    @if (ViewBag.Foods != null)
+                    {
+                        var foodList = ViewBag.Foods as List<WebCinema.Models.FoodBookingViewModel>;
+                        if (foodList != null && foodList.Any())
+                        {
+                            foreach (var item in foodList)
+                            {
+                                var food = item.Food;
+                                var maxQty = item.MaxStock;
+                                <div style="border:1px solid #eee; padding:0.6rem; border-radius:6px; background:#fafafa;">
+                                    <div style="font-weight:600;">@food.ten_san_pham</div>
+                                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.5rem;">
+                                        <span style="color:#27ae60; font-weight:600;">@((food.gia ?? 0).ToString("N0")) ₫</span>
+                                        <span style="color:#e67e22;">(Kho: @maxQty)</span>
+                                    </div>
+                                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                                        <button type="button" class="btn-food-qty" onclick="changeFoodQty(this, -1)">-</button>
+                                        <input type="number" class="food-quantity" data-food-id="@food.Do_An_id" data-food-price="@(food.gia ?? 0)" data-max="@maxQty" value="0" min="0" readonly style="width:50px; text-align:center; padding:0.3rem; border:1px solid #ddd; border-radius:4px;" />
+                                        <button type="button" class="btn-food-qty" onclick="changeFoodQty(this, 1)">+</button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        { <div class="text-muted font-italic">Không có đồ ăn.</div>}
+                    }
+                </div>
+            </div>
+
+            <div style="background: #fff8e1; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #ffe082;">
+                <h3 style="margin:0 0 0.8rem 0; color: #f39c12;">
+                    <i class="fas fa-ticket-alt"></i> Khuyến Mãi
+                </h3>
+                <div class="input-group" id="promoPicker">
+                    <input type="text" id="txtPromoDisplay" class="form-control" placeholder="Chưa chọn mã nào" readonly style="background:white; font-weight:bold; color:#27ae60;">
+                    <div class="input-group-append">
+                        <button class="btn btn-warning text-white" type="button" id="btnOpenPromo"><i class="fas fa-list"></i> Chọn Mã</button>
+                        <button class="btn btn-outline-secondary" type="button" id="btnClearPromo" title="Bỏ chọn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div id="promoDescDisplay" style="font-size:0.85rem; color:#666; margin-top:5px; font-style:italic;"></div>
+            </div>
+
+            <div style="background:white; padding:1rem; border-radius:8px; margin-bottom: 1rem;">
+                <h3 style="margin:0 0 0.8rem 0;">Phương thức thanh toán</h3>
+                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                    <label class="payment-option active" style="flex:1; min-width:120px; cursor:pointer;">
+                        <input type="radio" name="paymentMethod" value="cash" checked onchange="updatePaymentUI()" style="display:none" />
+                        <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
+                            <div style="font-size:1.5rem;">💵</div>
+                            <div style="font-weight:bold;">Tiền mặt</div>
+                        </div>
+                    </label>
+                    <label class="payment-option" style="flex:1; min-width:120px; cursor:pointer;">
+                        <input type="radio" name="paymentMethod" value="vnpay" onchange="updatePaymentUI()" style="display:none" />
+                        <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
+                            <img src="https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png" height="30" style="margin-bottom:5px;" />
+                            <div style="font-weight:bold;">VNPay QR</div>
+                        </div>
+                    </label>
+                    @*<label class="payment-option" style="flex:1; min-width:120px; cursor:pointer;">
+                            <input type="radio" name="paymentMethod" value="card" onchange="updatePaymentUI()" style="display:none" />
+                            <div class="option-box" style="border:2px solid #ddd; padding:10px; border-radius:8px; text-align:center;">
+                                <div style="font-size:1.5rem;">💳</div>
+                                <div style="font-weight:bold;">Thẻ ATM</div>
+                            </div>
+                        </label>*@
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="summary">
+                <div class="info">
+                    <div>
+                        <div style="color:#666; font-size:0.85rem;">Ghế đã chọn</div>
+                        <div id="selectedSeatsText" style="font-weight:700;">Chưa chọn</div>
+                    </div>
+                    <div>
+                        <div style="color:#666; font-size:0.85rem;">Số lượng</div>
+                        <div id="seatCount" style="font-weight:700;">0</div>
+                    </div>
+                </div>
+                <div>
+                    <div style="color:#666; font-size:0.85rem;">Tổng tiền</div>
+                    <div class="total" id="totalPrice">0 ₫</div>
+                </div>
+            </div>
+            <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+                <button class="btn btn-secondary" onclick="window.history.back()">Quay lại</button>
+                <button class="btn btn-primary" id="confirmBtn" onclick="confirmBooking()" disabled>Đặt và Thanh toán</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="promoListModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">Chọn Mã Khuyến Mãi</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="promoListLoading" class="text-center p-4">
+                    <i class="fas fa-spinner fa-spin text-warning"></i> Đang tìm mã phù hợp...
+                </div>
+                <div id="promoListContainer" class="list-group list-group-flush"></div>
+                <div id="promoListEmpty" class="text-center p-4 text-muted" style="display:none;">
+                    Không tìm thấy mã nào phù hợp.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. BIẾN TOÀN CỤC
+        var selectedSeats = [];
+        var maxSeats = 10;
+        var currentPromo = null;
+
+        // 2. CÁC HÀM XỬ LÝ
+
+        // Cập nhật UI Thanh toán
+        window.updatePaymentUI = function () {
+            var method = $('input[name="paymentMethod"]:checked').val();
+            var btnText = "Xác nhận Đã thu tiền";
+            var btnClass = "btn-primary";
+            if (method === 'vnpay') { btnText = "Thanh toán qua VNPay ➔"; btnClass = "btn-success"; }
+            else if (method === 'card') { btnText = "Xác nhận Đã quẹt thẻ"; }
+            $('#confirmBtn').removeClass('btn-primary btn-success').addClass(btnClass).html('<i class="fas fa-check-circle"></i> ' + btnText);
+        };
+
+        // Tăng/Giảm món ăn
+        window.changeFoodQty = function (btn, amount) {
+            var input = $(btn).parent().find('.food-quantity');
+            var currentVal = parseInt(input.val()) || 0;
+            var maxStock = parseInt(input.attr('data-max')) || 0;
+            var newVal = currentVal + amount;
+            if (newVal < 0) newVal = 0;
+            if (newVal > maxStock) { alert("Hết hàng! Kho chỉ còn " + maxStock); return; }
+            input.val(newVal);
+            updateSummary();
+        };
+
+        // Mở Modal Promo
+        // Mở Modal & Gọi Server lấy mã phù hợp
+        window.openPromoModal = function() {
+            // 1. Gom dữ liệu giỏ hàng
+            var items = [];
+            $('.food-quantity').each(function () {
+                var qty = parseInt($(this).val()) || 0;
+
+                // Chỉ gửi những món có số lượng > 0
+                if (qty > 0) {
+                    items.push({
+                        id: $(this).data('food-id'), // Lấy ID món ăn
+                        quantity: qty
+                    });
+                }
+            });
+
+            // Debug để xem Client gửi gì đi
+            console.log("Gửi lên Server check Promo:", JSON.stringify(items));
+
+            // 2. Reset UI Modal
+            $('#promoListModal').modal('show');
+            $('#promoListContainer').empty();
+            $('#promoListLoading').show();
+            $('#promoListEmpty').hide();
+
+            // 3. Gọi Ajax
+            $.ajax({
+                url: '@Url.Action("GetApplicablePromos", "StaffOfflineBooking", new { area = "Admin" })',
+                type: 'POST',
+                data: { foodItemsJson: JSON.stringify(items) },
+                success: function(res) {
+                    $('#promoListLoading').hide();
+
+                    if (res.success && res.data && res.data.length > 0) {
+                        var html = '';
+                        res.data.forEach(function(p) {
+                            // 🔴 BƯỚC SỬA QUAN TRỌNG: Ánh xạ dữ liệu Server (Tiếng Việt) -> Client (Tiếng Anh)
+                            var clientPromo = {
+                                Code: p.maKhuyen,           // Server trả về maKhuyen
+                                Value: p.giaTriGiam,        // Server trả về giaTriGiam
+                                Type: (p.loaiGiam === '%') ? 'PERCENT' : 'AMOUNT',
+                                Scope: p.isProductScope ? 1 : 0,
+                                Desc: p.moTa,
+                                Remaining: p.soLuongConLai,
+                                AllowedFoods: p.AllowedFoods
+                            };
+
+                            // Sau khi map xong mới dùng biến clientPromo để hiển thị
+                            var badge = clientPromo.Type === 'PERCENT' ? clientPromo.Value + '%' : clientPromo.Value.toLocaleString('vi-VN') + '₫';
+
+                            var scopeText = clientPromo.Scope === 1
+                                ? '<span class="badge badge-info">Theo món</span>'
+                                : '<span class="badge badge-secondary">Toàn đơn</span>';
+
+                            // Dùng data-attribute thay cho inline onclick để tránh lỗi escape
+                            var dataAttr = encodeURIComponent(JSON.stringify(clientPromo));
+
+                            html += `<a href="#" class="list-group-item list-group-item-action promo-item" data-promo="${dataAttr}">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <h5 class="mb-1 text-primary font-weight-bold">${clientPromo.Code}</h5>
+                                            <span class="badge badge-warning" style="font-size:1rem;">Giảm ${badge}</span>
+                                        </div>
+                                        <p class="mb-1 small text-muted">${clientPromo.Desc || ''}</p>
+                                        <div class="mt-1">${scopeText} <small class="text-muted">(Còn: ${clientPromo.Remaining})</small></div>
+                                     </a>`;
+                        });
+                        $('#promoListContainer').html(html);
+                    } else {
+                        $('#promoListEmpty').show();
+                    }
+                },
+                error: function() {
+                    $('#promoListLoading').hide();
+                    alert('Lỗi kết nối khi tải mã khuyến mãi.');
+                }
+            });
+        }
+
+        // Chọn mã
+        window.selectPromo = function(promoObj) {
+            currentPromo = promoObj; // Lưu object { Code, Value, Type, Scope, AllowedFoods... }
+            $('#txtPromoDisplay').val(promoObj.Code);
+            $('#promoDescDisplay').text(promoObj.Desc);
+            $('#btnClearPromo').prop('disabled', false);
+            $('#promoListModal').modal('hide');
+            updateSummary();
+        }
+
+        // Bỏ chọn mã
+        window.clearPromo = function() {
+            currentPromo = null;
+            $('#txtPromoDisplay').val('');
+            $('#promoDescDisplay').text('');
+            $('#btnClearPromo').prop('disabled', true);
+            updateSummary();
+        }
+
+        // Cập nhật tổng tiền (Logic cốt lõi)
+        function updateSummary() {
+            if (selectedSeats.length === 0) {
+                $('#selectedSeatsText').text('Chưa chọn');
+                $('#seatCount').text('0');
+                $('#totalPrice').text('0 ₫');
+                $('#confirmBtn').prop('disabled', true);
+                return;
+            }
+
+            // A. Vé
+            var names = selectedSeats.map(s => s.name).join(', ');
+            var ticketTotal = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+
+            // B. Đồ ăn
+            var foodTotal = 0;
+            var foodDetails = [];
+            $('.food-quantity').each(function () {
+                var id = $(this).data('food-id');
+                var qty = parseInt($(this).val()) || 0;
+                var price = parseFloat($(this).attr('data-food-price')) || 0;
+                if (qty > 0) {
+                    var subTotal = qty * price;
+                    foodTotal += subTotal;
+                    foodDetails.push({ id: id, subTotal: subTotal, qty: qty });
+                }
+            });
+
+            var totalBeforeDiscount = ticketTotal + foodTotal;
+            var discountAmount = 0;
+
+            // C. Tính Giảm Giá (Dựa vào currentPromo)
+            if (currentPromo) {
+                // TH1: Giảm toàn đơn
+                if (currentPromo.Scope === 0) {
+                    if (currentPromo.Type === 'PERCENT') {
+                        discountAmount = (totalBeforeDiscount * currentPromo.Value) / 100;
+                    } else {
+                        discountAmount = currentPromo.Value;
+                    }
+                }
+                // TH2: Giảm theo món
+                else if (currentPromo.Scope === 1) {
+                    foodDetails.forEach(function(f) {
+                        // Kiểm tra món này có trong AllowedFoods không
+                        if (currentPromo.AllowedFoods && currentPromo.AllowedFoods.includes(f.id)) {
+                            if (currentPromo.Type === 'PERCENT') {
+                                discountAmount += (f.subTotal * currentPromo.Value) / 100;
+                            } else {
+                                discountAmount += (currentPromo.Value * f.qty);
+                            }
+                        }
+                    });
+                }
+            }
+
+            discountAmount = Math.floor(discountAmount);
+            if (discountAmount > totalBeforeDiscount) discountAmount = totalBeforeDiscount;
+            var finalTotal = totalBeforeDiscount - discountAmount;
+
+            // D. Update UI
+            $('#selectedSeatsText').text(names);
+            $('#seatCount').text(selectedSeats.length);
+
+            if (discountAmount > 0) {
+                 $('#totalPrice').html(finalTotal.toLocaleString('vi-VN') + ' ₫ <br/><small class="text-success" style="font-size:0.6em">Đã giảm: ' + discountAmount.toLocaleString('vi-VN') + ' ₫</small>').css('color', '#27ae60');
+            } else {
+                 $('#totalPrice').text(finalTotal.toLocaleString('vi-VN') + ' ₫').css('color', '#ff6b35');
+            }
+            $('#confirmBtn').prop('disabled', false);
+        }
+
+        // --- SUBMIT ĐƠN HÀNG ---
+        window.confirmBooking = function () {
+            var name = $('#customerName').val().trim();
+            var phone = $('#customerPhone').val().trim();
+            var paymentMethod = $('input[name="paymentMethod"]:checked').val() || 'cash';
+            var promoCodeToSend = currentPromo ? currentPromo.Code : ''; // Lấy mã
+
+            if (!name) { alert('Vui lòng nhập tên khách hàng'); $('#customerName').focus(); return; }
+            if (!phone) { alert('Vui lòng nhập số điện thoại'); $('#customerPhone').focus(); return; }
+            if (selectedSeats.length === 0) { alert('Vui lòng chọn ghế'); return; }
+
+            var seatIds = selectedSeats.map(s => s.id).join(',');
+            var foodXml = '<orders>';
+            $('.food-quantity').each(function(){
+                var q = parseInt($(this).val())||0;
+                if(q > 0){ foodXml += '<item><id>' + $(this).data('food-id') + '</id><quantity>' + q + '</quantity></item>'; }
+            });
+            foodXml += '</orders>';
+
+            var btn = $('#confirmBtn');
+            var originalText = btn.html();
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+            $.ajax({
+                url: '@Url.Action("CreateOfflineBooking", "StaffOfflineBooking")',
+                type: 'POST',
+                data: {
+                    showtimeId: @ViewBag.ShowtimeId,
+                    selectedSeats: seatIds,
+                    customerPhone: phone,
+                    customerName: name,
+                    foodOrders: foodXml,
+                    paymentMethod: paymentMethod,
+                    promoCode: promoCodeToSend
+                },
+                success: function(res) {
+                    if (res.success) {
+                        if (res.isRedirect && res.redirectUrl.includes("vnpayment")) {
+                            showLoadingOverlay();
+                            setTimeout(function () { window.location.href = res.redirectUrl; }, 1000);
+                        } else {
+                            var msg = '✅ Đặt vé thành công!\nMã đơn: ' + res.bookingId;
+                            if (res.discountAmount > 0) { msg += '\n💰 Giảm: ' + res.discountAmount.toLocaleString('vi-VN') + ' ₫'; }
+                            alert(msg);
+                            if (res.redirectUrl) window.location.href = res.redirectUrl;
+                            else location.reload();
+                        }
+                    } else {
+                        alert('❌ Lỗi: ' + res.message);
+                        btn.prop('disabled', false).html(originalText);
+                    }
+                },
+                error: function() {
+                    alert('❌ Lỗi kết nối Server');
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+        };
+
+        function showLoadingOverlay() {
+            $('body').append('<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-spinner fa-spin fa-3x"></i></div>');
+        }
+
+        // 4. JQUERY INIT
+        $(function() {
+            function seatInfo(el) {
+                return {
+                    id: parseInt($(el).data('seat-id')),
+                    name: $(el).data('seat-name'),
+                    price: parseFloat($(el).data('seat-price')) || 0,
+                    loai: $(el).hasClass('vip') ? 2 : $(el).hasClass('couple') ? 3 : 1
+                };
+            }
+            $('.seat').not('.booked').not('.aisle').on('click', function () {
+                if ($(this).hasClass('selected')) {
+                    $(this).removeClass('selected');
+                    selectedSeats = selectedSeats.filter(s => s.id !== parseInt($(this).data('seat-id')));
+                } else {
+                    var info = seatInfo(this);
+                    if (selectedSeats.length > 0) {
+                        if (info.loai !== selectedSeats[0].loai) { alert('Không được chọn loại ghế khác nhau.'); return; }
+                    }
+                    if (selectedSeats.length >= maxSeats) { alert('Tối đa ' + maxSeats + ' ghế'); return; }
+                    $(this).addClass('selected');
+                    selectedSeats.push(info);
+                }
+                updateSummary();
+            });
+
+            // Khi click vào toàn bộ thanh chọn khuyến mãi (trừ nút xoá), mở modal
+            $('#promoPicker').on('click', function (e) {
+                if ($(e.target).closest('#btnClearPromo').length) return; // bỏ qua nếu bấm nút xoá
+                openPromoModal();
+            });
+            $('#btnOpenPromo').on('click', function (e) { e.preventDefault(); openPromoModal(); });
+            $('#btnClearPromo').on('click', function (e) { e.preventDefault(); clearPromo(); });
+
+            // Bắt sự kiện click item khuyến mãi bằng event delegation
+            $('#promoListContainer').on('click', '.promo-item', function (e) {
+                e.preventDefault();
+                var data = $(this).attr('data-promo');
+                try {
+                    var promo = JSON.parse(decodeURIComponent(data));
+                    selectPromo(promo);
+                } catch (err) {
+                    console.error('Parse promo error', err);
+                    alert('Không thể chọn mã này, vui lòng thử mã khác.');
+                }
+            });
+
+            // Khởi tạo trạng thái nút xoá
+            $('#btnClearPromo').prop('disabled', !currentPromo);
+
+            updatePaymentUI();
+            updateSummary();
+        });
+    </script>
+}

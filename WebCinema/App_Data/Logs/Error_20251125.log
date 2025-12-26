@@ -1,0 +1,117 @@
+
+================================================================================
+Time: 2025-11-25 14:52:31
+Message: Invalid column name 'so_luong'.
+Invalid column name 'gia_von'.
+
+Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at System.Data.SqlClient.SqlDataReader.get_MetaData()
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   at System.Data.Common.DbCommand.ExecuteReader()
+   at System.Data.Linq.SqlClient.SqlProvider.Execute(Expression query, QueryInfo queryInfo, IObjectReaderFactory factory, Object[] parentArgs, Object[] userArgs, ICompiledSubQuery[] subQueries, Object lastResult)
+   at System.Data.Linq.SqlClient.SqlProvider.ExecuteAll(Expression query, QueryInfo[] queryInfos, IObjectReaderFactory factory, Object[] userArguments, ICompiledSubQuery[] subQueries)
+   at System.Data.Linq.SqlClient.SqlProvider.CompiledQuery.Execute(IProvider provider, Object[] arguments)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.ExecuteKeyQuery(Object[] keyValues)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.Execute(Object instance)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.DeferredSource.GetEnumerator()
+   at System.Linq.Enumerable.SingleOrDefault[TSource](IEnumerable`1 source)
+   at System.Data.Linq.EntityRef`1.get_Entity()
+   at WebCinema.Models.DonHang_DoAn.get_Do_An() in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Models\CSDL.designer.cs:line 2961
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_23(DonHang_DoAn dda) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 68
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_4(Dat_Ve d) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 67
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.Index(Nullable`1 month, Nullable`1 year) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 66
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-25 14:54:57
+Message: Invalid column name 'so_luong'.
+Invalid column name 'gia_von'.
+
+Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at System.Data.SqlClient.SqlDataReader.get_MetaData()
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   at System.Data.Common.DbCommand.ExecuteReader()
+   at System.Data.Linq.SqlClient.SqlProvider.Execute(Expression query, QueryInfo queryInfo, IObjectReaderFactory factory, Object[] parentArgs, Object[] userArgs, ICompiledSubQuery[] subQueries, Object lastResult)
+   at System.Data.Linq.SqlClient.SqlProvider.ExecuteAll(Expression query, QueryInfo[] queryInfos, IObjectReaderFactory factory, Object[] userArguments, ICompiledSubQuery[] subQueries)
+   at System.Data.Linq.SqlClient.SqlProvider.CompiledQuery.Execute(IProvider provider, Object[] arguments)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.ExecuteKeyQuery(Object[] keyValues)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.Execute(Object instance)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.DeferredSource.GetEnumerator()
+   at System.Linq.Enumerable.SingleOrDefault[TSource](IEnumerable`1 source)
+   at System.Data.Linq.EntityRef`1.get_Entity()
+   at WebCinema.Models.DonHang_DoAn.get_Do_An() in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Models\CSDL.designer.cs:line 2961
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_23(DonHang_DoAn dda) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 68
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_4(Dat_Ve d) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 67
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.Index(Nullable`1 month, Nullable`1 year) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 66
+Inner Exception: None
+================================================================================
+
+================================================================================
+Time: 2025-11-25 15:04:27
+Message: Invalid column name 'so_luong'.
+Invalid column name 'gia_von'.
+
+Stack Trace:    at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+   at System.Data.SqlClient.SqlDataReader.get_MetaData()
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean async, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   at System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   at System.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+   at System.Data.Common.DbCommand.ExecuteReader()
+   at System.Data.Linq.SqlClient.SqlProvider.Execute(Expression query, QueryInfo queryInfo, IObjectReaderFactory factory, Object[] parentArgs, Object[] userArgs, ICompiledSubQuery[] subQueries, Object lastResult)
+   at System.Data.Linq.SqlClient.SqlProvider.ExecuteAll(Expression query, QueryInfo[] queryInfos, IObjectReaderFactory factory, Object[] userArguments, ICompiledSubQuery[] subQueries)
+   at System.Data.Linq.SqlClient.SqlProvider.CompiledQuery.Execute(IProvider provider, Object[] arguments)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.ExecuteKeyQuery(Object[] keyValues)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.Execute(Object instance)
+   at System.Data.Linq.CommonDataServices.DeferredSourceFactory`1.DeferredSource.GetEnumerator()
+   at System.Linq.Enumerable.SingleOrDefault[TSource](IEnumerable`1 source)
+   at System.Data.Linq.EntityRef`1.get_Entity()
+   at WebCinema.Models.DonHang_DoAn.get_Do_An() in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Models\CSDL.designer.cs:line 2961
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_23(DonHang_DoAn dda) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 68
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.<>c.<Index>b__1_4(Dat_Ve d) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 67
+   at System.Linq.Enumerable.WhereSelectEnumerableIterator`2.MoveNext()
+   at System.Linq.Enumerable.Sum(IEnumerable`1 source)
+   at System.Linq.Enumerable.Sum[TSource](IEnumerable`1 source, Func`2 selector)
+   at WebCinema.Areas.Admin.Controllers.StaffDashboardController.Index(Nullable`1 month, Nullable`1 year) in D:\HOCTAP\Nam_4_1\DoAnTotNghiep\KhoHangV2\WebQLRCP-main (1)\WebQLRCP-main\WebCinema\Areas\Admin\Controllers\StaffDashboardController.cs:line 66
+Inner Exception: None
+================================================================================

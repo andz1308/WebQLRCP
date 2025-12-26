@@ -1,0 +1,107 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using WebCinema.Models;
+
+namespace WebCinema.Services
+{
+    public class MovieService
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // Lấy tất cả phim đang chiếu
+        public List<Phim> GetAllMovies()
+        {
+            return db.Phims.ToList();
+        }
+
+        // Lấy phim theo ID
+        public Phim GetMovieById(int id)
+        {
+            return db.Phims.FirstOrDefault(p => p.phim_id == id);
+        }
+
+        // Lấy phim đang chiếu (có suất chiếu >= hôm nay)
+        public List<Phim> GetNowShowingMovies()
+        {
+            var today = DateTime.Today;
+            return db.Phims
+                .Where(p => p.Suat_Chieus.Any(sc => sc.ngay_chieu >= today))
+                .ToList();
+        }
+
+        // Lấy thể loại của phim
+        public List<string> GetMovieGenres(int phimId)
+        {
+            return db.Phim_LoaiPhims
+                .Where(pl => pl.phim_id == phimId)
+                .Select(pl => pl.Loai_Phim.ten_loai)
+                .ToList();
+        }
+
+        // Lấy danh sách diễn viên của phim
+        public List<Vai_Dien> GetMovieCast(int phimId)
+        {
+            return db.Vai_Diens
+                .Where(vd => vd.phim_id == phimId)
+                .ToList();
+        }
+
+        // Lấy điểm đánh giá trung bình của phim
+        public double GetAverageRating(int phimId)
+        {
+            var ratings = db.Danh_Gias
+                .Where(dg => dg.phim_id == phimId && dg.diem_rating.HasValue)
+                .Select(dg => dg.diem_rating.Value)
+                .ToList();
+
+            return ratings.Any() ? ratings.Average() : 0;
+        }
+
+        // Lấy số lượng đánh giá
+        public int GetRatingCount(int phimId)
+        {
+            return db.Danh_Gias
+                .Count(dg => dg.phim_id == phimId && dg.diem_rating.HasValue);
+        }
+
+        // Lấy các suất chiếu của phim
+        public List<Suat_Chieu> GetMovieShowtimes(int phimId)
+        {
+            var today = DateTime.Today;
+            return db.Suat_Chieus
+                .Where(sc => sc.phim_id == phimId && sc.ngay_chieu >= today)
+                .OrderBy(sc => sc.ngay_chieu)
+                .ThenBy(sc => sc.ca_chieu_id)
+                .ToList();
+        }
+
+        // Build a detailed view model from DB
+        public MovieDetailViewModel GetMovieDetailViewModel(int phimId)
+        {
+            var phim = GetMovieById(phimId);
+            if (phim == null) return null;
+
+            var genres = GetMovieGenres(phimId);
+            var cast = GetMovieCast(phimId);
+            var showtimes = db.Suat_Chieus.Where(sc => sc.phim_id == phimId).OrderBy(sc => sc.ngay_chieu).ThenBy(sc => sc.ca_chieu_id).ToList();
+            var avg = GetAverageRating(phimId);
+            var count = GetRatingCount(phimId);
+
+            var vm = new MovieDetailViewModel
+            {
+                Movie = phim,
+                Genres = genres,
+                Cast = cast,
+                Showtimes = showtimes,
+                AverageRating = avg,
+                RatingCount = count,
+                ImagePath = phim.hinh_anh, // DB field
+                TrailerUrl = phim.video // DB field
+            };
+
+            return vm;
+        }
+    }
+}

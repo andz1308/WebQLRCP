@@ -1,0 +1,355 @@
+﻿@model WebCinema.Models.Dat_Ve
+
+@{
+    ViewBag.Title = "Chi Tiết Đơn Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    var firstTicket = Model.Ves.FirstOrDefault();
+    var showtime = firstTicket?.Suat_Chieu;
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-ticket-alt"></i> Chi Tiết Đơn Hàng #@Model.Dat_Ve_id</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary" style="float: right;">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+        <!-- Booking Info -->
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-info-circle"></i> Thông Tin Đơn Hàng
+            </h3>
+
+            <div style="display: grid; gap: 1rem;">
+                <div>
+                    <strong style="color: #666;">Mã Đơn:</strong>
+                    <div style="font-size: 1.2rem; color: #ff6b35; margin-top: 0.25rem;">
+                        #@Model.Dat_Ve_id
+                    </div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Trạng Thái:</strong>
+                    <div style="margin-top: 0.25rem;">
+                        @{
+                            var statusClass = Model.trang_thai_Dat_Ve == "Đã xác nhận" ? "success"
+                                            : Model.trang_thai_Dat_Ve == "Chờ xác nhận" ? "warning"
+                                            : "danger";
+                        }
+                        <span class="badge badge-@statusClass">@Model.trang_thai_Dat_Ve</span>
+                    </div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Ngày Đặt:</strong>
+                    <div style="margin-top: 0.25rem;">@Model.ngay_tao.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Tổng Tiền:</strong>
+                    <div style="font-size: 1.3rem; color: #ff6b35; margin-top: 0.25rem;">
+                        @Model.tong_tien.ToString("N0") ₫
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-user"></i> Thông Tin Khách Hàng
+            </h3>
+
+            @if (Model.Khach_Hang != null)
+            {
+                <div style="display: grid; gap: 1rem;">
+                    <div>
+                        <strong style="color: #666;">Tên:</strong>
+                        <div style="margin-top: 0.25rem;">@Model.Khach_Hang.ho_ten</div>
+                    </div>
+
+                    <div>
+                        <strong style="color: #666;">Email:</strong>
+                        <div style="margin-top: 0.25rem;">@Model.Khach_Hang.email</div>
+                    </div>
+
+                    <div>
+                        <strong style="color: #666;">Số Điện Thoại:</strong>
+                        <div style="margin-top: 0.25rem;">
+                            @(!string.IsNullOrEmpty(Model.Khach_Hang.so_dien_thoai) ? Model.Khach_Hang.so_dien_thoai : "N/A")
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong style="color: #666;">Địa Chỉ:</strong>
+                        <div style="margin-top: 0.25rem;">
+                            @(!string.IsNullOrEmpty(Model.Khach_Hang.dia_chi) ? Model.Khach_Hang.dia_chi : "N/A")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Movie Info -->
+    @if (showtime != null)
+    {
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 2px solid #e0e0e0;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-film"></i> Thông Tin Phim
+            </h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <strong style="color: #666;">Phim:</strong>
+                    <div style="margin-top: 0.25rem; font-size: 1.1rem;">@showtime.Phim.ten_phim</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Rạp:</strong>
+                    <div style="margin-top: 0.25rem;">@showtime.Phong_Chieu.Rap.ten_rap</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Phòng:</strong>
+                    <div style="margin-top: 0.25rem;">@showtime.Phong_Chieu.ten_phong</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Ngày Chiếu:</strong>
+                    <div style="margin-top: 0.25rem;">@showtime.ngay_chieu.ToString("dd/MM/yyyy")</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Giờ Chiếu:</strong>
+                    <div style="margin-top: 0.25rem;">@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</div>
+                </div>
+
+                <div>
+                    <strong style="color: #666;">Giá Vé:</strong>
+                    <div style="margin-top: 0.25rem; color: #ff6b35; font-weight: 600;">
+                        @showtime.gia_ve.ToString("N0") ₫
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Tickets List -->
+    <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 2px solid #e0e0e0;">
+        <h3 style="color: #2c3e50; margin-bottom: 1rem;">
+            <i class="fas fa-couch"></i> Danh Sách Vé (@Model.Ves.Count() vé)
+        </h3>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">STT</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Ghế</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Loại Ghế</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Giá</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Mã QR</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 600;">Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int index = 1;
+                        foreach (var ticket in Model.Ves)
+                        {
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 1rem;">@(index++)</td>
+                                <td style="padding: 1rem; font-weight: 600;">@ticket.Ghe.so_ghe</td>
+                                <td style="padding: 1rem;">@ticket.Ghe.Loai_Ghe.ten_loai_ghe</td>
+                                <td style="padding: 1rem; color: #ff6b35; font-weight: 600;">@ticket.gia_ve.ToString("N0") ₫</td>
+                                <td style="padding: 1rem; font-family: monospace; font-size: 0.9rem;">
+                                    @if (!string.IsNullOrEmpty(ticket.ma_qr_code))
+                                    {
+                                        <code>@ticket.ma_qr_code</code>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #999;">N/A</span>
+                                    }
+                                </td>
+                                <td style="padding: 1rem;">
+                                    @{
+                                        var statusBadgeClass = ticket.trang_thai_ve == "Đã bán" ? "success"
+                                                            : ticket.trang_thai_ve == "Đang giữ" ? "warning"
+                                                            : "secondary";
+                                    }
+                                    <span class="badge badge-@statusBadgeClass">@ticket.trang_thai_ve</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Food Orders -->
+    @if (Model.DonHang_DoAns.Any())
+    {
+        <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 2px solid #e0e0e0;">
+            <h3 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-utensils"></i> Đồ Ăn & Thức Uống
+            </h3>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Tên Sản Phẩm</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Giá</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Số Lượng</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Tổng Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var food in Model.DonHang_DoAns)
+                        {
+                            var totalPrice = (food.Do_An.gia ?? 0) * food.so_luong;
+                            <tr style="border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 1rem;">@food.Do_An.ten_san_pham</td>
+                                <td style="padding: 1rem;">@((food.Do_An.gia ?? 0).ToString("N0")) ₫</td>
+                                <td style="padding: 1rem;">@food.so_luong</td>
+                                <td style="padding: 1rem; color: #ff6b35; font-weight: 600;">@totalPrice.ToString("N0") ₫</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Actions -->
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+        <button class="btn btn-warning" onclick="showStatusModal()">
+            <i class="fas fa-edit"></i> Thay Đổi Trạng Thái
+        </button>
+        <button class="btn btn-danger" onclick="deleteBooking()">
+            <i class="fas fa-trash"></i> Xóa Đơn Hàng
+        </button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+</div>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-secondary {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #ff8555;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        color: black;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+</style>
+
+@section scripts {
+    <script>
+        function showStatusModal() {
+            // Redirect to index with action to update
+            var bookingId = @Model.Dat_Ve_id;
+            if (confirm('Bạn muốn thay đổi trạng thái của đơn hàng này?')) {
+                window.location.href = '@Url.Action("Index")';
+            }
+        }
+
+        function deleteBooking() {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này? Hành động này không thể hoàn tác!')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: @Model.Dat_Ve_id },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.href = '@Url.Action("Index")';
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra!');
+                    }
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,41 @@
+﻿@model WebCinema.Models.Phong_Chieu
+
+@{
+    ViewBag.Title = "Tạo Phòng Chiếu Mới";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+
+    bool hasSpecificRap = ViewBag.HasSpecificRap ?? false;
+}
+
+<h2>Tạo Phòng Chiếu Mới</h2>
+<hr />
+
+@using (Html.BeginForm(...))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    @if (hasSpecificRap)
+    {
+        <div class="form-group">
+            <label class="control-label col-md-2">Thuộc Rạp</label>
+            <div class="col-md-10">
+                <p class="form-control-static">
+                    <strong>@ViewBag.RapName</strong>
+                </p>
+                @Html.HiddenFor(model => model.rap_id)
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            @Html.LabelFor(model => model.rap_id, "Chọn rạp", new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("rap_id", (SelectList)ViewBag.RapList, "--- Chọn rạp ---", new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.rap_id, "", new { @class = "text-danger" })
+            </div>
+        </div>
+    }
+
+    }

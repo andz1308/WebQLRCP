@@ -1,0 +1,137 @@
+﻿@model IEnumerable<WebCinema.Models.Dao_Dien>
+
+@{
+    ViewBag.Title = "Quản Lý Đạo Diễn";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-video"></i> Quản Lý Đạo Diễn</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm Đạo Diễn
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "DirectorManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm kiếm theo tên..." class="form-control" style="flex: 1;" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm kiếm
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã ĐD</th>
+                        <th>Họ Tên</th>
+                        <th>Ngày Sinh</th>
+                        <th>Quốc Tịch</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var director in Model)
+                    {
+                        <tr>
+                            <td><strong>#@director.daodien_id</strong></td>
+                            <td>@director.ho_ten</td>
+                            <td>@(director.ngay_sinh.HasValue ? director.ngay_sinh.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                            <td>@(string.IsNullOrEmpty(director.quoc_tich) ? "N/A" : director.quoc_tich)</td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = director.daodien_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteDirector(@director.daodien_id, '@director.ho_ten')" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* PHÂN TRANG *@
+        if (ViewBag.TotalPages > 1)
+        {
+            <div style="margin-top: 2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                @if (ViewBag.CurrentPage > 1)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage - 1 })" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-chevron-left"></i> Trước
+                    </a>
+                }
+                
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    if (i == ViewBag.CurrentPage)
+                    {
+                        <span class="btn btn-primary" style="pointer-events: none;">
+                            @i
+                        </span>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) <= 2 || i == 1 || i == ViewBag.TotalPages)
+                    {
+                        <a href="@Url.Action("Index", new { page = i })" class="btn btn-secondary">
+                            @i
+                        </a>
+                    }
+                    else if (Math.Abs(i - ViewBag.CurrentPage) == 3)
+                    {
+                        <span style="padding: 0.6rem; color: #999;">...</span>
+                    }
+                }
+                
+                @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                {
+                    <a href="@Url.Action("Index", new { page = ViewBag.CurrentPage + 1 })" 
+                       class="btn btn-secondary">
+                        Sau <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có đạo diễn nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteDirector(id, name) {
+            if (confirm('Bạn có chắc chắn muốn xóa đạo diễn "' + name + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + (response.message || 'Không thể xóa đạo diễn'));
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra khi xóa đạo diễn.');
+                    }
+                });
+            }
+        }
+    </script>
+}

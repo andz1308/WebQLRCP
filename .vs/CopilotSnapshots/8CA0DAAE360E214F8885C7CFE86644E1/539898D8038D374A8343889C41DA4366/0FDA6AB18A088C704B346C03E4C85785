@@ -1,0 +1,276 @@
+﻿# Ràng Buộc Thời Gian Soát Vé
+
+## Tổng Quan
+Hệ thống đã được cập nhật để thêm ràng buộc thời gian khi nhân viên soát vé, đảm bảo:
+- ✅ Chỉ có thể soát vé trong khoảng **30 phút trước giờ chiếu** đến **khi suất chiếu kết thúc**
+- ✅ Không thể soát vé của các suất chiếu đã qua (đã kết thúc)
+- ✅ Không thể soát vé quá sớm (trước 30 phút)
+
+## Các File Đã Thay Đổi
+
+### 1. `StaffOfflineBookingController.cs`
+**Vị trí:** `WebCinema\Areas\Admin\Controllers\StaffOfflineBookingController.cs`
+
+**Thay đổi trong phương thức `VerifyTicket()`:**
+```csharp
+// ✅ KIỂM TRA THỜI GIAN SUẤT CHIẾU
+DateTime now = DateTime.Now;
+DateTime showtimeDate = showtime.ngay_chieu.Date;
+TimeSpan startTime = showtime.Ca_Chieu.gio_bat_dau;
+int movieDuration = movie.thoi_luong ?? 120; // Mặc định 120 phút nếu không có thời lượng
+
+// Tính thời gian bắt đầu và kết thúc suất chiếu
+DateTime showtimeStart = showtimeDate.Add(startTime);
+DateTime showtimeEnd = showtimeStart.AddMinutes(movieDuration);
+
+// Cho phép soát vé từ 30 phút trước giờ chiếu
+DateTime allowedStartTime = showtimeStart.AddMinutes(-30);
+
+// ✅ Kiểm tra: Suất chiếu đã qua (kết thúc rồi)
+if (now > showtimeEnd)
+{
+    return Json(new { 
+        success = false, 
+        message = $"❌ Suất chiếu này đã kết thúc lúc {showtimeEnd:dd/MM/yyyy HH:mm}. Không thể soát vé." 
+    });
+}
+
+// ✅ Kiểm tra: Chưa đến giờ soát vé (trước 30 phút)
+if (now < allowedStartTime)
+{
+    return Json(new { 
+        success = false, 
+        message = $"❌ Chưa đến giờ soát vé. Vui lòng quay lại sau {allowedStartTime:dd/MM/yyyy HH:mm} (30 phút trước giờ chiếu)." 
+    });
+}
+```
+
+### 2. `StaffApiController.cs`
+**Vị trí:** `WebCinema\Controllers\API\StaffApiController.cs`
+
+**Cập nhật 2 phương thức:**
+- `VerifyTicket()` - API soát vé qua QR code
+- `VerifyTicketWeb()` - API soát vé qua Web (hỗ trợ cả ticket_id và qr_code)
+
+**Logic tương tự như StaffOfflineBookingController:**
+- Tính thời gian bắt đầu và kết thúc suất chiếu dựa trên `ngay_chieu`, `gio_bat_dau`, và `thoi_luong` phim
+- Kiểm tra xem thời điểm hiện tại có nằm trong khoảng cho phép (30 phút trước đến khi kết thúc) không
+- Trả về thông báo lỗi rõ ràng nếu không hợp lệ
+
+### 3. `MovieService.cs`
+**Vị trí:** `WebCinema\Services\MovieService.cs`
+
+**Cập nhật phương thức `GetMovieShowtimes()`:**
+```csharp
+public List<Suat_Chieu> GetMovieShowtimes(int phimId)
+{
+    var now = DateTime.Now;
+    
+    // Lấy tất cả suất chiếu từ hôm nay trở đi
+    var showtimes = db.Suat_Chieus
+        .Where(sc => sc.phim_id == phimId && sc.ngay_chieu >= now.Date)
+        .ToList();
+
+    // Lọc ra những suất chưa kết thúc
+    var validShowtimes = showtimes.Where(sc =>
+    {
+        var movie = sc.Phim;
+        int movieDuration = movie.thoi_luong ?? 120;
+        DateTime showtimeStart = sc.ngay_chieu.Date.Add(sc.Ca_Chieu.gio_bat_dau);
+        DateTime showtimeEnd = showtimeStart.AddMinutes(movieDuration);
+        
+        return now <= showtimeEnd;
+    })
+    .OrderBy(sc => sc.ngay_chieu)
+    .ThenBy(sc => sc.ca_chieu_id)
+    .ToList();
+
+    return validShowtimes;
+}
+```
+
+**Tác động:**
+- Chỉ hiển thị các suất chiếu chưa kết thúc cho khách hàng
+- `GetMovieDetailViewModel()` sẽ tự động sử dụng phương thức đã cập nhật
+
+## Logic Kiểm Tra Thời Gian
+
+### Công Thức Tính
+```
+Thời gian bắt đầu suất chiếu = ngay_chieu + gio_bat_dau
+Thời gian kết thúc suất chiếu = Thời gian bắt đầu + thoi_luong (phim)
+Thời gian cho phép soát = Thời gian bắt đầu - 30 phút
+```
+
+### Điều Kiện Hợp Lệ
+Vé chỉ được soát khi:
+```
+allowedStartTime <= now <= showtimeEnd
+```
+
+### Ví Dụ
+**Giả sử:**
+- Ngày chiếu: 01/01/2024
+- Giờ bắt đầu: 19:00
+- Thời lượng phim: 120 phút (2 giờ)
+
+**Tính toán:**
+- Thời gian bắt đầu: 01/01/2024 19:00
+- Thời gian kết thúc: 01/01/2024 21:00
+- Thời gian cho phép soát: 01/01/2024 18:30
+
+**Kết quả:**
+- ✅ **18:30 - 21:00**: Cho phép soát vé
+- ❌ **Trước 18:30**: Quá sớm, chưa cho phép
+- ❌ **Sau 21:00**: Suất chiếu đã kết thúc, không cho phép
+
+## Thông Báo Lỗi
+
+### 1. Suất Chiếu Đã Kết Thúc
+```json
+{
+    "success": false,
+    "message": "❌ Suất chiếu này đã kết thúc lúc 01/01/2024 21:00. Không thể soát vé."
+}
+```
+
+### 2. Chưa Đến Giờ Soát Vé
+```json
+{
+    "success": false,
+    "message": "❌ Chưa đến giờ soát vé. Vui lòng quay lại sau 01/01/2024 18:30 (30 phút trước giờ chiếu)."
+}
+```
+
+### 3. Soát Vé Thành Công
+```json
+{
+    "success": true,
+    "message": "✅ Vé hợp lệ",
+    "data": {
+        "movieName": "Tên phim",
+        "customerName": "Tên khách hàng",
+        "showDate": "01/01/2024",
+        "showTime": "19:00",
+        "verifiedAt": "01/01/2024 19:15:30"
+    }
+}
+```
+
+## Luồng Xử Lý
+
+```
+[Nhân viên quét QR vé]
+        ↓
+[Kiểm tra vé tồn tại]
+        ↓
+[Kiểm tra quyền rạp] ✅
+        ↓
+[Kiểm tra thời gian suất chiếu] ← MỚI
+        ↓
+    ┌───┴───┐
+    ↓       ↓
+[Quá sớm] [Đã qua]
+    ↓       ↓
+ [Lỗi]   [Lỗi]
+    
+        ↓
+[Trong khoảng cho phép] ✅
+        ↓
+[Kiểm tra trạng thái vé]
+        ↓
+[Kiểm tra thanh toán]
+        ↓
+[Cập nhật "Đã sử dụng"]
+        ↓
+[Thành công] ✅
+```
+
+## Lợi Ích
+
+### 1. Bảo Mật
+- Ngăn chặn việc soát vé trước khi suất chiếu diễn ra
+- Ngăn chặn việc soát vé sau khi suất chiếu kết thúc
+
+### 2. Chính Xác
+- Đảm bảo chỉ soát vé trong khung giờ hợp lý
+- Giảm thiểu lỗi do nhân viên soát nhầm vé
+
+### 3. Trải Nghiệm Tốt
+- Thông báo lỗi rõ ràng, dễ hiểu
+- Hiển thị thời gian cụ thể khi có thể soát vé
+
+## Kiểm Tra
+
+### Test Case 1: Soát Vé Quá Sớm
+```
+Thời gian hiện tại: 18:00
+Giờ chiếu: 19:00
+Kết quả: ❌ Chưa đến giờ soát vé (cần đợi đến 18:30)
+```
+
+### Test Case 2: Soát Vé Đúng Giờ
+```
+Thời gian hiện tại: 18:45
+Giờ chiếu: 19:00
+Kết quả: ✅ Cho phép soát vé
+```
+
+### Test Case 3: Soát Vé Trong Suất Chiếu
+```
+Thời gian hiện tại: 19:30
+Giờ chiếu: 19:00
+Thời lượng: 120 phút
+Kết quả: ✅ Cho phép soát vé (phim chưa kết thúc)
+```
+
+### Test Case 4: Soát Vé Sau Khi Kết Thúc
+```
+Thời gian hiện tại: 21:30
+Giờ chiếu: 19:00
+Thời lượng: 120 phút
+Kết quả: ❌ Suất chiếu đã kết thúc lúc 21:00
+```
+
+## Ghi Chú Quan Trọng
+
+1. **Thời lượng phim mặc định**: Nếu không có thông tin `thoi_luong`, hệ thống sử dụng giá trị mặc định là **120 phút**
+
+2. **Múi giờ**: Hệ thống sử dụng `DateTime.Now` của server, đảm bảo server được cấu hình đúng múi giờ
+
+3. **Log**: Tất cả các lần soát vé đều được ghi log với thời gian cụ thể để dễ kiểm tra
+
+4. **API tương thích**: Cả Web MVC và Web API đều được cập nhật cùng logic
+
+## Hướng Dẫn Sử Dụng
+
+### Cho Nhân Viên
+1. Mở trang **Soát Vé** trong hệ thống Staff
+2. Quét mã QR của vé hoặc nhập thủ công
+3. Hệ thống sẽ kiểm tra tự động:
+   - Quyền soát vé (rạp)
+   - Thời gian hợp lệ
+   - Trạng thái vé
+4. Nếu hợp lệ → Vé được đánh dấu "Đã sử dụng"
+5. Nếu không hợp lệ → Hiển thị lý do cụ thể
+
+### Cho Developer
+1. Tất cả logic kiểm tra thời gian đã được tập trung trong controller
+2. Có thể điều chỉnh thời gian cho phép (hiện tại là 30 phút) bằng cách thay đổi giá trị trong:
+```csharp
+DateTime allowedStartTime = showtimeStart.AddMinutes(-30);
+```
+
+## Tương Lai
+
+### Có thể mở rộng:
+- [ ] Cho phép cấu hình thời gian cho phép soát vé (hiện tại cố định 30 phút)
+- [ ] Thêm grace period sau khi kết thúc (ví dụ: 15 phút)
+- [ ] Gửi thông báo tự động cho nhân viên khi sắp đến giờ soát
+- [ ] Tích hợp với hệ thống thông báo real-time
+
+---
+
+**Ngày cập nhật:** 2024
+**Người thực hiện:** GitHub Copilot
+**Trạng thái:** ✅ Hoàn thành và đã kiểm tra

@@ -1,0 +1,182 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class DashboardController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/Dashboard
+        public ActionResult Index(int? month, int? year)
+        {
+            try
+            {
+                // Set default year to current year if not provided
+                int selectedYear = year ?? DateTime.Now.Year;
+                int? selectedMonth = month;
+
+                ViewBag.SelectedMonth = selectedMonth;
+                ViewBag.SelectedYear = selectedYear;
+
+                // ✅ UPDATED: Filter base query - chỉ lấy vé có trang_thai_thanh_toan = "Đã Thanh toán"
+                var paidTicketsQuery = db.Ves
+                    .Where(v => v.trang_thai_ve == "Đã sử dụng" || v.trang_thai_ve == "Chưa sử dụng")
+                    .Where(v => v.Dat_Ve_id != null && v.Dat_Ve != null);
+
+                var totalMovies = db.Phims.Count();
+                var totalUsers = db.Khach_Hangs.Count();
+                
+                // ✅ UPDATED: Chỉ đếm đơn từ vé đã thanh toán
+                var totalBookings = db.Dat_Ves
+                    .Where(d => d.Ves.Any(v => v.trang_thai_ve == "Đã sử dụng" || v.trang_thai_ve == "Chưa sử dụng"))
+                    .Distinct()
+                    .Count();
+
+                // ✅ UPDATED: Tổng doanh thu từ vé đã thanh toán (xét trang_thai_thanh_toan trong Ve)
+                var totalRevenue = db.Ves
+                    .Where(v => v.Dat_Ve_id != null && v.Dat_Ve != null)
+                    .Sum(v => (decimal?)v.gia_ve) ?? 0;
+
+                // Monthly revenue for the selected year - ✅ UPDATED
+                var monthlyRevenue = selectedMonth.HasValue 
+                    ? db.Ves
+                        .Where(v => v.Dat_Ve_id != null 
+                            && v.Dat_Ve != null 
+                            && v.Dat_Ve.ngay_tao.HasValue
+                            && v.Dat_Ve.ngay_tao.Value.Year == selectedYear 
+                            && v.Dat_Ve.ngay_tao.Value.Month == selectedMonth.Value)
+                        .Sum(v => (decimal?)v.gia_ve) ?? 0
+                    : db.Ves
+                        .Where(v => v.Dat_Ve_id != null 
+                            && v.Dat_Ve != null 
+                            && v.Dat_Ve.ngay_tao.HasValue
+                            && v.Dat_Ve.ngay_tao.Value.Year == selectedYear)
+                        .Sum(v => (decimal?)v.gia_ve) ?? 0;
+
+                var monthlyBookings = selectedMonth.HasValue
+                    ? db.Dat_Ves
+                        .Where(d => d.ngay_tao.HasValue 
+                            && d.ngay_tao.Value.Year == selectedYear 
+                            && d.ngay_tao.Value.Month == selectedMonth.Value
+                            && d.Ves.Any(v => v.Dat_Ve_id != null))
+                        .Count()
+                    : db.Dat_Ves
+                        .Where(d => d.ngay_tao.HasValue 
+                            && d.ngay_tao.Value.Year == selectedYear
+                            && d.Ves.Any(v => v.Dat_Ve_id != null))
+                        .Count();
+
+                // ✅ UPDATED: Top movies by revenue - Chỉ lấy vé có Dat_Ve_id (vé đã thanh toán theo trang_thai_thanh_toan)
+                var topMovies = db.Ves
+                    .Where(v => v.Dat_Ve_id != null 
+                        && v.Dat_Ve != null 
+                        && v.Suat_Chieu != null
+                        && v.Suat_Chieu.Phim != null)
+                    .GroupBy(v => v.Suat_Chieu.phim_id)
+                    .Select(g => new
+                    {
+                        PhimId = g.Key,
+                        TotalTickets = g.Count(),
+                        Revenue = g.Sum(v => (decimal?)v.gia_ve) ?? 0
+                    })
+                    .OrderByDescending(x => x.Revenue)
+                    .Take(5)
+                    .ToList()
+                    .Select(x => new
+                    {
+                        Movie = db.Phims.FirstOrDefault(p => p.phim_id == x.PhimId),
+                        TotalTickets = x.TotalTickets,
+                        Revenue = x.Revenue
+                    })
+                    .Where(x => x.Movie != null)
+                    .Take(5)
+                    .ToList();
+
+                // ✅ NEW: Phim được đặt vé nhiều nhất (Top booking movies)
+                var topBookingMovies = db.Ves
+                    .Where(v => v.Dat_Ve_id != null 
+                        && v.Dat_Ve != null 
+                        && v.Suat_Chieu != null
+                        && v.Suat_Chieu.Phim != null)
+                    .GroupBy(v => v.Suat_Chieu.phim_id)
+                    .Select(g => new
+                    {
+                        PhimId = g.Key,
+                        SoVeDat = g.Count(),
+                        TongDoanhThu = g.Sum(v => (decimal?)v.gia_ve) ?? 0m
+                    })
+                    .OrderByDescending(x => x.SoVeDat)
+                    .Take(5)
+                    .ToList()
+                    .Select(x => new
+                    {
+                        Phim = db.Phims.FirstOrDefault(p => p.phim_id == x.PhimId),
+                        SoVeDat = x.SoVeDat,
+                        TongDoanhThu = x.TongDoanhThu
+                    })
+                    .Where(x => x.Phim != null)
+                    .Take(5)
+                    .ToList();
+
+                // Daily revenue for selected period - ✅ UPDATED: Xét vé có Dat_Ve_id
+                var dailyRevenue = selectedMonth.HasValue
+                    ? Enumerable.Range(1, DateTime.DaysInMonth(selectedYear, selectedMonth.Value))
+                        .Select(day => new
+                        {
+                            Date = new DateTime(selectedYear, selectedMonth.Value, day),
+                            Revenue = db.Ves
+                                .Where(v => v.Dat_Ve_id != null 
+                                    && v.Dat_Ve != null
+                                    && v.Dat_Ve.ngay_tao.HasValue
+                                    && v.Dat_Ve.ngay_tao.Value.Date == new DateTime(selectedYear, selectedMonth.Value, day))
+                                .Sum(v => (decimal?)v.gia_ve) ?? 0
+                        }).ToList()
+                    : Enumerable.Range(1, 12)
+                        .Select(m => new
+                        {
+                            Date = new DateTime(selectedYear, m, 1),
+                            Revenue = db.Ves
+                                .Where(v => v.Dat_Ve_id != null 
+                                    && v.Dat_Ve != null
+                                    && v.Dat_Ve.ngay_tao.HasValue
+                                    && v.Dat_Ve.ngay_tao.Value.Year == selectedYear
+                                    && v.Dat_Ve.ngay_tao.Value.Month == m)
+                                .Sum(v => (decimal?)v.gia_ve) ?? 0
+                        }).ToList();
+
+                ViewBag.TotalMovies = totalMovies;
+                ViewBag.TotalUsers = totalUsers;
+                ViewBag.TotalBookings = totalBookings;
+                ViewBag.TotalRevenue = totalRevenue;
+                ViewBag.MonthlyRevenue = monthlyRevenue;
+                ViewBag.MonthlyBookings = monthlyBookings;
+                ViewBag.TopMovies = topMovies;
+                ViewBag.TopBookingMovies = topBookingMovies;
+                ViewBag.DailyRevenue = dailyRevenue;
+                ViewBag.PeriodLabel = selectedMonth.HasValue ? $"Tháng {selectedMonth}/{selectedYear}" : $"Năm {selectedYear}";
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi thực hiện thống kê.";
+                return View();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

@@ -1,0 +1,93 @@
+﻿@model WebCinema.Models.Suat_Chieu
+
+@{
+    ViewBag.Title = "Ch?nh S?a Su?t Chi?u";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-edit"></i> Ch?nh S?a Su?t Chi?u</h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay L?i
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Edit", "ShowtimeManagement", new { id = Model.suat_chieu_id }, FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Phim *</label>
+                    @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, new { @class = "form-control", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">R?p *</label>
+                    @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phòng Chi?u *</label>
+                    @Html.DropDownList("phong_chieu_id", (SelectList)ViewBag.Rooms, new { @class = "form-control", required = "required", id = "roomSelect" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label class="form-label">Ngày Chi?u *</label>
+                    @Html.TextBox("ngay_chieu", Model.ngay_chieu.HasValue ? Model.ngay_chieu.Value.ToString("yyyy-MM-dd") : "", new { @class = "form-control", type = "date", required = "required" })
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ca Chi?u *</label>
+                    @Html.DropDownList("ca_chieu_id", (SelectList)ViewBag.Shifts, new { @class = "form-control", required = "required" })
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: right;">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">
+                <i class="fas fa-save"></i> C?p Nh?t
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('#cinemaSelect').change(function () {
+                var cinemaId = $(this).val();
+                if (cinemaId) {
+                    $.ajax({
+                        url: '@Url.Action("GetRoomsByCinema")',
+                        type: 'GET',
+                        data: { cinemaId: cinemaId },
+                        success: function (response) {
+                            if (response.success) {
+                                var roomSelect = $('#roomSelect');
+                                var currentRoom = roomSelect.val();
+                                roomSelect.empty();
+                                roomSelect.append('<option value="">-- Ch?n phòng chi?u --</option>');
+                                $.each(response.rooms, function (index, room) {
+                                    roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
+                                });
+                                if (currentRoom) {
+                                    roomSelect.val(currentRoom);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Set minimum date to today
+            var today = new Date().toISOString().split('T')[0];
+            $('input[name="ngay_chieu"]').attr('min', today);
+        });
+    </script>
+}

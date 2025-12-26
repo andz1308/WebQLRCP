@@ -1,0 +1,769 @@
+﻿@{
+    // Ensure the response uses UTF-8 encoding to avoid garbled Vietnamese characters
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - DAV Cinema Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #ff6b35;
+            --color-primary-light: #ff8555;
+            --color-primary-dark: #e65a28;
+            --color-dark-blue: #2c3e50;
+            --color-dark-blue-light: #34495e;
+            --color-light-gray: #f8f9fa;
+            --color-medium-gray: #e9ecef;
+            --color-dark-gray: #6c757d;
+            --color-text: #343a40;
+            --color-text-light: #6c757d;
+            --color-white: #ffffff;
+            --color-success: #28a745;
+            --color-danger: #dc3545;
+            --color-warning: #ffc107;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--color-light-gray);
+            color: var(--color-text);
+            font-size: 16px;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--color-dark-blue) 0%, var(--color-dark-blue-light) 100%);
+            color: var(--color-white);
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        .sidebar-logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            white-space: nowrap; /* Prevent logo text from wrapping */
+        }
+
+        .sidebar-logo i {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-logo:hover i {
+            transform: rotate(-10deg) scale(1.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 1rem 0;
+            flex-grow: 1; /* Allow menu to take available space */
+            overflow-y: auto; /* Add scroll to menu if it overflows */
+        }
+
+        .menu-item {
+            margin: 0.25rem 0.75rem;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+  /*          gap: 1rem;*/
+            padding: 0.9rem 1.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+            white-space: nowrap; /* Prevent text from wrapping */
+        }
+
+        .menu-link > span {
+            flex-grow: 1; /* Allow text to take up available space */
+        }
+
+            .menu-link > i.menu-icon {
+                margin-right: 0.5rem; /* chỉ khoảng cách icon trái - text */
+            }
+
+        .menu-link:hover,
+        .menu-link.active {
+            background: var(--color-primary);
+            color: var(--color-white);
+            box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Prevent toggle links from shifting when open or active */
+        .menu-link.toggle.active,
+        .menu-item.open > .menu-link.toggle {
+            transform: translateY(0);
+        }
+
+        .menu-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 2rem;
+            width: calc(100% - 260px);
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--color-white);
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            color: var(--color-dark-blue);
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--color-dark-blue);
+        }
+
+        .btn-logout {
+            padding: 0.6rem 1.2rem;
+            background: var(--color-danger);
+            color: var(--color-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .btn-logout:hover {
+            background: #c82333;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Content Header */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--color-dark-blue);
+            font-weight: 700;
+        }
+
+        /* Content Card */
+        .content-card {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-medium-gray);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--color-dark-blue);
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--color-dark-gray);
+            color: var(--color-white);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--color-danger);
+            color: var(--color-white);
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--color-success);
+            color: var(--color-white);
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--color-warning);
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .data-table thead {
+            background: var(--color-light-gray);
+        }
+
+        .data-table th {
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            color: var(--color-dark-blue);
+            border-bottom: 2px solid var(--color-medium-gray);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--color-medium-gray);
+            color: var(--color-text-light);
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error, .alert-danger {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--color-dark-blue);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid var(--color-medium-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--color-white);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-info h3 {
+            font-size: 2.25rem;
+            color: var(--color-dark-blue);
+            margin-bottom: 0.25rem;
+            font-weight: 700;
+        }
+
+        .stat-info p {
+            color: var(--color-text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--color-white);
+        }
+
+        .stat-card.orange { border-left-color: #fd7e14; }
+        .stat-icon.orange { background: linear-gradient(135deg, #fd7e14 0%, #ff9a4f 100%); }
+
+        .stat-card.blue { border-left-color: #007bff; }
+        .stat-icon.blue { background: linear-gradient(135deg, #007bff 0%, #3498db 100%); }
+
+        .stat-card.green { border-left-color: #28a745; }
+        .stat-icon.green { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+
+        .stat-card.purple { border-left-color: #6f42c1; }
+        .stat-icon.purple { background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%); }
+
+        /* Submenu */
+        .submenu {
+            list-style: none;
+            padding-left: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            margin-top: 0.25rem; /* Add some space between parent and submenu */
+        }
+
+        .submenu .menu-link {
+            padding-left: 2.25rem; /* Adjust padding for icon */
+            font-size: 0.9rem;
+            position: relative;
+            gap: 0.75rem; /* Adjust gap for submenu items */
+        }
+
+        .submenu .menu-link:hover,
+        .submenu .menu-link.active {
+            transform: translateY(0); /* Keep submenu items stable */
+        }
+
+        .submenu .menu-link::before {
+            content: none; /* Remove the old dot */
+        }
+
+        .submenu .menu-link:hover::before {
+            background: var(--color-white);
+        }
+
+        .submenu .menu-link.active::before {
+            background: var(--color-white);
+            box-shadow: 0 0 8px var(--color-white);
+        }
+
+        .menu-item.open > .submenu {
+            max-height: 500px; /* Adjust as needed */
+        }
+
+        .menu-link .fa-chevron-down {
+            transition: transform 0.3s ease;
+            /* Revert font-weight change and use a specific class for the icon */
+        }
+
+        .menu-item.open > .menu-link .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar:hover {
+                width: 260px;
+            }
+            .sidebar:hover .sidebar-logo span,
+            .sidebar:hover .menu-link span,
+            .sidebar:hover .fa-chevron-down {
+                display: inline-block;
+                opacity: 1;
+            }
+            .sidebar-logo span,
+            .menu-link span,
+            .fa-chevron-down {
+                display: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+            }
+            .sidebar:hover + .main-content {
+                margin-left: 260px;
+                width: calc(100% - 260px);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            .top-bar {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            /* Add a menu toggle button for mobile */
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="sidebar-logo">
+                    <i class="fas fa-film"></i>
+                    <span>DAV Cinema</span>
+                </a>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "Dashboard", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-home menu-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
+                        <i class="fas fa-film menu-icon"></i>
+                        <span>Quản lý Nội Dung</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+
+                    <ul class="submenu">
+                        <li><a href="@Url.Action("Index", "MovieManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-video fa-fw menu-icon"></i><span>Phim</span></a></li>
+                        <li><a href="@Url.Action("Index", "ActorManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-user-friends fa-fw menu-icon"></i><span>Diễn Viên</span></a></li>
+                        <li><a href="@Url.Action("Index", "DirectorManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-user-tie fa-fw menu-icon"></i><span>Đạo Diễn</span></a></li>
+                        <li><a href="@Url.Action("Index", "ProducerManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-industry fa-fw menu-icon"></i><span>Nhà Sản Xuất</span></a></li>
+                    </ul>
+                </li>
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "ShowtimeManagement", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-clock menu-icon"></i>
+                        <span>Quản lý Suất Chiếu</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "ShiftManagement", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-business-time menu-icon"></i>
+                        <span>Quản lý Ca Chiếu</span>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="@Url.Action("Index", "CinemaManagement", new { area = "Admin" })" class="menu-link">
+                        <i class="fas fa-building menu-icon"></i>
+                        <span>Quản lý Rạp</span>
+                    </a>
+                </li>
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
+                        <i class="fas fa-shopping-cart menu-icon"></i>
+                        <span>Quản lý Đơn Hàng</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="@Url.Action("Index", "BookingManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-file-invoice-dollar fa-fw menu-icon"></i><span>Đơn đặt vé</span></a></li>
+                        @*<li><a href="@Url.Action("Index", "TicketManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-ticket-alt fa-fw menu-icon"></i><span>Vé suất chiếu</span></a></li>*@
+                        <li><a href="@Url.Action("Index", "TicketRefundManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-undo fa-fw menu-icon"></i><span>Hủy vé</span></a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
+                        <i class="fas fa-users menu-icon"></i>
+                        <span>Quản lý Tài Khoản</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="@Url.Action("Index", "UserManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-user fa-fw menu-icon"></i><span>Khách hàng</span></a></li>
+                        <li><a href="@Url.Action("Staff", "UserManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-user-shield fa-fw menu-icon"></i><span>Nhân viên</span></a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-item has-submenu">
+                    <a class="menu-link toggle">
+                        <i class="fas fa-tag menu-icon"></i>
+                        <span>Quản lý Dịch Vụ</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="@Url.Action("Index", "ReviewManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-star fa-fw menu-icon"></i><span>Đánh giá</span></a></li>
+                        <li><a href="@Url.Action("Index", "Promo", new { area = "Admin" })" class="menu-link"><i class="fas fa-percent fa-fw menu-icon"></i><span>Khuyến mãi</span></a></li>
+                        <li><a href="@Url.Action("Index", "InventoryManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-box-open fa-fw menu-icon"></i><span>Sản phẩm</span></a></li>
+                        <li><a href="@Url.Action("Index", "ManagerPurchaseOrder", new { area = "Admin" })" class="menu-link"><i class="fas fa-clipboard-list fa-fw menu-icon"></i><span>Phiếu nhập</span></a></li>
+                        <li><a href="@Url.Action("Index", "SupplierManagement", new { area = "Admin" })" class="menu-link"><i class="fas fa-truck fa-fw menu-icon"></i><span>Nhà cung cấp</span></a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-item" >
+                    <a href="@Url.Action("Index", "Home", new { area = "" })" class="menu-link">
+                        <i class="fas fa-arrow-left menu-icon"></i>
+                        <span>Về Trang Chủ</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h1 class="page-title">@ViewBag.Title</h1>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span class="user-name">Admin</span>
+                    <a href="@Url.Action("Logout", "Account", new { area = "" })" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Alerts -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>@TempData["SuccessMessage"]</span>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@TempData["ErrorMessage"]</span>
+                </div>
+            }
+
+            <!-- Page Content -->
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Confirm delete
+        function confirmDelete(message) {
+            return confirm(message || 'Bạn có chắc chắn muốn xóa?');
+        }
+
+        $(document).ready(function () {
+            // --- Sidebar Logic ---
+            var currentPath = window.location.pathname;
+            var currentFullPath = window.location.href;
+
+            // Set active link
+            $('.menu-link').each(function () {
+                var linkHref = $(this).attr('href');
+                if (linkHref && currentPath === new URL(linkHref, window.location.origin).pathname) {
+                    $(this).addClass('active');
+
+                    // Open parent submenu if it exists
+                    let parentSubmenu = $(this).closest('.submenu');
+                    if (parentSubmenu.length) {
+                        let parentMenuItem = parentSubmenu.closest('.menu-item.has-submenu');
+                        parentMenuItem.addClass('open');
+                        parentMenuItem.find('> .menu-link.toggle').addClass('active'); // Also highlight the main category link
+                    }
+                }
+            });
+
+            // Submenu toggle
+            $('.menu-item.has-submenu > .menu-link.toggle').on('click', function (e) {
+                e.preventDefault();
+                let parentMenuItem = $(this).parent('.menu-item');
+                
+                // Close other open submenus
+                $('.menu-item.has-submenu.open').not(parentMenuItem).removeClass('open');
+
+                // Toggle current submenu
+                parentMenuItem.toggleClass('open');
+            });
+
+            // --- General UI ---
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+        });
+
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

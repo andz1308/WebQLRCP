@@ -1,0 +1,567 @@
+﻿@{
+    ViewBag.Title = "Thanh Toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var tickets = ViewBag.Tickets as List<WebCinema.Models.Ve>;
+    var foodItems = ViewBag.FoodItems as List<dynamic>;
+    var ticketTotal = (decimal)ViewBag.TicketTotal;
+    var foodTotal = (decimal)ViewBag.FoodTotal;
+    var grandTotal = (decimal)ViewBag.GrandTotal;
+}
+
+<style>
+    .payment-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .payment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .progress-steps {
+        background: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #999;
+        font-weight: 600;
+    }
+
+    .step-number {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .step.active {
+        color: #ff6b35;
+    }
+
+    .step.active .step-number {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .step.completed .step-number {
+        background: #27ae60;
+        color: white;
+    }
+
+    .payment-content {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 2rem;
+        padding: 2rem;
+        background: white;
+    }
+
+    .payment-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .info-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .section-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .movie-summary {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .movie-poster-tiny {
+        width: 80px;
+        height: 110px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .movie-details {
+        flex: 1;
+    }
+
+    .movie-title-pay {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .movie-info-line {
+        display: flex;
+        gap: 0.5rem;
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .ticket-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .ticket-item {
+        padding: 0.5rem 1rem;
+        background: white;
+        border: 2px solid #ff6b35;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #ff6b35;
+    }
+
+    .food-list {
+        margin-top: 1rem;
+    }
+
+    .food-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .food-item-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .food-item-qty {
+        color: #666;
+    }
+
+    .food-item-price {
+        font-weight: bold;
+        color: #ff6b35;
+    }
+
+    .payment-methods {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .payment-option {
+        background: white;
+        padding: 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .payment-option:hover {
+        border-color: #ff6b35;
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+    }
+
+    .payment-option.selected {
+        border-color: #ff6b35;
+        background: #fff5f2;
+    }
+
+    .payment-option input[type="radio"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .payment-icon {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .payment-info {
+        flex: 1;
+    }
+
+    .payment-name {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .payment-desc {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .order-summary {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        position: sticky;
+        top: 20px;
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .summary-line {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .summary-label {
+        color: #666;
+    }
+
+    .summary-value {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        margin-top: 1rem;
+        border-top: 2px solid #333;
+        font-size: 1.3rem;
+        font-weight: bold;
+    }
+
+    .total-label {
+        color: #333;
+    }
+
+    .total-value {
+        color: #ff6b35;
+    }
+
+    .btn-confirm {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-confirm:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-confirm:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-back {
+        width: 100%;
+        padding: 0.8rem;
+        background: transparent;
+        color: #666;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .btn-back:hover {
+        border-color: #ff6b35;
+        color: #ff6b35;
+    }
+
+    .terms {
+        font-size: 0.85rem;
+        color: #666;
+        text-align: center;
+        margin-top: 1rem;
+        line-height: 1.6;
+    }
+
+    .terms a {
+        color: #ff6b35;
+        text-decoration: none;
+    }
+
+    @@media (max-width: 1024px) {
+        .payment-content {
+            grid-template-columns: 1fr;
+        }
+
+        .order-summary {
+            position: static;
+        }
+    }
+</style>
+
+<div class="payment-container">
+    <div class="payment-header">
+        <h2 style="margin: 0;">?? Thanh Toán</h2>
+        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Xác nh?n thông tin và hoàn t?t ??t vé</p>
+    </div>
+
+    <div class="progress-steps">
+        <div class="step completed">
+            <span class="step-number"><i class="fas fa-check"></i></span>
+            <span>Chọn Ghế</span>
+        </div>
+        <div class="step completed">
+            <span class="step-number"><i class="fas fa-check"></i></span>
+            <span>Ch?n ?? ?n</span>
+        </div>
+        <div class="step active">
+            <span class="step-number">3</span>
+            <span>Thanh Toán</span>
+        </div>
+    </div>
+
+    <div class="payment-content">
+        <div class="payment-main">
+            <!-- Movie Info -->
+            <div class="info-section">
+                <h3 class="section-title">
+                    <i class="fas fa-film"></i>
+                    Thông Tin Phim
+                </h3>
+                <div class="movie-summary">
+                    @if (!string.IsNullOrEmpty(showtime.Phim.hinh_anh))
+                    {
+                        <img src="@Url.Content(showtime.Phim.hinh_anh)" alt="@showtime.Phim.ten_phim" class="movie-poster-tiny" />
+                    }
+                    <div class="movie-details">
+                        <div class="movie-title-pay">@showtime.Phim.ten_phim</div>
+                        <div class="movie-info-line">
+                            <i class="fas fa-building"></i>
+                            <span>@showtime.Phong_Chieu.Rap.ten_rap</span>
+                        </div>
+                        <div class="movie-info-line">
+                            <i class="fas fa-door-open"></i>
+                            <span>@showtime.Phong_Chieu.ten_phong</span>
+                        </div>
+                        <div class="movie-info-line">
+                            <i class="fas fa-calendar"></i>
+                            <span>@showtime.ngay_chieu.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="movie-info-line">
+                            <i class="fas fa-clock"></i>
+                            <span>@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm") - @showtime.Ca_Chieu.gio_ket_thuc.ToString(@"hh\:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets -->
+            <div class="info-section">
+                <h3 class="section-title">
+                    <i class="fas fa-ticket-alt"></i>
+                    Vé ?ã Ch?n (@tickets.Count vé)
+                </h3>
+                <div class="ticket-list">
+                    @foreach (var ticket in tickets)
+                    {
+                        <div class="ticket-item">
+                            <i class="fas fa-chair"></i> @ticket.Ghe.so_ghe
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Food Items -->
+            @if (foodItems != null && foodItems.Count > 0)
+            {
+                <div class="info-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-utensils"></i>
+                        ?? ?n & Th?c U?ng
+                    </h3>
+                    <div class="food-list">
+                        @foreach (var item in foodItems)
+                        {
+                            <div class="food-item">
+                                <div>
+                                    <div class="food-item-name">@item.Food.ten_do_an</div>
+                                    <div class="food-item-qty">S? l??ng: @item.Quantity</div>
+                                </div>
+                                <div class="food-item-price">
+                                    @(((decimal)item.Food.gia_ban * item.Quantity).ToString("N0")) ?
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <h3 class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    Ph??ng Th?c Thanh Toán
+                </h3>
+
+                <div class="payment-option selected" onclick="selectPayment('online', this)">
+                    <input type="radio" name="payment" value="online" checked />
+                    <div class="payment-icon">??</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Thanh Toán Online</div>
+                        <div class="payment-desc">Visa, Master Card, ATM, QR Code</div>
+                    </div>
+                </div>
+
+                <div class="payment-option" onclick="selectPayment('cash', this)">
+                    <input type="radio" name="payment" value="cash" />
+                    <div class="payment-icon">??</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Thanh Toán T?i Qu?y</div>
+                        <div class="payment-desc">Thanh toán b?ng ti?n m?t t?i r?p</div>
+                    </div>
+                </div>
+
+                <div class="payment-option" onclick="selectPayment('wallet', this)">
+                    <input type="radio" name="payment" value="wallet" />
+                    <div class="payment-icon">??</div>
+                    <div class="payment-info">
+                        <div class="payment-name">Ví ?i?n T?</div>
+                        <div class="payment-desc">MoMo, ZaloPay, VNPay</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h3 class="summary-title">T?ng ??n Hàng</h3>
+            
+            <div class="summary-line">
+                <span class="summary-label">Ti?n vé (@tickets.Count vé)</span>
+                <span class="summary-value">@ticketTotal.ToString("N0") ?</span>
+            </div>
+
+            @if (foodTotal > 0)
+            {
+                <div class="summary-line">
+                    <span class="summary-label">?? ?n & th?c u?ng</span>
+                    <span class="summary-value">@foodTotal.ToString("N0") ?</span>
+                </div>
+            }
+
+            <div class="summary-total">
+                <span class="total-label">T?ng C?ng</span>
+                <span class="total-value">@grandTotal.ToString("N0") ?</span>
+            </div>
+
+            <button class="btn-confirm" onclick="confirmBooking()">
+                <i class="fas fa-check-circle"></i> Xác Nh?n ??t Vé
+            </button>
+
+            <button class="btn-back" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i> Quay L?i
+            </button>
+
+            <div class="terms">
+                B?ng vi?c nh?n "Xác Nh?n", b?n ??ng ý v?i
+                <a href="#">?i?u kho?n s? d?ng</a> và
+                <a href="#">Chính sách b?o m?t</a> c?a DAV Cinema
+            </div>
+        </div>
+    </div>
+</div>
+
+@@section scripts {
+    <script>
+        var selectedPaymentMethod = 'online';
+
+        function selectPayment(method, element) {
+            $('.payment-option').removeClass('selected');
+            $(element).addClass('selected');
+            $(element).find('input[type="radio"]').prop('checked', true);
+            selectedPaymentMethod = method;
+        }
+
+        function confirmBooking() {
+            if (!confirm('Xác nh?n ??t vé v?i t?ng ti?n @grandTotal.ToString("N0") ??')) {
+                return;
+            }
+
+            $('#btn-confirm').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> ?ang x? lý...');
+
+            $.ajax({
+                url: '@Url.Action("Confirm", "Booking")',
+                type: 'POST',
+                data: { paymentMethod: selectedPaymentMethod },
+                success: function(response) {
+                    if (response.success) {
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        alert(response.message);
+                        $('#btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Xác Nh?n ??t Vé');
+                    }
+                },
+                error: function() {
+                    alert('Có l?i x?y ra. Vui lòng th? l?i!');
+                    $('#btn-confirm').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Xác Nh?n ??t Vé');
+                }
+            });
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+}

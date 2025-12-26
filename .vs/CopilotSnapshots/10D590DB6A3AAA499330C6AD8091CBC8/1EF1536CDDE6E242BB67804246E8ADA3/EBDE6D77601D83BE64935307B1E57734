@@ -1,0 +1,234 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class CartController : Controller
+    {
+        // GET: Cart (Partial view for layout)
+        public ActionResult Index()
+        {
+            return PartialView();
+        }
+
+        // GET: Cart/GetCartData (AJAX)
+        [HttpGet]
+        public ActionResult GetCartData()
+        {
+            var cart = SessionCartManager.GetCart();
+            var cartData = cart.Select(item => new
+            {
+                cartItemId = item.CartItemId,
+                movieName = item.MovieName,
+                cinemaName = item.CinemaName,
+                roomName = item.RoomName,
+                showDate = item.ShowDate.ToString("dd/MM/yyyy"),
+                showTime = item.ShowTime,
+                seats = string.Join(", ", item.Seats.Select(s => s.SeatNumber)),
+                seatCount = item.Seats.Count,
+                seatDetails = item.Seats.Select(s => new
+                {
+                    seatNumber = s.SeatNumber,
+                    seatType = s.SeatType,
+                    price = s.Price
+                }).ToList(),
+                foodCount = item.Foods.Sum(f => f.Quantity),
+                foodDetails = item.Foods.Select(f => new
+                {
+                    foodName = f.FoodName,
+                    quantity = f.Quantity,
+                    unitPrice = f.UnitPrice
+                }).ToList(),
+                ticketTotal = item.TicketTotal,
+                foodTotal = item.FoodTotal,
+                totalPrice = item.TotalPrice
+            }).ToList();
+
+            return Json(new
+            {
+                success = true,
+                items = cartData,
+                count = SessionCartManager.GetCartCount(),
+                total = SessionCartManager.GetCartTotal()
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        // POST: Cart/Remove
+        [HttpPost]
+        public ActionResult Remove(string cartItemId)
+        {
+            try
+            {
+                SessionCartManager.RemoveFromCart(cartItemId);
+                return Json(new
+                {
+                    success = true,
+                    count = SessionCartManager.GetCartCount(),
+                    total = SessionCartManager.GetCartTotal()
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Cart/Clear
+        [HttpPost]
+        public ActionResult Clear()
+        {
+            try
+            {
+                SessionCartManager.ClearCart();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // GET: Cart/Checkout
+        public ActionResult Checkout()
+        {
+            if (Session["CustomerId"] == null)
+            {
+                ViewBag.ReturnUrl = Request.Url?.PathAndQuery;
+                ViewBag.ErrorMessage = "Vui lòng đăng nhập để thanh toán!";
+                return View("~/Views/Shared/RequireLogin.cshtml");
+            }
+
+            var cart = SessionCartManager.GetCart();
+            if (!cart.Any())
+            {
+                TempData["ErrorMessage"] = "Giỏ hàng trống!";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(cart);
+        }
+
+        // POST: Cart/ProcessCheckout
+        [HttpPost]
+        public ActionResult ProcessCheckout(string paymentMethod)
+        {
+            try
+            {
+                if (Session["CustomerId"] == null)
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập!", requireLogin = true });
+                }
+
+                var cart = SessionCartManager.GetCart();
+                if (!cart.Any())
+                {
+                    return Json(new { success = false, message = "Giỏ hàng trống!" });
+                }
+
+                var db = new Models.CSDLDataContext();
+                var customerId = (int)Session["CustomerId"];
+                var successfulBookings = new List<int>();
+
+                try
+                {
+                    // Process each cart item as a separate booking
+                    foreach (var cartItem in cart)
+                    {
+                        // Check if seats are still available
+                        var seatIds = cartItem.Seats.Select(s => s.SeatId).ToList();
+                        var tickets = db.Ves
+                            .Where(v => seatIds.Contains(v.ghe_id) && v.Suat_Chieu.suat_chieu_id == cartItem.ShowtimeId)
+                            .ToList();
+
+                        // **CHECK: Chỉ vé "Chưa sử dụng" mới được chọn**
+                        var unavailableSeats = tickets.Where(t => t.trang_thai_ve != "Chưa sử dụng").ToList();
+                        if (unavailableSeats.Any())
+                        {
+                            var seatNumbers = string.Join(", ", unavailableSeats.Select(t => t.Ghe.so_ghe));
+                            return Json(new
+                            {
+                                success = false,
+                                message = $"Ghế {seatNumbers} của phim {cartItem.MovieName} đã được đặt. Vui lòng xóa khỏi giỏ và chọn ghế khác!"
+                            });
+                        }
+
+                        // Create booking
+                        var booking = new Models.Dat_Ve
+                        {
+                            khach_hang_id = customerId,
+                            ngay_tao = DateTime.Now,
+                            tong_tien = cartItem.TotalPrice,
+                            trang_thai_Dat_Ve = paymentMethod == "cash" ? "Chờ xác nhận" : "Đã xác nhận"
+                        };
+
+                        db.Dat_Ves.InsertOnSubmit(booking);
+                        db.SubmitChanges();
+
+                        // Update tickets
+                        foreach (var ticket in tickets)
+                        {
+                            ticket.Dat_Ve_id = booking.Dat_Ve_id;
+                            ticket.trang_thai_ve = "Chưa sử dụng";  // **CHÍNH XÁC TRẠNG THÁI**
+                            ticket.ma_qr_code = $"DAVCINEMA-{booking.Dat_Ve_id}-{ticket.ve_id}-{DateTime.Now.Ticks}";
+                        }
+
+                        // Add food items
+                        foreach (var foodInfo in cartItem.Foods)
+                        {
+                            var foodOrder = new Models.DonHang_DoAn
+                            {
+                                Dat_Ve_id = booking.Dat_Ve_id,
+                                Do_An_id = foodInfo.FoodId,
+                                so_luong = foodInfo.Quantity
+                            };
+                            db.DonHang_DoAns.InsertOnSubmit(foodOrder);
+                        }
+
+                        db.SubmitChanges();
+                        successfulBookings.Add(booking.Dat_Ve_id);
+                    }
+
+                    // Clear cart after successful checkout
+                    SessionCartManager.ClearCart();
+
+                    // Redirect to success page with first booking ID
+                    return Json(new
+                    {
+                        success = true,
+                        message = $"Đặt vé thành công! Tổng {successfulBookings.Count} đơn hàng.",
+                        redirectUrl = Url.Action("CheckoutSuccess", "Cart", new { bookingIds = string.Join(",", successfulBookings) })
+                    });
+                }
+                finally
+                {
+                    db.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Infrastructure.LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // GET: Cart/CheckoutSuccess
+        public ActionResult CheckoutSuccess(string bookingIds)
+        {
+            if (string.IsNullOrEmpty(bookingIds))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var ids = bookingIds.Split(',').Select(int.Parse).ToList();
+            var db = new Models.CSDLDataContext();
+            var bookings = db.Dat_Ves.Where(b => ids.Contains(b.Dat_Ve_id)).ToList();
+            db.Dispose();
+
+            return View(bookings);
+        }
+    }
+}

@@ -1,0 +1,190 @@
+﻿@{
+    ViewBag.Title = "Thanh Toán Online";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .payment-gateway-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .payment-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+
+    .payment-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-box {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-title {
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-text {
+        color: #666;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .loading-spinner.active {
+        display: block;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .btn-pay {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+    }
+
+    .btn-pay:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-pay:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .btn-back {
+        width: 100%;
+        padding: 0.8rem;
+        background: transparent;
+        color: #666;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 0.5rem;
+    }
+
+    .btn-back:hover {
+        border-color: #667eea;
+        color: #667eea;
+    }
+</style>
+
+<div class="payment-gateway-container">
+    <div class="payment-header">
+        <h2 style="margin: 0;">💳 Thanh Toán Online</h2>
+        <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Sử dụng VNPay để thanh toán an toàn</p>
+    </div>
+
+    <div class="payment-content">
+        <!-- Info Box -->
+        <div class="info-box">
+            <div class="info-title">ℹ️ Thông Tin Thanh Toán</div>
+            <div class="info-text">
+                Bạn sắp thanh toán thông qua cổng VNPay. 
+                Số tiền: <strong>@ViewBag.Amount</strong> VND<br>
+                Đơn hàng: <strong>@ViewBag.BookingId</strong>
+            </div>
+        </div>
+
+        <!-- Loading Spinner (hidden by default) -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Đang chuyển hướng đến VNPay... Vui lòng chờ</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <button class="btn-pay" id="btnPay" onclick="processPayment()">
+            <i class="fas fa-lock"></i> Thanh Toán Bằng VNPay
+        </button>
+        <button class="btn-back" onclick="goBack()">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </button>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function processPayment() {
+            var bookingId = @ViewBag.BookingId;
+            
+            if (!bookingId) {
+                alert('Lỗi: Không tìm thấy Booking ID');
+                return;
+            }
+
+            // Show loading spinner
+            $('#loadingSpinner').addClass('active');
+            $('#btnPay').prop('disabled', true);
+
+            // ✅ Gọi action InitiatePayment để tạo URL VNPay
+            $.ajax({
+                url: '@Url.Action("InitiatePayment", "Invoice")',
+                type: 'POST',
+                data: { bookingId: bookingId },
+                success: function(response) {
+                    if (response.success && response.redirectUrl) {
+                        // ✅ Redirect sang VNPay URL
+                        window.location.href = response.redirectUrl;
+                    } else {
+                        alert(response.message || 'Lỗi khi khởi tạo thanh toán');
+                        $('#loadingSpinner').removeClass('active');
+                        $('#btnPay').prop('disabled', false);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Lỗi: ' + error);
+                    $('#loadingSpinner').removeClass('active');
+                    $('#btnPay').prop('disabled', false);
+                }
+            });
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+}

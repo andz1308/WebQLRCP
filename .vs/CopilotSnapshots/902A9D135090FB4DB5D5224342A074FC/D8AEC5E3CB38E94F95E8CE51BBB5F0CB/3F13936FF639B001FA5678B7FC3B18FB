@@ -1,0 +1,442 @@
+﻿@model WebCinema.Models.MovieDetailViewModel
+
+@{
+    ViewBag.Title = "Chi Tiết Phim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var movie = Model.Movie;
+    var genres = Model.Genres;
+    var cast = Model.Cast;
+    var avgRating = Model.AverageRating;
+    var ratingCount = Model.RatingCount;
+    var showtimes = Model.Showtimes;
+    var imagePath = Model.ImagePath;
+    var trailer = Model.TrailerUrl;
+}
+
+<style>
+    .movie-detail-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .movie-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+    }
+
+    .movie-poster-large {
+        width: 100%;
+        height: 450px;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
+    }
+
+    .movie-poster-large img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .movie-main-info h1 {
+        font-size: 2.5rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .movie-meta {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #666;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #ff6b35;
+    }
+
+    .movie-rating-detail {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .rating-stars-large {
+        font-size: 1.5rem;
+        color: #ffc107;
+    }
+
+    .rating-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff6b35;
+    }
+
+    .rating-total {
+        color: #999;
+    }
+
+    .movie-description {
+        line-height: 1.8;
+        color: #555;
+        margin-bottom: 1.5rem;
+    }
+
+    .movie-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-book-ticket {
+        padding: 1rem 3rem;
+        background: #ff6b35;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-book-ticket:hover {
+        background: #ff8555;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-trailer {
+        padding: 1rem 2rem;
+        background: transparent;
+        color: #ff6b35;
+        border: 2px solid #ff6b35;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-trailer:hover {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .section-detail {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-detail h2 {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #ff6b35;
+    }
+
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .cast-item {
+        text-align: center;
+    }
+
+    .cast-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        margin: 0 auto 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+    }
+
+    .cast-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cast-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.3rem;
+    }
+
+    .cast-role {
+        font-size: 0.9rem;
+        color: #ff6b35;
+    }
+
+    .showtimes-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .showtime-date-group {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .showtime-date-group:hover {
+        border-color: #ff6b35;
+        box-shadow: 0 4px 15px rgba(255, 107, 53, 0.1);
+    }
+
+    .showtime-date {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #ff6b35;
+        margin-bottom: 1rem;
+    }
+
+    .showtime-slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+
+    .showtime-slot {
+        padding: 0.8rem 1rem;
+        background: #f9f9f9;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .showtime-slot:hover {
+        background: #ff6b35;
+        border-color: #ff6b35;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .showtime-time {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .showtime-price {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .showtime-slot:hover .showtime-price {
+        color: white;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 4px solid #ff6b35;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #ff6b35;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: #333;
+    }
+
+    @@media (max-width: 768px) {
+        .movie-header {
+            grid-template-columns: 1fr;
+        }
+
+        .movie-poster-large {
+            height: 400px;
+        }
+    }
+</style>
+
+<div class="movie-detail-container">
+    <!-- Movie Header -->
+    <div class="movie-header">
+        <div class="movie-poster-large">
+            @if (!string.IsNullOrEmpty(imagePath))
+            {
+                var imgSrc = imagePath.StartsWith("~") ? Url.Content(imagePath) : imagePath;
+                <img src="@imgSrc" alt="@movie.ten_phim" />
+            }
+        </div>
+        <div class="movie-main-info">
+            <h1>@movie.ten_phim</h1>
+
+            <div class="movie-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Thể loại:</span>
+                    <span>@(genres != null && genres.Any() ? string.Join(", ", genres) : "Chưa phân loại")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Thời lượng:</span>
+                    <span>@(movie.thoi_luong.HasValue ? movie.thoi_luong.Value + " phút" : "N/A")</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Khởi chiếu:</span>
+                    <span>@(movie.ngay_khoi_chieu.HasValue ? movie.ngay_khoi_chieu.Value.ToString("dd/MM/yyyy") : "N/A")</span>
+                </div>
+            </div>
+
+            <div class="movie-rating-detail">
+                <div class="rating-stars-large">
+                    @for (int i = 0; i < (int)Math.Round(avgRating); i++)
+                    {
+                        <text>★</text>
+                    }
+                    @for (int i = 0; i < 5 - (int)Math.Round(avgRating); i++)
+                    {
+                        <text>☆</text>
+                    }
+                </div>
+                <span class="rating-number">@avgRating.ToString("0.0")</span>
+                <span class="rating-total">/ 5 (@ratingCount đánh giá)</span>
+            </div>
+
+            <div class="movie-description">
+                <p>@(movie.mo_ta ?? "Chưa có mô tả cho phim này.")</p>
+            </div>
+
+            <div class="movie-actions">
+                <button class="btn-book-ticket" onclick="document.getElementById('showtimes').scrollIntoView({ behavior: 'smooth' })">
+                    Đặt Vé Ngay
+                </button>
+                @if (!string.IsNullOrEmpty(trailer))
+                {
+                    <button class="btn-trailer" onclick="window.open('@(trailer.StartsWith("~") ? Url.Content(trailer) : trailer)', '_blank')">
+                        🎬 Xem Trailer
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="section-detail">
+        <h2>Thông Tin Phim</h2>
+        <div class="info-grid">
+            @if (movie.Dao_Dien != null)
+            {
+                <div class="info-item">
+                    <div class="info-label">Đạo diễn</div>
+                    <div class="info-value">@movie.Dao_Dien.ho_ten</div>
+                </div>
+            }
+            @if (movie.Nha_San_Xuat != null)
+            {
+                <div class="info-item">
+                    <div class="info-label">Nhà sản xuất</div>
+                    <div class="info-value">@movie.Nha_San_Xuat.ten_nha_san_xuat</div>
+                </div>
+            }
+            @if (movie.Nha_San_Xuat != null && movie.Nha_San_Xuat.quoc_gia != null)
+            {
+                <div class="info-item">
+                    <div class="info-label">Quốc gia</div>
+                    <div class="info-value">@movie.Nha_San_Xuat.quoc_gia</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Cast -->
+    @if (cast != null && cast.Any())
+    {
+        <div class="section-detail">
+            <h2>Diễn Viên</h2>
+            <div class="cast-grid">
+                @foreach (var actor in cast.Take(8))
+                {
+                    <div class="cast-item">
+                        <div class="cast-photo">
+                            @if (actor.Dien_Vien != null && !string.IsNullOrEmpty(actor.Dien_Vien.hinh_anh))
+                            {
+                                var actorImg = actor.Dien_Vien.hinh_anh.StartsWith("~") ? Url.Content(actor.Dien_Vien.hinh_anh) : actor.Dien_Vien.hinh_anh;
+                                <img src="@actorImg" alt="@actor.Dien_Vien.ho_ten" />
+                            }
+                        </div>
+                        <div class="cast-name">@(actor.Dien_Vien != null ? actor.Dien_Vien.ho_ten : "N/A")</div>
+                        <div class="cast-role">@(actor.ten_vai_dien ?? "N/A")</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Showtimes -->
+    <div class="section-detail" id="showtimes">
+        <h2>Lịch Chiếu</h2>
+        @if (showtimes != null && showtimes.Any())
+        {
+            <div class="showtimes-container">
+                @foreach (var dateGroup in showtimes.GroupBy(st => st.ngay_chieu.Date))
+                {
+                    <div class="showtime-date-group">
+                        <div class="showtime-date">
+                            @dateGroup.Key.ToString("dddd, dd/MM/yyyy")
+                        </div>
+                        <div class="showtime-slots">
+                            @foreach (var showtime in dateGroup)
+                            {
+                                <div class="showtime-slot" onclick="alert('Chức năng đặt vé đang được phát triển!')">
+                                    <div class="showtime-time">
+                                        @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")
+                                    </div>
+                                    <div class="showtime-price">
+                                        @showtime.gia_ve.ToString("N0") đ
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p style="text-align: center; color: #999; padding: 2rem;">
+                Hiện chưa có suất chiếu nào cho phim này.
+            </p>
+        }
+    </div>
+</div>
+

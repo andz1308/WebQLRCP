@@ -1,0 +1,282 @@
+﻿<!--  Cart Overlay -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!--  Shopping Cart Modal -->
+<div class="cart-modal" id="cartModal">
+    <div class="cart-header">
+        <span>🛒 Giỏ Hàng (<span id="cartItemCount">0</span> vé)</span>
+        <span class="cart-close" onclick="toggleCart()">✕</span>
+    </div>
+    <div class="cart-items" id="cartItems">
+        <div class="cart-empty">Đang tải...</div>
+    </div>
+    <div class="cart-footer">
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>Tổng tiền vé:</span>
+                <span id="ticketSubtotal">0 đ</span>
+            </div>
+            <div class="summary-row">
+                <span>Tổng tiền đồ ăn:</span>
+                <span id="foodSubtotal">0 đ</span>
+            </div>
+            <div class="cart-total">
+                <span>Tổng cộng:</span>
+                <span class="cart-total-price" id="cartTotal">0 đ</span>
+            </div>
+        </div>
+        <a href="@Url.Action("Checkout", "Cart")" class="cart-checkout" id="checkoutBtn">
+            <i class="fas fa-credit-card"></i> Thanh Toán
+        </a>
+    </div>
+</div>
+
+<style>
+    .cart-summary {
+        margin-bottom: 1rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .cart-item {
+        background: #f9f9f9;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #ff6b35;
+        transition: all 0.3s ease;
+    }
+
+    .cart-item:hover {
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+    }
+
+    .cart-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .cart-item-name {
+        font-weight: 700;
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .cart-item-details {
+        font-size: 0.85rem;
+        color: #666;
+        line-height: 1.8;
+    }
+
+    .cart-item-details i {
+        color: #ff6b35;
+        width: 16px;
+    }
+
+    .seats-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin: 0.5rem 0;
+    }
+
+    .seat-badge {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .food-list {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed #ddd;
+    }
+
+    .food-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #666;
+        padding: 0.2rem 0;
+    }
+
+    .cart-item-price {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.8rem;
+        padding-top: 0.8rem;
+        border-top: 2px solid #e0e0e0;
+        font-weight: bold;
+    }
+
+    .price-amount {
+        color: #ff6b35;
+        font-size: 1.2rem;
+    }
+
+    .remove-btn {
+        padding: 0.4rem 0.8rem;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .remove-btn:hover {
+        background: #c0392b;
+    }
+</style>
+
+<script>
+    // Ensure jQuery is loaded first
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not loaded! Cart functionality may not work.');
+    }
+
+    // Load cart data when DOM is ready
+    if (typeof jQuery !== 'undefined') {
+        jQuery(document).ready(function($) {
+            console.log('Loading cart data...');
+            loadCartData();
+        });
+    }
+
+    function loadCartData() {
+        $.ajax({
+            url: '@Url.Action("GetCartData", "Cart")',
+            type: 'GET',
+            success: function(response) {
+                console.log('Cart data loaded:', response);
+                if (response.success) {
+                    updateCartDisplay(response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to load cart:', error);
+                $('#cartItems').html('<div class="cart-empty"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem; display: block;"></i><p>Không thể tải giỏ hàng</p></div>');
+            }
+        });
+    }
+
+    function updateCartDisplay(data) {
+        console.log('Updating cart display with items:', data.items.length);
+        
+        // Update cart count badges
+        $('#cartCount').text(data.count);
+        $('#cartItemCount').text(data.count);
+        
+        if (data.items.length === 0) {
+            $('#cartItems').html('<div class="cart-empty"><i class="fas fa-shopping-cart" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem; display: block;"></i><p style="color: #999; font-size: 1.1rem; margin-bottom: 0.5rem;">Giỏ hàng trống</p><p style="font-size: 0.9rem; color: #999;">Hãy chọn phim và đặt vé ngay!</p></div>');
+            $('#cartTotal').text('0 ₫');
+            $('#ticketSubtotal').text('0 ₫');
+            $('#foodSubtotal').text('0 ₫');
+            $('#checkoutBtn').hide();
+            return;
+        }
+
+        $('#checkoutBtn').show();
+
+        var html = '';
+        var totalTicketPrice = 0;
+        var totalFoodPrice = 0;
+
+        data.items.forEach(function(item) {
+            totalTicketPrice += item.ticketTotal;
+            totalFoodPrice += item.foodTotal;
+
+            html += '<div class="cart-item">';
+            
+            // Movie name and cinema info
+            html += '  <div class="cart-item-name">' + item.movieName + '</div>';
+            html += '  <div class="cart-item-details">';
+            html += '    <div><i class="fas fa-building"></i> ' + item.cinemaName + ' - ' + item.roomName + '</div>';
+            html += '    <div><i class="fas fa-calendar"></i> ' + item.showDate + ' | <i class="fas fa-clock"></i> ' + item.showTime + '</div>';
+            
+            // Seats
+            html += '    <div style="margin-top: 0.5rem;"><i class="fas fa-couch"></i> Ghế đã chọn:</div>';
+            html += '    <div class="seats-badges">';
+            if (item.seatDetails && item.seatDetails.length > 0) {
+                item.seatDetails.forEach(function(seat) {
+                    html += '<span class="seat-badge">' + seat.seatNumber + ' (' + seat.seatType + ')</span>';
+                });
+            } else {
+                html += '<span style="color: #999;">Không có thông tin ghế</span>';
+            }
+            html += '    </div>';
+            
+            // Food items if any
+            if (item.foodCount > 0 && item.foodDetails && item.foodDetails.length > 0) {
+                html += '    <div class="food-list">';
+                html += '      <div style="font-weight: 600; margin-bottom: 0.3rem;"><i class="fas fa-utensils"></i> Đồ ăn & thức uống:</div>';
+                item.foodDetails.forEach(function(food) {
+                    html += '      <div class="food-item">';
+                    html += '        <span>' + food.foodName + ' x' + food.quantity + '</span>';
+                    html += '        <span>' + (food.unitPrice * food.quantity).toLocaleString('vi-VN') + ' đ</span>';
+                    html += '      </div>';
+                });
+                html += '    </div>';
+            }
+            
+            html += '  </div>';
+            
+            // Price and remove button
+            html += '  <div class="cart-item-price">';
+            html += '    <button class="remove-btn" onclick="removeFromCart(\'' + item.cartItemId + '\')"><i class="fas fa-trash"></i> Xóa</button>';
+            html += '    <span class="price-amount">' + item.totalPrice.toLocaleString('vi-VN') + ' đ</span>';
+            html += '  </div>';
+            
+            html += '</div>';
+        });
+
+        $('#cartItems').html(html);
+        $('#ticketSubtotal').text(totalTicketPrice.toLocaleString('vi-VN') + ' đ');
+        $('#foodSubtotal').text(totalFoodPrice.toLocaleString('vi-VN') + ' đ');
+        $('#cartTotal').text(data.total.toLocaleString('vi-VN') + ' đ');
+        
+        console.log('Cart display updated successfully');
+    }
+
+    function removeFromCart(cartItemId) {
+        if (!confirm('Bạn có chắc muốn xóa vé này khỏi giỏ hàng?')) {
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("Remove", "Cart")',
+            type: 'POST',
+            data: { cartItemId: cartItemId },
+            success: function(response) {
+                if (response.success) {
+                    console.log('Item removed, reloading cart...');
+                    loadCartData();
+                } else {
+                    alert('Có lỗi xảy ra');
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi xóa vé');
+            }
+        });
+    }
+
+    // Make loadCartData globally accessible for other scripts
+    window.reloadCart = loadCartData;
+</script>
+

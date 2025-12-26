@@ -1,0 +1,182 @@
+[2025-12-02 08:11:53] ? BookingExpirationService started
+[2025-12-02 09:05:35] ? BookingExpirationService stopped
+[2025-12-02 09:07:32] ? BookingExpirationService started
+[2025-12-02 09:09:14]  Staff Cancel: Hủy Dat_Ve ID=196, giải phóng 1 vé
+[2025-12-02 09:40:56] ? BookingExpirationService stopped
+[2025-12-02 09:41:12] ? BookingExpirationService started
+[2025-12-02 10:02:09] ✅ Delete: Xóa Dat_Ve ID=182, đã xóa 1 vé và 1 đồ ăn
+[2025-12-02 10:04:06] ✅ Delete: Xóa Dat_Ve ID=190, đã xóa 1 vé và 1 đồ ăn
+[2025-12-02 10:04:13] ✅ Delete: Xóa Dat_Ve ID=189, đã xóa 1 vé và 2 đồ ăn
+[2025-12-02 10:04:19] ✅ Delete: Xóa Dat_Ve ID=188, đã xóa 1 vé và 1 đồ ăn
+[2025-12-02 10:06:40] Actor 10: Found 1 movies
+[2025-12-02 10:06:50] SelectSeats (Fresh DB): showtime=39, paidBookings=58, bookedCount=0
+[2025-12-02 10:07:52] ✅ Tạo Dat_Ve mới: ID=1193, Trạng thái=Chưa thanh toán
+[2025-12-02 10:07:52] ✅ Sinh QR code: DAVCINEMA-1193-1549-639002668723707031 -> qr_DAVCINEMA-1193-1549-639002668723707031.png
+[2025-12-02 10:07:52] ✅ Cập nhật Dat_Ve: ID=1193, Tổng tiền=145000,00, Vé=1, Đồ ăn=0
+[2025-12-02 10:07:52] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=145000&addInfo=DatVe1193
+[2025-12-02 10:08:03] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=123250&addInfo=DatVe1193
+[2025-12-02 10:09:24] ✅ Tạo hóa đơn HTML: invoice_1193_20251202_100924.html
+[2025-12-02 10:09:28] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:09:28] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 10:13:35] ✅ Tạo hóa đơn HTML: invoice_1193_20251202_101335.html
+[2025-12-02 10:13:39] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:13:39] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 10:13:40] ✅ Tạo hóa đơn HTML: invoice_1193_20251202_101340.html
+[2025-12-02 10:13:43] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:13:43] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 10:15:24] ? BookingExpirationService started
+[2025-12-02 10:15:45] SelectSeats (Fresh DB): showtime=39, paidBookings=59, bookedCount=1
+[2025-12-02 10:15:45] Booked seat ids: 102
+[2025-12-02 10:16:04] ✅ Tạo Dat_Ve mới: ID=1194, Trạng thái=Chưa thanh toán
+[2025-12-02 10:16:04] ✅ Sinh QR code: DAVCINEMA-1194-1556-639002673646051571 -> qr_DAVCINEMA-1194-1556-639002673646051571.png
+[2025-12-02 10:16:04] ✅ Cập nhật Dat_Ve: ID=1194, Tổng tiền=145000,00, Vé=1, Đồ ăn=0
+[2025-12-02 10:16:04] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=145000&addInfo=DatVe1194
+[2025-12-02 10:16:13] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=123250&addInfo=DatVe1194
+[2025-12-02 10:17:25] ✅ Tạo hóa đơn HTML: invoice_1194_20251202_101725.html
+[2025-12-02 10:17:28] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:17:28] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 10:19:36] ✅ Hoàn lại 1 điểm cho khách 34
+[2025-12-02 10:19:39] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:19:39] ✅ Gửi email thông báo hủy vé tới: duyan9088@gmail.com
+[2025-12-02 10:19:39] ✅ Hủy vé TỰ ĐỘNG: Booking 1194, Customer 34, Hoàn: 86275,000
+[2025-12-02 10:24:15] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 10:24:15] ✅ Gửi email xác nhận chuyển tiền tới: duyan9088@gmail.com
+[2025-12-02 10:24:15] ✅ Admin 1 xác nhận chuyển tiền: Yêu cầu 1, Booking 1194, Hoàn: 86.275₫
+[2025-12-02 10:48:44] ? BookingExpirationService started
+[2025-12-02 11:02:56] ? BookingExpirationService started
+[2025-12-02 11:33:25] ? BookingExpirationService started
+[2025-12-02 12:12:39] ? BookingExpirationService started
+[2025-12-02 12:36:47] ? BookingExpirationService started
+[2025-12-02 13:06:45] ? BookingExpirationService started
+[2025-12-02 13:23:54] ? BookingExpirationService started
+[2025-12-02 13:40:38] ? BookingExpirationService started
+[2025-12-02 13:46:08] ? BookingExpirationService started
+[2025-12-02 13:55:03] ? BookingExpirationService started
+[2025-12-02 13:58:04] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 14:01:42] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:14:38] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:16:22] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:17:02] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:20:16] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:24:39] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:33:26] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:37:07] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:41:49] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:44:56] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:50:00] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 14:57:47] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:04:33] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:07:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:08:55] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:10:26] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:11:40] ? BookingExpirationService stopped
+[2025-12-02 15:11:45] ? BookingExpirationService started
+[2025-12-02 15:11:45] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:13:13] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:15:45] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:16:08] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:16:33] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:17:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:18:36] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 15:32:06] ? BookingExpirationService stopped
+[2025-12-02 15:32:11] ? BookingExpirationService started
+[2025-12-02 15:54:22] ? BookingExpirationService started
+[2025-12-02 16:20:02] ? BookingExpirationService started
+[2025-12-02 16:27:09] ? BookingExpirationService started
+[2025-12-02 16:51:50] ? BookingExpirationService started
+[2025-12-02 16:59:46] Login success: duyan9088@gmail.com (Customer)
+[2025-12-02 17:01:17] ✅ Sinh QR code: DAVCINEMA-1195-1557-639002916771179734 -> qr_DAVCINEMA-1195-1557-639002916771179734.png
+[2025-12-02 17:01:17] ✅ Tạo đơn đặt online: Booking ID 1195, Trạng thái: Chưa thanh toán, Vé: 1, PromoCode: , Discount: 0
+[2025-12-02 17:01:17] 🔴 GetAvailablePromoCodes ENTRY POINT REACHED
+[2025-12-02 17:01:17] ✅ API GetAvailablePromoCodes called: CustomerId=34
+[2025-12-02 17:01:17] ✅ Found 5 active promos in DB
+[2025-12-02 17:01:17] ✅ Added promo: KM001, applicable=False, reason=Đã hết hạn
+[2025-12-02 17:01:17] ✅ Added promo: KM003, applicable=False, reason=Dành cho khách hàng VIP (100+ điểm)
+[2025-12-02 17:01:17] ✅ Added promo: KM004, applicable=True, reason=
+[2025-12-02 17:01:17] ✅ Added promo: k08, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:01:17] ✅ Added promo: PROMO_3011, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:01:17] ✅ Returning 5 promos to client
+[2025-12-02 17:03:30] Login success: vu@gmail.com (Staff)
+[2025-12-02 17:03:30] ✅ Staff Dashboard: ID 5
+[2025-12-02 17:05:10] ✅ Lấy thông tin Staff: ID 5
+[2025-12-02 17:05:55] ✅ Staff Dashboard: ID 5
+[2025-12-02 17:05:57] ✅ Lấy thông tin Staff: ID 5
+[2025-12-02 17:11:51] ? Found 1 expired bookings to cancel
+[2025-12-02 17:11:51] ? Cancelled expired booking ID=1195, Customer=34, Released 1 seats
+[2025-12-02 17:11:51] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-02 17:14:41] Login success: duyan9088@gmail.com (Customer)
+[2025-12-02 17:15:31] ✅ Sinh QR code: DAVCINEMA-1196-1557-639002925312234329 -> qr_DAVCINEMA-1196-1557-639002925312234329.png
+[2025-12-02 17:15:31] ✅ Tạo đơn đặt online: Booking ID 1196, Trạng thái: Chưa thanh toán, Vé: 1, PromoCode: , Discount: 0
+[2025-12-02 17:15:31] 🔴 GetAvailablePromoCodes ENTRY POINT REACHED
+[2025-12-02 17:15:31] ✅ API GetAvailablePromoCodes called: CustomerId=34
+[2025-12-02 17:15:31] ✅ Found 5 active promos in DB
+[2025-12-02 17:15:31] ✅ Added promo: KM001, applicable=False, reason=Đã hết hạn
+[2025-12-02 17:15:31] ✅ Added promo: KM003, applicable=False, reason=Dành cho khách hàng VIP (100+ điểm)
+[2025-12-02 17:15:31] ✅ Added promo: KM004, applicable=True, reason=
+[2025-12-02 17:15:31] ✅ Added promo: k08, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:15:31] ✅ Added promo: PROMO_3011, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:15:31] ✅ Returning 5 promos to client
+[2025-12-02 17:17:00] ✅ API Generated VNPay URL: BookingId=1196, Amount=102000,00₫
+[2025-12-02 17:20:17] Login success: duyan9088@gmail.com (Customer)
+[2025-12-02 17:25:51] ? Found 1 expired bookings to cancel
+[2025-12-02 17:25:51] ? Cancelled expired booking ID=1196, Customer=34, Released 1 seats
+[2025-12-02 17:25:51] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-02 17:34:44] Login success: duyan9088@gmail.com (Customer)
+[2025-12-02 17:37:14] Failed login: leminh@gmail.com
+[2025-12-02 17:37:32] Login success: leminh@example.com (Customer)
+[2025-12-02 17:38:12] Login success: duyan9088@gmail.com (Customer)
+[2025-12-02 17:40:53] ✅ Sinh QR code: DAVCINEMA-1197-1574-639002940533770900 -> qr_DAVCINEMA-1197-1574-639002940533770900.png
+[2025-12-02 17:40:53] ✅ Tạo đơn đặt online: Booking ID 1197, Trạng thái: Chưa thanh toán, Vé: 1, PromoCode: , Discount: 0
+[2025-12-02 17:40:53] 🔴 GetAvailablePromoCodes ENTRY POINT REACHED
+[2025-12-02 17:40:53] ✅ API GetAvailablePromoCodes called: CustomerId=34
+[2025-12-02 17:40:53] ✅ Found 5 active promos in DB
+[2025-12-02 17:40:53] ✅ Added promo: KM001, applicable=False, reason=Đã hết hạn
+[2025-12-02 17:40:53] ✅ Added promo: KM003, applicable=False, reason=Dành cho khách hàng VIP (100+ điểm)
+[2025-12-02 17:40:53] ✅ Added promo: KM004, applicable=True, reason=
+[2025-12-02 17:40:53] ✅ Added promo: k08, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:40:53] ✅ Added promo: PROMO_3011, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:40:53] ✅ Returning 5 promos to client
+[2025-12-02 17:41:54] ✅ Sinh QR code: DAVCINEMA-1198-1557-639002941144087568 -> qr_DAVCINEMA-1198-1557-639002941144087568.png
+[2025-12-02 17:41:54] ✅ Tạo đơn đặt online: Booking ID 1198, Trạng thái: Chưa thanh toán, Vé: 1, PromoCode: , Discount: 0
+[2025-12-02 17:41:54] 🔴 GetAvailablePromoCodes ENTRY POINT REACHED
+[2025-12-02 17:41:54] ✅ API GetAvailablePromoCodes called: CustomerId=34
+[2025-12-02 17:41:54] ✅ Found 5 active promos in DB
+[2025-12-02 17:41:54] ✅ Added promo: KM001, applicable=False, reason=Đã hết hạn
+[2025-12-02 17:41:54] ✅ Added promo: KM003, applicable=False, reason=Dành cho khách hàng VIP (100+ điểm)
+[2025-12-02 17:41:54] ✅ Added promo: KM004, applicable=True, reason=
+[2025-12-02 17:41:54] ✅ Added promo: k08, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:41:54] ✅ Added promo: PROMO_3011, applicable=False, reason=Khuyến mãi này chỉ áp dụng cho combo cụ thể
+[2025-12-02 17:41:54] ✅ Returning 5 promos to client
+[2025-12-02 17:43:03] 🔴 ApplyPromoToBooking called: bookingId=1198, promoCode=KM004, requestData={
+  "promo_code": "KM004",
+  "original_total": "145000.0"
+}
+[2025-12-02 17:43:03] ✅ Tính OriginalTotal từ booking: Vé=90000,00, Đồ ăn=55000,00, Total=145000,00
+[2025-12-02 17:43:03] ✅ Áp dụng khuyến mãi KM004 cho booking 1198: 145000,00 → 123250,00₫ (Giảm 21750₫)
+[2025-12-02 17:44:20] ✅ API Generated VNPay URL: BookingId=1198, Amount=123250,00₫
+[2025-12-02 17:47:47] ✅ Tạo hóa đơn HTML: invoice_1198_20251202_174747.html
+[2025-12-02 17:47:51] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 17:47:51] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 17:47:51] ✅ API VNPay Payment Success: Booking 1198, Customer 34, TransactionNo: 15315387
+[2025-12-02 17:49:03] Login success: vu@gmail.com (Staff)
+[2025-12-02 17:49:04] ✅ Staff Dashboard: ID 5
+[2025-12-02 17:50:40] ✅ Lấy thông tin Staff: ID 5
+[2025-12-02 17:51:51] ? Found 1 expired bookings to cancel
+[2025-12-02 17:51:51] ? Cancelled expired booking ID=1197, Customer=34, Released 1 seats
+[2025-12-02 17:51:51] ? Successfully cancelled 1 expired bookings and released seats
+[2025-12-02 17:52:17] ✅ Staff Dashboard: ID 5
+[2025-12-02 17:52:19] ✅ Lấy thông tin Staff: ID 5
+[2025-12-02 21:34:27] ? BookingExpirationService started
+[2025-12-02 21:35:54] SelectSeats (Fresh DB): showtime=39, paidBookings=60, bookedCount=2
+[2025-12-02 21:35:54] Booked seat ids: 102,112
+[2025-12-02 21:36:14] ✅ Tạo Dat_Ve mới: ID=1199, Trạng thái=Chưa thanh toán
+[2025-12-02 21:36:14] ✅ Sinh QR code: DAVCINEMA-1199-1556-639003081745082308 -> qr_DAVCINEMA-1199-1556-639003081745082308.png
+[2025-12-02 21:36:14] ✅ Cập nhật Dat_Ve: ID=1199, Tổng tiền=145000,00, Vé=1, Đồ ăn=0
+[2025-12-02 21:36:14] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=145000&addInfo=DatVe1199
+[2025-12-02 21:36:28] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=123250&addInfo=DatVe1199
+[2025-12-02 21:37:45] ✅ Tạo hóa đơn HTML: invoice_1199_20251202_213745.html
+[2025-12-02 21:37:51] ✅ Gửi email thành công tới: duyan9088@gmail.com
+[2025-12-02 21:37:51] ✅ Gửi email hóa đơn thành công cho khách 34 (duyan9088@gmail.com)
+[2025-12-02 21:40:18] ✅ QR Code URL (new format) generated: https://img.vietqr.io/image/VCB-1031419192-compact2.png?amount=0&addInfo=VeGladiator
+[2025-12-02 21:49:40] ? BookingExpirationService started
+[2025-12-02 21:58:31] ✅ Tạo phiếu nhập HTML: phieu_nhap_1_20251202_215831.html

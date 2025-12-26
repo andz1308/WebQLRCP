@@ -1,0 +1,1386 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAV - Rạp Chiếu Phim Hàng Đầu Việt Nam</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 3px solid #ff6b35;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b35;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #ff6b35;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #ff6b35;
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+        }
+
+        .search-box:hover {
+            background: #fff;
+            border-color: #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+        }
+
+        .search-box input {
+            background: none;
+            border: none;
+            color: #333;
+            outline: none;
+            width: 150px;
+        }
+
+        .search-box input::placeholder {
+            color: #999;
+        }
+
+        .user-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-login, .btn-register {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #ff6b35;
+            border: 2px solid #ff6b35;
+        }
+
+        .btn-login:hover {
+            background: #ff6b35;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-register {
+            background: #ff6b35;
+            color: #fff;
+        }
+
+        .btn-register:hover {
+            background: #ff8555;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* User dropdown menu */
+        .user-dropdown {
+            position: relative;
+        }
+
+        .user-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .user-button:hover {
+            background: #ff8555;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 0.5rem;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 0.8rem 1.2rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-content a:hover {
+            background: #f9f9f9;
+            color: #ff6b35;
+            padding-left: 1.5rem;
+        }
+
+        /*  Shopping Cart Icon */
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .cart-icon:hover {
+            color: #ff6b35;
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b35;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /*  Shopping Cart Modal */
+        .cart-modal {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: right 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            border-left: 3px solid #ff6b35;
+        }
+
+        .cart-modal.active {
+            right: 0;
+        }
+
+        .cart-header {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .cart-close {
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .cart-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .cart-item {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #ff6b35;
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-price {
+            color: #ff6b35;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .qty-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .qty-btn:hover {
+            background: #ff8555;
+        }
+
+        .cart-empty {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .cart-footer {
+            border-top: 2px solid #e0e0e0;
+            padding: 1.5rem;
+            background: #f9f9f9;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .cart-total-price {
+            color: #ff6b35;
+        }
+
+        .cart-checkout {
+            width: 100%;
+            padding: 0.8rem;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cart-checkout:hover {
+            background: #ff8555;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .cart-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== BANNER SLIDER ===== */
+        .banner-slider {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 107, 53, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            color: #333;
+        }
+
+        .slide-content h2 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            animation: slideInDown 0.8s ease;
+            color: #ff6b35;
+        }
+
+        .slide-content p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+            animation: slideInUp 0.8s ease;
+            color: #555;
+        }
+
+        .slide-btn {
+            padding: 1rem 2.5rem;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: slideInUp 0.8s ease 0.2s both;
+        }
+
+        .slide-btn:hover {
+            background: #ff8555;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        }
+
+        .slider-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: #ff6b35;
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        .dot:hover {
+            background: #ff6b35;
+        }
+
+        @@keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FILTER SECTION ===== */
+        .filter-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 2rem;
+            margin: -50px 0 0 0;
+            position: relative;
+            z-index: 20;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .filter-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            color: #ff6b35;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.8rem;
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            color: #333;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .filter-group select:hover,
+        .filter-group input:hover {
+            border-color: #ff6b35;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.15);
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+        }
+
+        /* ===== MOVIES SECTION ===== */
+        .movies-section {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #333;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: #ff6b35;
+            border-radius: 2px;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.25);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .movie-poster::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280"><rect fill="%23ff6b35" width="200" height="280"/><circle cx="50" cy="70" r="30" fill="%23ff8555" opacity="0.5"/><circle cx="150" cy="150" r="40" fill="%23ff8555" opacity="0.3"/></svg>');
+            background-size: cover;
+        }
+
+        .movie-poster::after {
+            content: '▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .movie-card:hover .movie-poster::after {
+            opacity: 1;
+        }
+
+        .movie-info {
+            padding: 1.5rem;
+        }
+
+        .movie-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .movie-genre {
+            color: #ff6b35;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .movie-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stars {
+            color: #ffc107;
+        }
+
+        .rating-text {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .movie-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #ff6b35;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .movie-btn:hover {
+            background: #ff8555;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        /* ===== PROMOTIONS SECTION ===== */
+        .promotions-section {
+            background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+            padding: 3rem 2rem;
+            margin: 3rem 0;
+            border-top: 2px solid #e0e0e0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .promotions-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .promo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .promo-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+            transition: all 0.4s ease;
+        }
+
+        .promo-card:hover {
+            border-color: #ff6b35;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(255, 107, 53, 0.02) 100%);
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.15);
+        }
+
+        .promo-card:hover::before {
+            top: -20%;
+            right: -20%;
+        }
+
+        .promo-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .promo-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+
+        .promo-desc {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ===== CINEMAS SECTION ===== */
+        .cinemas-section {
+            max-width: 1400px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .cinemas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .cinema-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .cinema-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(255, 107, 53, 0.25);
+        }
+
+        .cinema-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cinema-image::before {
+            content: '🎬';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .cinema-card:hover .cinema-image {
+            background: linear-gradient(135deg, #ff8555 0%, #ff6b35 100%);
+        }
+
+        .cinema-info {
+            padding: 1.5rem;
+        }
+
+        .cinema-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .cinema-location {
+            color: #ff6b35;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cinema-details {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .cinema-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: transparent;
+            color: #ff6b35;
+            border: 2px solid #ff6b35;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cinema-btn:hover {
+            background: #ff6b35;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ===== PARTNERS SECTION ===== */
+        .partners-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%);
+            padding: 3rem 2rem;
+            margin-top: 3rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .partners-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .partners-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .partners-slider {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .partners-track {
+            display: flex;
+            gap: 2rem;
+            animation: scroll 20s linear infinite;
+        }
+
+        .partner-logo {
+            min-width: 150px;
+            height: 80px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ff6b35;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .partner-logo:hover {
+            background: #f9f9f9;
+            border-color: #ff6b35;
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.2);
+        }
+
+        @@keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .partners-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: #333;
+            border-top: 3px solid #ff6b35;
+            padding: 3rem 2rem 1rem;
+            margin-top: 3rem;
+            color: #ccc;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #ff6b35;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #ff6b35;
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            color: #999;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+
+            .slide-content h2 {
+                font-size: 2rem;
+            }
+
+            .slide-content p {
+                font-size: 1rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .filter-container {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-modal {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!--  Cart Overlay -->
+    @Html.Action("Index", "Cart")
+
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-container">
+            <a href="@Url.Action("Index", "Home")" class="logo">DAV</a>
+            <nav>
+                <a href="#movies">Phim</a>
+                <a href="#cinemas">Rạp</a>
+                <a href="#promotions">Khuyến Mãi</a>
+                <a href="#contact">Liên Hệ</a>
+            </nav>
+            <div class="search-box">
+                <input type="text" placeholder="Tìm phim...">
+                <span>🔍</span>
+            </div>
+            <div class="user-menu">
+                <!--  Added shopping cart icon -->
+                <div class="cart-icon" onclick="toggleCart()">
+                    🛒
+                    <span class="cart-count" id="cartCount">0</span>
+                </div>
+
+                @if (Session["CustomerId"] != null)
+                {
+                    <!-- User is logged in -->
+                    <div class="user-dropdown">
+                        <button class="user-button" onclick="toggleUserMenu()">
+                            👤 @Session["CustomerName"]
+                        </button>
+                        <div class="dropdown-content" id="userMenu">
+                            <a href="@Url.Action("Profile", "Account")">Tài khoản của tôi</a>
+                            <a href="#">Lịch sử đặt vé</a>
+                            <a href="#">Ưu đãi của tôi</a>
+                            <a href="@Url.Action("Logout", "Account")">Đăng xuất</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- User is not logged in -->
+                    <a href="@Url.Action("Login", "Account")" class="btn-login">Đăng Nhập</a>
+                    <a href="@Url.Action("Register", "Account")" class="btn-register">Đăng Ký</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER SLIDER -->
+    <section class="banner-slider">
+        <div class="slider-container">
+            <div class="slide active" style="background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);">
+                <div class="slide-overlay">
+                    <div class="slide-content">
+                        <h2>Phim Hành Động Mới Nhất</h2>
+                        <p>Trải nghiệm rạp chiếu phim đẳng cấp thế giới</p>
+                        <button class="slide-btn">Đặt Vé Ngay</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slide" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="slide-overlay">
+                    <div class="slide-content">
+                        <h2>Phim Tình Cảm Hay Nhất</h2>
+                        <p>Cảm nhận những giây phút đặc biệt cùng người thân</p>
+                        <button class="slide-btn">Đặt Vé Ngay</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slide" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="slide-overlay">
+                    <div class="slide-content">
+                        <h2>Phim Hoạt Hình Cho Gia Đình</h2>
+                        <p>Vui vẻ cùng gia đình tại CGV</p>
+                        <button class="slide-btn">Đặt Vé Ngay</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slide" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="slide-overlay">
+                    <div class="slide-content">
+                        <h2>Phim Kinh Dị Rùng Rợn</h2>
+                        <p>Cảm nhận những giây phút rùng rợn tại rạp</p>
+                        <button class="slide-btn">Đặt Vé Ngay</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slider-controls">
+            <span class="dot active" onclick="currentSlide(0)"></span>
+            <span class="dot" onclick="currentSlide(1)"></span>
+            <span class="dot" onclick="currentSlide(2)"></span>
+            <span class="dot" onclick="currentSlide(3)"></span>
+        </div>
+    </section>
+
+    <!-- FILTER SECTION -->
+    <section class="filter-section">
+        <div class="filter-container">
+            <div class="filter-group">
+                <label>Chọn Rạp</label>
+                <select>
+                    <option>Tất cả rạp</option>
+                    <option>DAV Hà Nội</option>
+                    <option>DAV TP.HCM</option>
+                    <option>DAV Đà Nẵng</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Ngày Chiếu</label>
+                <input type="date">
+            </div>
+            <div class="filter-group">
+                <label>Thể Loại</label>
+                <select>
+                    <option>Tất cả thể loại</option>
+                    <option>Hành Động</option>
+                    <option>Tình Cảm</option>
+                    <option>Hoạt Hình</option>
+                    <option>Kinh Dị</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Định Dạng</label>
+                <select>
+                    <option>Tất cả định dạng</option>
+                    <option>2D</option>
+                    <option>3D</option>
+                    <option>IMAX</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- MOVIES SECTION -->
+    <!-- --------------------------------------------------------------------------------------------------------------- -->
+    <!-- Index -->
+    @RenderBody()
+
+
+    <!-- PARTNERS SECTION -->
+    <section class="partners-section">
+        <div class="partners-container">
+            <h2 class="partners-title">Đối Tác Của Chúng Tôi</h2>
+            <div class="partners-slider">
+                <div class="partners-track">
+                    <div class="partner-logo">Netflix</div>
+                    <div class="partner-logo">Disney</div>
+                    <div class="partner-logo">Warner Bros</div>
+                    <div class="partner-logo">Universal</div>
+                    <div class="partner-logo">Sony Pictures</div>
+                    <div class="partner-logo">Paramount</div>
+                    <div class="partner-logo">20th Century</div>
+                    <div class="partner-logo">Lionsgate</div>
+                    <div class="partner-logo">Netflix</div>
+                    <div class="partner-logo">Disney</div>
+                    <div class="partner-logo">Warner Bros</div>
+                    <div class="partner-logo">Universal</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contact">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Về DAV</h3>
+                <ul>
+                    <li><a href="#">Giới Thiệu</a></li>
+                    <li><a href="#">Lịch Sử</a></li>
+                    <li><a href="#">Tuyển Dụng</a></li>
+                    <li><a href="#">Tin Tức</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Dịch Vụ</h3>
+                <ul>
+                    <li><a href="#">Đặt Vé Online</a></li>
+                    <li><a href="#">Thành Viên VIP</a></li>
+                    <li><a href="#">Cho Thuê Rạp</a></li>
+                    <li><a href="#">Quảng Cáo</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Hỗ Trợ</h3>
+                <ul>
+                    <li><a href="#">Câu Hỏi Thường Gặp</a></li>
+                    <li><a href="#">Liên Hệ</a></li>
+                    <li><a href="#">Chính Sách Bảo Mật</a></li>
+                    <li><a href="#">Điều Khoản Sử Dụng</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Kết Nối</h3>
+                <ul>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">YouTube</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 DAV Vietnam. Tất cả quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        let cart = [];
+
+        function showSlide(index) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+
+            slides[index].classList.add('active');
+            dots[index].classList.add('active');
+        }
+
+        function nextSlide() {
+            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+            showSlide(currentSlideIndex);
+        }
+
+        function currentSlide(index) {
+            currentSlideIndex = index;
+            showSlide(currentSlideIndex);
+        }
+
+        //  Shopping cart functions
+        function toggleCart() {
+            const cartModal = document.getElementById('cartModal');
+            const cartOverlay = document.getElementById('cartOverlay');
+            cartModal.classList.toggle('active');
+            cartOverlay.classList.toggle('active');
+        }
+
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartCount = document.getElementById('cartCount');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="cart-empty">Giỏ hàng trống</div>';
+                cartTotal.textContent = '0 đ';
+                return;
+            }
+
+            cartItems.innerHTML = cart.map((item, index) => `
+                                        <div class="cart-item">
+                                            <div class="cart-item-name">${item.name}</div>
+                                            <div class="cart-item-price">${item.price.toLocaleString('vi-VN')} đ</div>
+                                            <div class="cart-item-qty">
+                                                <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
+                                                <span>${item.quantity}</span>
+                                                <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                                                <button class="qty-btn" style="margin-left: auto; background: #e74c3c;" onclick="removeFromCart(${index})">🗑️</button>
+                                            </div>
+                                        </div>
+                                    `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = total.toLocaleString('vi-VN') + ' đ';
+        }
+
+        function changeQty(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                removeFromCart(index);
+            } else {
+                updateCart();
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        // Toggle user dropdown menu
+        function toggleUserMenu() {
+            const userMenu = document.getElementById('userMenu');
+            userMenu.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const userDropdown = document.querySelector('.user-dropdown');
+            if (userDropdown && !userDropdown.contains(event.target)) {
+                const userMenu = document.getElementById('userMenu');
+                if (userMenu) {
+                    userMenu.classList.remove('show');
+                }
+            }
+        });
+
+        // Close cart when clicking overlay
+        document.getElementById('cartOverlay').addEventListener('click', toggleCart);
+
+        // Auto-play banner slider every 5 seconds
+        setInterval(nextSlide, 5000);
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

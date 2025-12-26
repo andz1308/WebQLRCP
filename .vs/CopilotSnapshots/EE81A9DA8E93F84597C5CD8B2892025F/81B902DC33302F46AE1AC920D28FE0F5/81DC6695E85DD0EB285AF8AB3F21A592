@@ -1,0 +1,790 @@
+﻿@{
+    ViewBag.Title = "Chọn Ghế";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+    
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var room = ViewBag.Room as WebCinema.Models.Phong_Chieu;
+    var seats = ViewBag.Seats as List<WebCinema.Models.Ghe>;
+    var bookedSeats = ViewBag.BookedSeats as List<int>;
+    var movie = ViewBag.Movie as WebCinema.Models.Phim;
+    var cinema = ViewBag.Cinema as WebCinema.Models.Rap;
+}
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .booking-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    /* ===== HEADER ===== */
+    .booking-header {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 20px 20px 0 0;
+        margin-bottom: 0;
+        box-shadow: 0 10px 40px rgba(255, 107, 53, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .booking-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(-20px, -20px); }
+    }
+
+    .movie-info {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .movie-poster-small {
+        width: 120px;
+        height: 170px;
+        border-radius: 12px;
+        object-fit: cover;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s ease;
+    }
+
+    .movie-poster-small:hover {
+        transform: scale(1.05);
+    }
+
+    .movie-details h2 {
+        margin: 0 0 1rem 0;
+        font-size: 2rem;
+        color: white;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .movie-meta {
+        display: flex;
+        gap: 2.5rem;
+        font-size: 1rem;
+        opacity: 0.95;
+        color: white;
+        flex-wrap: wrap;
+    }
+
+    .movie-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+    }
+
+    .movie-meta i {
+        font-size: 1.1rem;
+    }
+
+    /* ===== PROGRESS STEPS ===== */
+    .progress-steps {
+        background: white;
+        padding: 2rem;
+        display: flex;
+        justify-content: center;
+        gap: 4rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        position: relative;
+    }
+
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 25%;
+        right: 25%;
+        height: 2px;
+        background: linear-gradient(90deg, #ff6b35 0%, #ff6b35 33%, #e0e0e0 33%, #e0e0e0 100%);
+        z-index: 0;
+        transform: translateY(-50%);
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: #999;
+        font-weight: 600;
+        font-size: 0.95rem;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+
+    .step-number {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .step.active {
+        color: #ff6b35;
+        transform: scale(1.05);
+    }
+
+    .step.active .step-number {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    }
+
+    /* ===== SEAT SELECTION ===== */
+    .seat-selection {
+        background: white;
+        padding: 3rem 2rem;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .screen-area {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .screen {
+        background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 12px 80px;
+        border-radius: 0 0 50% 50%;
+        display: inline-block;
+        font-weight: 800;
+        font-size: 1.1rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        margin-bottom: 1rem;
+        letter-spacing: 2px;
+    }
+
+    .screen-label {
+        color: #666;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .seat-legend {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-bottom: 3rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .legend-seat {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px 8px 0 0;
+        display: inline-block;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .legend-seat.available {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+
+    .legend-seat.selected {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+    }
+
+    .legend-seat.booked {
+        background: #95a5a6;
+    }
+
+    .legend-seat.vip {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .legend-seat.couple {
+        background: linear-gradient(135deg, #e83e8c 0%, #d6296d 100%);
+    }
+
+    .seat-map {
+        display: grid;
+        grid-template-columns: repeat(@room.so_cot, 45px);
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .seat {
+        width: 45px;
+        height: 45px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        line-height: 1;
+        padding: 0;
+        border: none;
+        overflow: hidden;
+        text-align: center;
+        vertical-align: middle;
+        z-index: 1;
+    }
+
+    .seat::before {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 15%;
+        right: 15%;
+        height: 2px;
+        background: inherit;
+        filter: brightness(0.8);
+        border-radius: 0 0 2px 2px;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .seat-label {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-weight: 800;
+        line-height: 1;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .seat.available {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+
+    .seat.available:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(52, 152, 219, 0.5);
+    }
+
+    .seat.selected {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(255, 107, 53, 0.5);
+    }
+
+    .seat.vip.selected {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%) !important;
+        color: white !important;
+    }
+
+    .seat.couple.selected {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%) !important;
+        color: white !important;
+    }
+
+    .seat.booked {
+        background: #7f8c8d !important;
+        color: #bdc3c7 !important;
+        cursor: not-allowed !important;
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .seat.booked:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    .seat.vip {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    .seat.couple {
+        background: linear-gradient(135deg, #e83e8c 0%, #d6296d 100%);
+        color: white;
+        width: 95px;
+    }
+
+    .seat.aisle {
+        background: transparent;
+        box-shadow: none;
+        cursor: default;
+    }
+
+    .seat.aisle::before {
+        display: none;
+    }
+
+    /* ===== BOOKING SUMMARY ===== */
+    .booking-summary {
+        background: white;
+        padding: 2.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        position: sticky;
+        bottom: 0;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12);
+        z-index: 100;
+    }
+
+    .summary-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .selected-info {
+        display: flex;
+        gap: 3rem;
+        flex: 1;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-label {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #1a1a1a;
+    }
+
+    .total-price {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #ff6b35;
+    }
+
+    .btn-continue {
+        padding: 1.2rem 3.5rem;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8555 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+
+    .btn-continue:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-continue:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 768px) {
+        .booking-container {
+            padding: 0 1rem;
+            margin: 1rem auto;
+        }
+
+        .booking-header {
+            padding: 2rem 1.5rem;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .movie-details h2 {
+            font-size: 1.5rem;
+        }
+
+        .movie-meta {
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .progress-steps {
+            gap: 2rem;
+            padding: 1.5rem 1rem;
+        }
+
+        .progress-steps::before {
+            display: none;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .seat-selection {
+            padding: 2rem 1rem;
+        }
+
+        .seat-legend {
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .seat-map {
+            grid-template-columns: repeat(@room.so_cot, 35px);
+            gap: 5px;
+        }
+
+        .seat {
+            width: 35px;
+            height: 35px;
+            font-size: 0.75rem;
+        }
+
+        .summary-content {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .selected-info {
+            width: 100%;
+            gap: 2rem;
+        }
+
+        .btn-continue {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="booking-container">
+    <div class="booking-header">
+        <div class="movie-info">
+            @if (!string.IsNullOrEmpty(movie.hinh_anh))
+            {
+                <img src="@Url.Content(movie.hinh_anh)" alt="@movie.ten_phim" class="movie-poster-small" />
+            }
+            <div class="movie-details">
+                <h2>@movie.ten_phim</h2>
+                <div class="movie-meta">
+                    <span><i class="fas fa-building"></i> @cinema.ten_rap</span>
+                    <span><i class="fas fa-door-open"></i> @room.ten_phong</span>
+                    <span><i class="fas fa-calendar"></i> @showtime.ngay_chieu.ToString("dd/MM/yyyy")</span>
+                    <span><i class="fas fa-clock"></i> @showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-steps">
+        <div class="step active">
+            <span class="step-number">1</span>
+            <span class="step-label">Chọn Ghế</span>
+        </div>
+        <div class="step">
+            <span class="step-number">2</span>
+            <span class="step-label">Chọn Đồ Ăn</span>
+        </div>
+        <div class="step">
+            <span class="step-number">3</span>
+            <span class="step-label">Thanh Toán</span>
+        </div>
+    </div>
+
+    <div class="seat-selection">
+        <div class="screen-area">
+            <div class="screen">MÀN HÌNH</div>
+            <div class="screen-label">Màn hình chiếu phim</div>
+        </div>
+
+        <div class="seat-legend">
+            <div class="legend-item">
+                <span class="legend-seat available"></span>
+                <span>Ghế trống</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-seat selected"></span>
+                <span>Ghế đang chọn</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-seat booked"></span>
+                <span>Ghế đã đặt</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-seat vip"></span>
+                <span>Ghế VIP</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-seat couple"></span>
+                <span>Ghế đôi</span>
+            </div>
+        </div>
+
+        <div class="seat-map">
+            @foreach (var seat in seats)
+            {
+                var isBooked = bookedSeats.Contains(seat.ghe_id);
+                var isAisle = seat.trang_thai == 0; // Lối đi
+                var seatClass = "";
+
+                if (isAisle)
+                {
+                    seatClass = "seat aisle";
+                }
+                else if (isBooked)
+                {
+                    seatClass = "seat booked";
+                }
+                else
+                {
+                    // Determine seat type
+                    if (seat.loai_ghe_id == 1)
+                    {
+                        seatClass = "seat available"; // Standard
+                    }
+                    else if (seat.loai_ghe_id == 2)
+                    {
+                        seatClass = "seat available vip"; // VIP
+                    }
+                    else if (seat.loai_ghe_id == 3)
+                    {
+                        seatClass = "seat available couple"; // Couple
+                    }
+                }
+
+                <div class="@seatClass" 
+                     data-seat-id="@seat.ghe_id" 
+                     data-seat-name="@seat.so_ghe"
+                     data-seat-price="@( (ViewBag.SeatPrices as System.Collections.Generic.Dictionary<int, decimal>).ContainsKey(seat.ghe_id) ? (ViewBag.SeatPrices as System.Collections.Generic.Dictionary<int, decimal>)[seat.ghe_id] : 0 )"
+                     data-booked="@(isBooked ? "true" : "false")"
+                     data-aisle="@(isAisle ? "true" : "false")">
+                    @if (!isAisle)
+                    {
+                        <span class="seat-label">@seat.so_ghe</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="booking-summary">
+    <div class="summary-content">
+        <div class="selected-info">
+            <div class="info-item">
+                <span class="info-label">Ghế đã chọn</span>
+                <span class="info-value" id="selectedSeatsText">Chưa chọn ghế</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tổng tiền</span>
+                <span class="total-price" id="totalPrice">0 VND</span>
+            </div>
+        </div>
+        <button class="btn-continue" id="btnContinue" disabled onclick="continueToFood()">
+            Tiếp Tục <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function() {
+            var selectedSeats = [];
+            var seatMap = {};  // ✅ Lưu bản đồ ghế theo tên (e.g., A1, A2, etc.)
+            var roomColumns = @room.so_cot;
+
+            // Build seat map for validation
+            $('.seat:not(.aisle)').each(function() {
+                var seatName = $(this).data('seat-name');
+                var seatId = $(this).data('seat-id');
+                if (!seatMap[seatName]) {
+                    seatMap[seatName] = {
+                        id: seatId,
+                        element: $(this),
+                        loaiGhe: $(this).hasClass('vip') ? 2 : $(this).hasClass('couple') ? 3 : 1
+                    };
+                }
+            });
+
+            // Only attach click handler to non-booked seats
+            $('.seat').not('.booked').not('.aisle').click(function() {
+                // Double check it's not booked
+                if ($(this).hasClass('booked') || $(this).data('booked') === 'true' || $(this).data('aisle') === 'true') {
+                    alert('Ghế này đã được đặt!');
+                    return;
+                }
+
+                var seatId = $(this).data('seat-id');
+                var seatName = $(this).data('seat-name');
+                var seatPrice = parseFloat($(this).data('seat-price'));
+                var loaiGhe = $(this).hasClass('vip') ? 2 : $(this).hasClass('couple') ? 3 : 1;  // ✅ Lấy loại ghế
+
+                if ($(this).hasClass('selected')) {
+                    // Deselect
+                    $(this).removeClass('selected');
+                    selectedSeats = selectedSeats.filter(s => s.id !== seatId);
+                } else {
+                    // ✅ CHECK RULE: Loại ghế phải giống nhau
+                    if (selectedSeats.length > 0) {
+                        var firstSeatLoai = selectedSeats[0].loaiGhe;
+                        if (loaiGhe !== firstSeatLoai) {
+                            var loaiNames = { 1: 'Ghế thường', 2: 'Ghế VIP', 3: 'Ghế đôi' };
+                            alert('❌ Không được phép chọn các loại ghế khác nhau!\n\nGhế đã chọn: ' + loaiNames[firstSeatLoai] + '\nGhế hiện tại: ' + loaiNames[loaiGhe]);
+                            return;
+                        }
+
+                        // ✅ CHECK RULE: Ghế phải sát nhau (liên tiếp, cùng hàng)
+                        if (!isSeatsAdjacent(selectedSeats, seatName)) {
+                            alert('❌ Ghế phải sát nhau (liên tiếp và cùng hàng)!\n\nVui lòng chọn ghế gần nhau.');
+                            return;
+                        }
+                    }
+
+                    if (selectedSeats.length >= 10) {
+                        alert('Bạn chỉ có thể chọn tối đa 10 ghế!');
+                        return;
+                    }
+
+                    $(this).addClass('selected');
+                    selectedSeats.push({
+                        id: seatId,
+                        name: seatName,
+                        price: seatPrice,
+                        loaiGhe: loaiGhe  // ✅ Lưu loại ghế
+                    });
+                }
+
+                updateSummary();
+            });
+
+            // ✅ VALIDATE: Ghế phải sát nhau (liên tiếp, cùng hàng)
+            function isSeatsAdjacent(currentSeats, newSeatName) {
+                // Extract row and column from seat name (e.g., "A1" -> row="A", col=1)
+                var newRow = newSeatName.charAt(0);
+                var newCol = parseInt(newSeatName.substring(1));
+
+                // Check if all seats are in the same row
+                for (var i = 0; i < currentSeats.length; i++) {
+                    var row = currentSeats[i].name.charAt(0);
+                    if (row !== newRow) {
+                        return false;  // ❌ Không cùng hàng
+                    }
+                }
+
+                // Get all columns in current selection + new seat
+                var cols = currentSeats.map(s => parseInt(s.name.substring(1)));
+                cols.push(newCol);
+                cols.sort((a, b) => a - b);
+
+                // Check if columns are consecutive
+                for (var i = 1; i < cols.length; i++) {
+                    if (cols[i] !== cols[i - 1] + 1) {
+                        return false;  // ❌ Không sát nhau
+                    }
+                }
+
+                return true;  // ✅ Ghế sát nhau
+            }
+
+            function updateSummary() {
+                if (selectedSeats.length === 0) {
+                    $('#selectedSeatsText').text('Chưa chọn ghế');
+                    $('#totalPrice').text('0 đ');
+                    $('#btnContinue').prop('disabled', true);
+                } else {
+                    var seatNames = selectedSeats.map(s => s.name).join(', ');
+                    var total = selectedSeats.reduce((sum, s) => sum + s.price, 0);
+                    
+                    $('#selectedSeatsText').text(seatNames);
+                    $('#totalPrice').text(total.toLocaleString('vi-VN') + ' đ');
+                    $('#btnContinue').prop('disabled', false);
+                }
+            }
+
+            window.continueToFood = function() {
+                if (selectedSeats.length === 0) {
+                    alert('Vui lòng chọn ít nhất 1 ghế!');
+                    return;
+                }
+
+                var seatIds = selectedSeats.map(s => s.id).join(',');
+                
+                $.ajax({
+                    url: '@Url.Action("SelectFood", "Booking")',
+                    type: 'POST',
+                    data: {
+                        selectedSeats: seatIds,
+                        showtimeId: @showtime.suat_chieu_id
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                    }
+                });
+            };
+        });
+    </script>
+}

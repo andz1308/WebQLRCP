@@ -1,0 +1,137 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Controllers
+{
+    public class EvaluateController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Evaluate
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+        // POST: Evaluate/SubmitReview
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult SubmitReview(int phim_id, int diem_rating, string noi_dung)
+        {
+            try
+            {
+                // Kiểm tra đăng nhập
+                if (Session["CustomerId"] == null)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng đăng nhập để đánh giá phim.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                int khachHangId = Convert.ToInt32(Session["CustomerId"]);
+
+                // Validate rating
+                if (diem_rating < 1 || diem_rating > 5)
+                {
+                    TempData["ErrorMessage"] = "Đánh giá phải từ 1 đến 5 sao.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                // Validate content
+                if (string.IsNullOrWhiteSpace(noi_dung))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập nội dung đánh giá.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                // Kiểm tra xem khách hàng đã đánh giá phim này chưa (không tính reply của admin)
+                var existingReview = db.Danh_Gias
+                    .Where(dg => dg.phim_id == phim_id 
+                                && dg.khach_hang_id == khachHangId 
+                                && (dg.noi_dung == null || 
+                                    (!dg.noi_dung.Contains("[AdminReply]") && 
+                                     !dg.noi_dung.Contains("[ParentID:"))))
+                    .FirstOrDefault();
+
+                if (existingReview != null)
+                {
+                    TempData["ErrorMessage"] = "Bạn đã đánh giá phim này rồi.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                // Tạo vé ảo cho đánh giá (vì database yêu cầu ve_id)
+                // Lấy suất chiếu đầu tiên của phim
+                var suatChieu = db.Suat_Chieus
+                    .Where(sc => sc.phim_id == phim_id)
+                    .OrderBy(sc => sc.ngay_chieu)
+                    .FirstOrDefault();
+
+                if (suatChieu == null)
+                {
+                    TempData["ErrorMessage"] = "Phim này chưa có lịch chiếu.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                // Lấy ghế đầu tiên của phòng chiếu
+                var ghe = db.Ghes
+                    .Where(g => g.phong_chieu_id == suatChieu.phong_chieu_id && g.trang_thai == 2)
+                    .FirstOrDefault();
+
+                if (ghe == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy ghế phù hợp.";
+                    return RedirectToAction("Detail", "Home", new { id = phim_id });
+                }
+
+                // Tạo vé ảo
+                var veAo = new Ve
+                {
+                    ghe_id = ghe.ghe_id,
+                    suat_chieu_id = suatChieu.suat_chieu_id,
+                    Dat_Ve_id = null,
+                    ma_qr_code = null,
+                    trang_thai_ve = "Review Only",
+                    gia_ve = 0
+                };
+                db.Ves.InsertOnSubmit(veAo);
+                db.SubmitChanges();
+
+                // Tạo đánh giá mới
+                var danhGia = new Danh_Gia
+                {
+                    ve_id = veAo.ve_id,
+                    khach_hang_id = khachHangId,
+                    phim_id = phim_id,
+                    noi_dung = noi_dung.Trim(),
+                    diem_rating = diem_rating,
+                    ngay_Danh_Gia = DateTime.Now
+                };
+
+                db.Danh_Gias.InsertOnSubmit(danhGia);
+                db.SubmitChanges();
+
+                TempData["SuccessMessage"] = "Cảm ơn bạn đã đánh giá phim!";
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                TempData["ErrorMessage"] = "Có lỗi xảy ra khi gửi đánh giá: " + ex.Message;
+            }
+
+            return RedirectToAction("Detail", "Home", new { id = phim_id });
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

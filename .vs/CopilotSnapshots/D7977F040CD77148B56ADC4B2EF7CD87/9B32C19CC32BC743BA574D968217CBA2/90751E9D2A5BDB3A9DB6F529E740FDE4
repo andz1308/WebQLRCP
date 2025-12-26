@@ -1,0 +1,392 @@
+﻿@{
+    ViewBag.Title = "Báo Cáo Kho Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+
+}
+
+<div class="content-header">
+    <h1><i class="fas fa-chart-pie"></i> Báo Cáo Kho Hàng</h1>
+    <a href="@Url.Action("Index")" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Quay Lại
+    </a>
+</div>
+
+<!-- Filter Section -->
+<div class="content-card" style="margin-bottom: 2rem;">
+    <div style="padding: 1.5rem;">
+        @using (Html.BeginForm("Report", "InventoryManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Chọn Tháng</label>
+                    <select name="month" class="form-control">
+                        <option value="">-- Tất cả tháng --</option>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" @(ViewBag.SelectedMonth == i ? "selected" : "")>Tháng @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Chọn Năm</label>
+                    <select name="year" class="form-control">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i" @(ViewBag.SelectedYear == i ? "selected" : "")>Năm @i</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Lọc
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #3498db;">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@ViewBag.TotalQuantity</h3>
+            <p>Tổng Số Lượng Bán</p>
+            <small>@ViewBag.PeriodLabel</small>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #27ae60;">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@((ViewBag.TotalRevenue ?? 0m).ToString("N0")) VNĐ</h3>
+            <p>Tổng Doanh Thu</p>
+            <small>@ViewBag.PeriodLabel</small>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e74c3c;">
+            <i class="fas fa-box"></i>
+        </div>
+        <div class="stat-info">
+            <h3>@(ViewBag.TopItems != null ? ((System.Collections.IList)ViewBag.TopItems).Count : 0)</h3>
+            <p>Sản Phẩm Đang Bán</p>
+            <small>@ViewBag.PeriodLabel</small>
+        </div>
+    </div>
+</div>
+
+<!-- Top Selling Items -->
+<div class="content-card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-trophy"></i> Top 10 Sản Phẩm Bán Chạy Nhất</h2>
+    </div>
+
+    @if (ViewBag.TopItems != null && ((System.Collections.IList)ViewBag.TopItems).Count > 0)
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sản Phẩm</th>
+                    <th>Loại</th>
+                    <th>Số Lượng Bán</th>
+                    <th>Doanh Thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int index = 1;
+                    var topItemsObj = ViewBag.TopItems as System.Collections.IEnumerable;
+                    if (topItemsObj != null)
+                    {
+                        foreach (var item in topItemsObj)
+                        {
+                            var itemProp = item.GetType().GetProperty("Item");
+                            var quantityProp = item.GetType().GetProperty("TotalQuantity");
+                            var revenueProp = item.GetType().GetProperty("TotalRevenue");
+
+                            var product = itemProp != null ? (WebCinema.Models.Do_An)itemProp.GetValue(item, null) : null;
+                            int quantity = quantityProp != null ? Convert.ToInt32(quantityProp.GetValue(item, null)) : 0;
+                            decimal revenue = revenueProp != null ? Convert.ToDecimal(revenueProp.GetValue(item, null)) : 0m;
+
+                            <tr>
+                                <td><strong>@index</strong></td>
+                                <td>
+                                    <strong style="color: #333;">@(product != null ? product.ten_san_pham : "N/A")</strong>
+                                </td>
+                                <td>
+                                    <span class="badge badge-category">@(product != null ? product.loai : "N/A")</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">@quantity</span>
+                                </td>
+                                <td>
+                                    <strong style="color: #27ae60;">@revenue.ToString("N0") VNĐ</strong>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê trong kỳ này.</p>
+    }
+</div>
+
+<!-- Sales by Category -->
+<div class="content-card" style="margin-top: 2rem;">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-chart-pie"></i> Doanh Thu Theo Loại Sản Phẩm</h2>
+    </div>
+
+    @if (ViewBag.CategoryStats != null && ((System.Collections.IList)ViewBag.CategoryStats).Count > 0)
+    {
+        <div style="padding: 2rem;">
+            <canvas id="categoryChart" height="80"></canvas>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Loại Sản Phẩm</th>
+                    <th>Số Lượng Bán</th>
+                    <th>Doanh Thu</th>
+                    <th>% Doanh Thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var categoryStatsObj = ViewBag.CategoryStats as System.Collections.IEnumerable;
+                    decimal totalRevenue = ViewBag.TotalRevenue ?? 0m;
+                    if (categoryStatsObj != null)
+                    {
+                        foreach (var cat in categoryStatsObj)
+                        {
+                            var categoryProp = cat.GetType().GetProperty("Category");
+                            var quantityProp = cat.GetType().GetProperty("TotalQuantity");
+                            var revenueProp = cat.GetType().GetProperty("TotalRevenue");
+
+                            string category = categoryProp != null ? categoryProp.GetValue(cat, null)?.ToString() : "N/A";
+                            int quantity = quantityProp != null ? Convert.ToInt32(quantityProp.GetValue(cat, null)) : 0;
+                            decimal revenue = revenueProp != null ? Convert.ToDecimal(revenueProp.GetValue(cat, null)) : 0m;
+                            decimal percentage = totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0;
+
+                            <tr>
+                                <td><strong>@category</strong></td>
+                                <td><span class="badge badge-info">@quantity</span></td>
+                                <td><strong style="color: #27ae60;">@revenue.ToString("N0") VNĐ</strong></td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div class="progress-bar" style="width: 100%; max-width: 200px;">
+                                            <div class="progress-fill" style="width: @percentage.ToString("F1")%"></div>
+                                        </div>
+                                        <span style="font-weight: 600;">@percentage.ToString("F1")%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Chưa có dữ liệu thống kê theo loại sản phẩm.</p>
+    }
+</div>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .content-header h1 {
+        font-size: 2rem;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .stat-info {
+        flex: 1;
+    }
+
+    .stat-info h3 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-info p {
+        color: #666;
+        font-size: 0.95rem;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .stat-info small {
+        color: #999;
+        font-size: 0.85rem;
+    }
+
+    .badge-category {
+        background: #3498db;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-info {
+        background: #3498db;
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .progress-bar {
+        height: 20px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ff6b35, #ff8555);
+        transition: width 0.3s ease;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+</style>
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (ViewBag.CategoryStats != null && ((System.Collections.IList)ViewBag.CategoryStats).Count > 0)
+        {
+            <text>
+            var ctx = document.getElementById('categoryChart').getContext('2d');
+            var categoryStats = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.CategoryStats));
+
+            var labels = categoryStats.map(function(item) { return item.Category; });
+            var data = categoryStats.map(function(item) { return item.TotalRevenue; });
+
+            var colors = ['#ff6b35', '#3498db', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6'];
+
+            var chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 13
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.label || '';
+                                    var value = context.parsed || 0;
+                                    return label + ': ' + value.toLocaleString('vi-VN') + ' VNĐ';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

@@ -1,0 +1,107 @@
+﻿using System;
+using System.Linq;
+using System.Web.Mvc;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Areas.Admin.Controllers
+{
+    [RoleAuthorize(Roles = "Admin")]
+    public class ReviewManagementController : Controller
+    {
+        private CSDLDataContext db = new CSDLDataContext();
+
+        // GET: Admin/ReviewManagement
+        public ActionResult Index(int? movieId, string status)
+        {
+            var reviews = db.Danh_Gias.AsQueryable();
+
+            // Filter by movie
+            if (movieId.HasValue)
+            {
+                reviews = reviews.Where(r => r.phim_id == movieId.Value);
+            }
+
+            var result = reviews
+                .OrderByDescending(r => r.ngay_Danh_Gia)
+                .ToList();
+
+            ViewBag.Movies = new SelectList(db.Phims, "phim_id", "ten_phim");
+            ViewBag.SelectedMovie = movieId;
+
+            return View(result);
+        }
+
+        // POST: Admin/ReviewManagement/Reply
+        [HttpPost]
+        public ActionResult Reply(int reviewId, string replyContent)
+        {
+            try
+            {
+                var originalReview = db.Danh_Gias.FirstOrDefault(r => r.Danh_Gia_id == reviewId);
+                if (originalReview == null)
+                {
+                    return Json(new { success = false, message = "Đánh giá không tồn tại." });
+                }
+
+                if (string.IsNullOrWhiteSpace(replyContent))
+                {
+                    return Json(new { success = false, message = "Nội dung phản hồi không được để trống." });
+                }
+
+                // Create admin reply as a new review entry
+                var reply = new Danh_Gia
+                {
+                    phim_id = originalReview.phim_id,
+                    khach_hang_id = null, // Null for admin reply
+                    diem_rating = null, // No rating for replies
+                    noi_dung = "[Phản hồi từ Admin] " + replyContent,
+                    ngay_Danh_Gia = DateTime.Now
+                };
+
+                db.Danh_Gias.InsertOnSubmit(reply);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Phản hồi thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        // POST: Admin/ReviewManagement/Delete/5
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            try
+            {
+                var review = db.Danh_Gias.FirstOrDefault(r => r.Danh_Gia_id == id);
+                if (review == null)
+                {
+                    return Json(new { success = false, message = "Đánh giá không tồn tại." });
+                }
+
+                db.Danh_Gias.DeleteOnSubmit(review);
+                db.SubmitChanges();
+
+                return Json(new { success = true, message = "Xóa đánh giá thành công!" });
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

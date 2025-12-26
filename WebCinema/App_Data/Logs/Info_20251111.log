@@ -1,0 +1,81 @@
+[2025-11-11 05:52:22] ? BookingExpirationService started
+[2025-11-11 06:02:59] ? BookingExpirationService started
+[2025-11-11 06:14:00] ? BookingExpirationService started
+[2025-11-11 06:22:46] ? BookingExpirationService started
+[2025-11-11 06:24:28] === CREATE PURCHASE ORDER - SESSION DEBUG ===
+[2025-11-11 06:24:28] EmployeeId: 1
+[2025-11-11 06:24:28] EmployeeName: Nguyễn Văn Quản Trị
+[2025-11-11 06:24:28] UserRole: Admin
+[2025-11-11 06:24:28] StaffId: 
+[2025-11-11 06:24:28] Session[EmployeeId] = 1
+[2025-11-11 06:24:28] Session[EmployeeName] = Nguyễn Văn Quản Trị
+[2025-11-11 06:24:28] Session[EmployeeEmail] = admin@galaxy.example
+[2025-11-11 06:24:28] Session[UserRole] = Admin
+[2025-11-11 06:28:48] ? BookingExpirationService started
+[2025-11-11 06:33:44] ? BookingExpirationService started
+[2025-11-11 06:46:36] ? BookingExpirationService started
+[2025-11-11 06:58:39] ? BookingExpirationService started
+[2025-11-11 07:13:30] ? BookingExpirationService stopped
+[2025-11-11 07:13:41] ? BookingExpirationService started
+[2025-11-11 07:13:47] === CREATE PURCHASE ORDER - SESSION DEBUG ===
+[2025-11-11 07:13:47] EmployeeId: 1
+[2025-11-11 07:13:47] EmployeeName: Nguyễn Văn Quản Trị
+[2025-11-11 07:13:47] UserRole: Admin
+[2025-11-11 07:13:47] StaffId: 
+[2025-11-11 07:13:47] Session[EmployeeId] = 1
+[2025-11-11 07:13:47] Session[EmployeeName] = Nguyễn Văn Quản Trị
+[2025-11-11 07:13:47] Session[EmployeeEmail] = admin@galaxy.example
+[2025-11-11 07:13:47] Session[UserRole] = Admin
+[2025-11-11 08:11:10] ? BookingExpirationService started
+[2025-11-11 08:21:56] ? BookingExpirationService started
+[2025-11-11 08:29:05] ? BookingExpirationService started
+[2025-11-11 08:30:38] === CREATE PURCHASE ORDER - SESSION DEBUG ===
+[2025-11-11 08:30:38] EmployeeId: 1
+[2025-11-11 08:30:38] EmployeeName: Nguyễn Văn Quản Trị
+[2025-11-11 08:30:38] UserRole: Admin
+[2025-11-11 08:30:38] StaffId: 
+[2025-11-11 08:30:38] Session[EmployeeId] = 1
+[2025-11-11 08:30:38] Session[EmployeeName] = Nguyễn Văn Quản Trị
+[2025-11-11 08:30:38] Session[EmployeeEmail] = admin@galaxy.example
+[2025-11-11 08:30:38] Session[UserRole] = Admin
+[2025-11-11 08:39:27] ? BookingExpirationService started
+[2025-11-11 08:45:18] ? BookingExpirationService started
+[2025-11-11 08:45:48] === CREATE PURCHASE ORDER - SESSION DEBUG ===
+[2025-11-11 08:45:48] EmployeeId: 1
+[2025-11-11 08:45:48] EmployeeName: Nguyễn Văn Quản Trị
+[2025-11-11 08:45:48] UserRole: Admin
+[2025-11-11 08:45:48] StaffId: 
+[2025-11-11 08:45:48] Session[EmployeeId] = 1
+[2025-11-11 08:45:48] Session[EmployeeName] = Nguyễn Văn Quản Trị
+[2025-11-11 08:45:48] Session[EmployeeEmail] = admin@galaxy.example
+[2025-11-11 08:45:48] Session[UserRole] = Admin
+[2025-11-11 09:06:43] ? BookingExpirationService started
+[2025-11-11 09:07:13] ✅ Delete: Xóa Dat_Ve ID=43, đã xóa 2 vé và 0 đồ ăn
+[2025-11-11 09:23:17] ? BookingExpirationService started
+[2025-11-11 10:08:59] ? BookingExpirationService started
+[2025-11-11 10:23:32] ? BookingExpirationService started
+[2025-11-11 10:34:44] ? BookingExpirationService started
+[2025-11-11 10:43:46] ? BookingExpirationService started
+[2025-11-11 10:47:16] ? BookingExpirationService started
+[2025-11-11 11:01:20] ? BookingExpirationService started
+[2025-11-11 11:04:21] ? BookingExpirationService started
+[2025-11-11 11:25:22] ? BookingExpirationService started
+[2025-11-11 18:54:07] ? BookingExpirationService started
+[2025-11-11 19:05:20] ? BookingExpirationService started
+[2025-11-11 19:11:42] ? BookingExpirationService started
+[2025-11-11 19:21:56] ? BookingExpirationService started
+[2025-11-11 19:41:28] ? BookingExpirationService started
+[2025-11-11 20:17:27] ? BookingExpirationService started
+[2025-11-11 20:23:37] ? BookingExpirationService started
+[2025-11-11 20:29:49] ? BookingExpirationService started
+[2025-11-11 20:34:58] ✅ Delete: Xóa Dat_Ve ID=44, đã xóa 2 vé và 0 đồ ăn
+[2025-11-11 20:43:13] ? BookingExpirationService started
+[2025-11-11 20:50:01] ? BookingExpirationService started
+[2025-11-11 20:50:47] Actor 4: Found 1 movies
+[2025-11-11 20:51:01] Actor 4: Found 1 movies
+[2025-11-11 21:04:40] ? BookingExpirationService started
+[2025-11-11 21:09:08] ? Deleted showtime 1 with 1 tickets
+[2025-11-11 21:18:09] ? BookingExpirationService started
+[2025-11-11 21:32:01] ? BookingExpirationService started
+[2025-11-11 21:46:50] ? BookingExpirationService started
+[2025-11-11 21:55:15] Actor 2: Found 1 movies

@@ -1,0 +1,30 @@
+﻿using System;
+using System.Configuration;
+
+namespace WebCinema.Models
+{
+    public partial class CSDLDataContext
+    {
+        public CSDLDataContext()
+            : base(GetConnectionString())
+        {
+            OnCreated();
+        }
+
+        partial void OnCreated();
+
+        private static string GetConnectionString()
+        {
+            string conn = ConfigurationManager.ConnectionStrings["CSDLConnectionString3"]?.ConnectionString
+                ?? ConfigurationManager.ConnectionStrings["CinemaDBConnectionString3"]?.ConnectionString;
+
+            if (string.IsNullOrWhiteSpace(conn))
+            {
+                throw new InvalidOperationException(
+                    "No database connection string found. Please add a connection string named 'CSDLConnectionString3' or 'CinemaDBConnectionString3' to Web.config.");
+            }
+
+            return conn;
+        }
+    }
+}

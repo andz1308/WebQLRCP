@@ -1,0 +1,245 @@
+﻿@*@model WebCinema.Models.Suat_Chieu
+
+    @{
+        ViewBag.Title = "Chỉnh Sửa Suất Chiếu";
+        Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+        Response.ContentEncoding = System.Text.Encoding.UTF8;
+        Response.Charset = "utf-8";
+    }
+
+    <div class="content-card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-edit"></i> Chỉnh Sửa Suất Chiếu #@Model.suat_chieu_id</h2>
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+
+        @using (Html.BeginForm("Edit", "ShowtimeManagement", new { id = Model.suat_chieu_id }, FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-error" })
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Phim *</label>
+                        @Html.DropDownList("phim_id", (SelectList)ViewBag.Movies, new { @class = "form-control", required = "required" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Rạp *</label>
+                        @Html.DropDownList("cinemaId", (SelectList)ViewBag.Cinemas, new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Phòng Chiếu *</label>
+                        @Html.DropDownList("phong_chieu_id", (SelectList)ViewBag.Rooms, new { @class = "form-control", required = "required", id = "roomSelect" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngày Chiếu *</label>
+                        @Html.TextBox("ngay_chieu", Model.ngay_chieu.ToString("yyyy-MM-dd"), new { @class = "form-control", type = "date", required = "required" })
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Ca Chiếu *</label>
+                        @Html.DropDownList("ca_chieu_id", (SelectList)ViewBag.Shifts, new { @class = "form-control", required = "required" })
+                        <a href="@Url.Action("Index", "ShiftManagement")" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.5rem; margin-top: 0.5rem; display: inline-block;">
+                            <i class="fas fa-cog"></i> Quản lý ca chiếu
+                        </a>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Giá Vé Gốc *</label>
+                        @Html.TextBoxFor(m => m.gia_ve, new { @class = "form-control", type = "number", min = "0", required = "required", placeholder = "Ví dụ: 80000" })
+                        @Html.ValidationMessageFor(m => m.gia_ve, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ngôn Ngữ</label>
+                        @Html.TextBoxFor(m => m.ngon_ngu, new { @class = "form-control", placeholder = "Ví dụ: Vietsub, Thuyết minh" })
+                        @Html.ValidationMessageFor(m => m.ngon_ngu, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Loại Ngày</label>
+                        <input type="text" class="form-control" value="@(Model.Loai_Ngay != null ? Model.Loai_Ngay.ten_loai_ngay : "Tự động")" readonly style="background: #f5f5f5;" />
+                        <small class="form-text text-muted">Loại ngày được tự động xác định dựa trên ngày chiếu</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: right;">
+                <button type="submit" class="btn btn-success" style="padding: 1rem 2rem;">
+                    <i class="fas fa-save"></i> Cập Nhật
+                </button>
+            </div>
+        }
+    </div>
+
+    @section scripts {
+        <script>
+            $(document).ready(function () {
+                $('#cinemaSelect').change(function () {
+                    var cinemaId = $(this).val();
+                    if (cinemaId) {
+                        $.ajax({
+                            url: '@Url.Action("GetRoomsByCinema")',
+                            type: 'GET',
+                            data: { cinemaId: cinemaId },
+                            success: function (response) {
+                                if (response.success) {
+                                    var roomSelect = $('#roomSelect');
+                                    var currentRoom = roomSelect.val();
+                                    roomSelect.empty();
+                                    roomSelect.append('<option value="">-- Chọn phòng chiếu --</option>');
+                                    $.each(response.rooms, function (index, room) {
+                                        roomSelect.append('<option value="' + room.value + '">' + room.text + '</option>');
+                                    });
+                                    if (currentRoom) {
+                                        roomSelect.val(currentRoom);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+
+                // Set minimum date to today
+                var today = new Date().toISOString().split('T')[0];
+                $('input[name="ngay_chieu"]').attr('min', today);
+            });
+        </script>
+    }*@
+
+@model WebCinema.Models.Suat_Chieu
+
+@{
+    ViewBag.Title = "Chỉnh Sửa Suất Chiếu";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-edit"></i> Chỉnh Sửa Suất Chiếu #@Model.suat_chieu_id
+        </h2>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Quay Lại
+        </a>
+    </div>
+
+    @using (Html.BeginForm("Edit", "ShowtimeManagement", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.suat_chieu_id)
+
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+        <div class="form-grid">
+            <div>
+                <div class="form-group">
+                    <label>Phim *</label>
+                    @Html.DropDownListFor(m => m.phim_id,
+                        (SelectList)ViewBag.Movies,
+                        "-- Chọn phim --",
+                        new { @class = "form-control", required = "required" })
+                    @Html.ValidationMessageFor(m => m.phim_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label>Rạp *</label>
+                    @Html.DropDownList("cinemaId",
+                        (SelectList)ViewBag.Cinemas,
+                        "-- Chọn rạp --",
+                        new { @class = "form-control", required = "required", id = "cinemaSelect" })
+                </div>
+
+                <div class="form-group">
+                    <label>Phòng Chiếu *</label>
+                    @Html.DropDownListFor(m => m.phong_chieu_id,
+                        (SelectList)ViewBag.Rooms,
+                        "-- Chọn phòng chiếu --",
+                        new { @class = "form-control", required = "required", id = "roomSelect" })
+                    @Html.ValidationMessageFor(m => m.phong_chieu_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label>Ngày Chiếu *</label>
+                    @Html.TextBoxFor(m => m.ngay_chieu,
+                        "{0:yyyy-MM-dd}",
+                        new { @class = "form-control", type = "date", required = "required", id = "ngayChieu" })
+                    @Html.ValidationMessageFor(m => m.ngay_chieu, "", new { @class = "text-danger" })
+                </div>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label>Ca Chiếu *</label>
+                    @Html.DropDownListFor(m => m.ca_chieu_id,
+                        (SelectList)ViewBag.Shifts,
+                        "-- Chọn ca chiếu --",
+                        new { @class = "form-control", required = "required" })
+                    @Html.ValidationMessageFor(m => m.ca_chieu_id, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label>Giá Vé Gốc *</label>
+                    @Html.TextBoxFor(m => m.gia_ve,
+                        new { @class = "form-control", type = "number", min = "0", required = "required" })
+                    @Html.ValidationMessageFor(m => m.gia_ve, "", new { @class = "text-danger" })
+                </div>
+
+                <div class="form-group">
+                    <label>Ngôn Ngữ</label>
+                    @Html.TextBoxFor(m => m.ngon_ngu, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    <label>Loại Ngày (Tự động)</label>
+                    <input type="text" class="form-control" value="@(Model.Loai_Ngay?.ten_loai_ngay ?? "Tự động")" readonly />
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align:right; margin-top:20px">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Cập Nhật
+            </button>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        $(function () {
+            var today = new Date().toISOString().split('T')[0];
+            $('#ngayChieu').attr('min', today);
+
+            $('#cinemaSelect').change(function () {
+                $.ajax({
+                    url: '@Url.Action("GetRoomsByCinema")',
+                    data: { cinemaId: $(this).val() },
+                    success: function (response) {
+                        var roomSelect = $('#roomSelect');
+                        roomSelect.empty().append('<option value="">-- Chọn phòng --</option>');
+                        $.each(response.rooms, function (_, room) {
+                            roomSelect.append(`<option value="${room.value}">${room.text}</option>`);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+</style>

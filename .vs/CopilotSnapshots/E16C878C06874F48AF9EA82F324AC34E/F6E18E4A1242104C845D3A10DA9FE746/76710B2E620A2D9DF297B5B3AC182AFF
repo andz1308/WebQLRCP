@@ -1,0 +1,113 @@
+﻿@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Qu?n Lý ??n ??t Vé";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-ticket-alt"></i> Danh Sách ??n ??t Vé</h2>
+    </div>
+
+    <!-- Filter Form -->
+    <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        @using (Html.BeginForm("Index", "BookingManagement", FormMethod.Get))
+        {
+            <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Ngày ??t</label>
+                    <input type="date" name="searchDate" value="@ViewBag.SearchDate" class="form-control" />
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Tr?ng Thái</label>
+                    <select name="status" class="form-control">
+                        <option value="">-- T?t c? --</option>
+                        <option value="?ã xác nh?n" @(ViewBag.Status == "?ã xác nh?n" ? "selected" : "")>?ã xác nh?n</option>
+                        <option value="Ch? xác nh?n" @(ViewBag.Status == "Ch? xác nh?n" ? "selected" : "")>Ch? xác nh?n</option>
+                        <option value="?ã h?y" @(ViewBag.Status == "?ã h?y" ? "selected" : "")>?ã h?y</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm Ki?m
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Mã ??n</th>
+                        <th>Khách Hàng</th>
+                        <th>Ngày ??t</th>
+                        <th>T?ng Ti?n</th>
+                        <th>Tr?ng Thái</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        var statusColor = booking.trang_thai_Dat_Ve == "?ã xác nh?n" ? "#27ae60" :
+                                        booking.trang_thai_Dat_Ve == "Ch? xác nh?n" ? "#f39c12" : "#e74c3c";
+                        <tr>
+                            <td><strong>#@booking.Dat_Ve_id</strong></td>
+                            <td>@(booking.Khach_Hang != null ? booking.Khach_Hang.ho_ten : "N/A")</td>
+                            <td>@(booking.ngay_tao.HasValue ? booking.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")</td>
+                            <td><strong>@booking.tong_tien.ToString("N0") ?</strong></td>
+                            <td>
+                                <span style="padding: 0.3rem 0.8rem; background: @statusColor; color: white; border-radius: 4px; font-size: 0.85rem;">
+                                    @booking.trang_thai_Dat_Ve
+                                </span>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = booking.Dat_Ve_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-eye"></i> Chi Ti?t
+                                </a>
+                                @if (booking.trang_thai_Dat_Ve != "?ã h?y")
+                                {
+                                    <button onclick="cancelBooking(@booking.Dat_Ve_id)" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                        <i class="fas fa-times"></i> H?y
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Không có ??n ??t nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function cancelBooking(id) {
+            if (confirmDelete('B?n có ch?c ch?n mu?n h?y ??n ??t này?')) {
+                $.ajax({
+                    url: '@Url.Action("Cancel")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có l?i x?y ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

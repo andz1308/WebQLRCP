@@ -1,0 +1,98 @@
+﻿@model IEnumerable<WebCinema.Models.Khach_Hang>
+
+@{
+    ViewBag.Title = "Quản Lý Người Dùng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-users"></i> Danh Sách Người Dùng</h2>
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> Thêm Người Dùng
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div style="margin-bottom: 2rem;">
+        @using (Html.BeginForm("Index", "UserManagement", FormMethod.Get))
+        {
+            <div style="display: flex; gap: 1rem;">
+                <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" placeholder="Tìm theo tên, email, số điện thoại..." class="form-control" style="flex: 1;" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Tìm Kiếm
+                </button>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ Tên</th>
+                        <th>Email</th>
+                        <th>Số Điện Thoại</th>
+                        <th>Ngày Đăng Ký</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td><strong>@user.khach_hang_id</strong></td>
+                            <td>@user.ho_ten</td>
+                            <td>@user.email</td>
+                            <td>@(user.so_dien_thoai ?? "N/A")</td>
+                            <td>@(user.ngay_dang_ky.HasValue ? user.ngay_dang_ky.Value.ToString("dd/MM/yyyy") : "N/A")</td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = user.khach_hang_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-eye"></i> Xem
+                                </a>
+                                <a href="@Url.Action("Edit", new { id = user.khach_hang_id })" class="btn btn-secondary" style="padding: 0.5rem 1rem; margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <button onclick="deleteUser(@user.khach_hang_id, '@user.ho_ten')" class="btn btn-danger" style="padding: 0.5rem 1rem;">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Không tìm thấy người dùng nào.</p>
+    }
+</div>
+
+@section scripts {
+    <script>
+        function deleteUser(id, name) {
+            if (confirmDelete('Bạn có chắc chắn muốn xóa người dùng "' + name + '"?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Có lỗi xảy ra.');
+                    }
+                });
+            }
+        }
+    </script>
+}

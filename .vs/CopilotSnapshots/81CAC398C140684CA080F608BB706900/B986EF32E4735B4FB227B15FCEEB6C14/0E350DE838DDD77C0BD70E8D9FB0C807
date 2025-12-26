@@ -1,0 +1,4 @@
+﻿                    @if (movie.ngay_khoi_chieu != default(DateTime))
+                    {
+                        <div class="movie-year">@movie.ngay_khoi_chieu.Year</div>
+                    }

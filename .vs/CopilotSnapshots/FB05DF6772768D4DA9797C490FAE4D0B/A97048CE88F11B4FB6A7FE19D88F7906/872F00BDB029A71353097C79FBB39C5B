@@ -1,0 +1,392 @@
+﻿@{
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+}
+
+@model WebCinema.Models.Dat_Ve
+
+@{
+    ViewBag.Title = "Chi Tiết Vé";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var tickets = ViewBag.Tickets as System.Collections.Generic.List<WebCinema.Models.Ve>;
+    var showtime = ViewBag.Showtime as WebCinema.Models.Suat_Chieu;
+    var isShowtimePassed = (bool)ViewBag.IsShowtimePassed;
+    var cancelRequest = ViewBag.CancelRequest as WebCinema.Models.Yeu_Cau_Huy_Ve;
+}
+
+<style>
+    .ticket-detail-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .ticket-detail-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .detail-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        padding: 1rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border-left: 3px solid #ff6b35;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #ff6b35;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-value {
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .tickets-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .tickets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .ticket-item {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .ticket-qr {
+        font-size: 0.8rem;
+        word-break: break-all;
+        line-height: 1.2;
+    }
+
+    .btn-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.9rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel-ticket {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    .btn-cancel-ticket:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-back {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-back:hover {
+        background: #7f8c8d;
+    }
+
+    .cancel-form {
+        background: #fff3cd;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 2rem;
+        border-left: 4px solid #ff9800;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+
+    .alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-left: 4px solid #17a2b8;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+        border-left: 4px solid #28a745;
+    }
+
+    .refund-info {
+        background: linear-gradient(135deg, #f0f8f5 0%, #e8f5e9 100%);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #27ae60;
+        margin-top: 1rem;
+    }
+
+    .refund-amount {
+        font-size: 1.3rem;
+        color: #27ae60;
+        font-weight: 600;
+    }
+</style>
+
+<div class="ticket-detail-container">
+    <div class="ticket-detail-card">
+        <div class="detail-header">
+            <div class="detail-title">
+                <i class="fas fa-ticket-alt"></i> Chi Tiết Vé #@Model.Dat_Ve_id
+            </div>
+            <a href="@Url.Action("MyTickets")" class="btn-action btn-back">
+                <i class="fas fa-arrow-left"></i> Quay Lại
+            </a>
+        </div>
+
+        <!-- ✅ Hiển thị trạng thái hủy nếu có -->
+        @if (cancelRequest != null)
+        {
+            if (cancelRequest.trang_thai == "Chờ duyệt")
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-hourglass-half"></i> <strong>Yêu cầu hủy đang chờ duyệt</strong><br/>
+                    Ngày gửi: @cancelRequest.ngay_tao.Value.ToString("dd/MM/yyyy HH:mm")<br/>
+                </div>
+            }
+            else if (cancelRequest.trang_thai == "Đã Hủy")
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> <strong>Vé đã hủy thành công</strong><br/>
+                    Số tiền hoàn lại: @cancelRequest.so_tien_hoan_lai?.ToString("N0") ₫<br/>
+                    Ngày duyệt: @cancelRequest.ngay_duyet.Value.ToString("dd/MM/yyyy HH:mm")
+                </div>
+            }
+            else if (cancelRequest.trang_thai == "Từ chối")
+            {
+                <div class="alert alert-warning">
+                    <i class="fas fa-times-circle"></i> <strong>Yêu cầu hủy bị từ chối</strong><br/>
+                    Lý do: @cancelRequest.ghi_chu
+                </div>
+            }
+        }
+
+        <!-- ✅ Cảnh báo nếu vé quá hạn -->
+        @if (isShowtimePassed)
+        {
+            <div class="alert alert-warning">
+                <i class="fas fa-calendar-times"></i> <strong>Suất chiếu đã qua</strong><br/>
+                Bạn không thể hủy vé sau khi suất chiếu diễn ra
+            </div>
+        }
+
+        <!-- Thông tin phim & suất chiếu -->
+        @if (showtime != null)
+        {
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-film"></i> Phim</div>
+                    <div class="info-value">@showtime.Phim.ten_phim</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-calendar"></i> Ngày Chiếu</div>
+                    <div class="info-value">@showtime.ngay_chieu.ToString("dd/MM/yyyy")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-clock"></i> Giờ Chiếu</div>
+                    <div class="info-value">@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-building"></i> Rạp</div>
+                    <div class="info-value">@showtime.Phong_Chieu.Rap.ten_rap</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-door-open"></i> Phòng</div>
+                    <div class="info-value">@showtime.Phong_Chieu.ten_phong</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label"><i class="fas fa-money-bill-wave"></i> Tổng Tiền</div>
+                    <div class="info-value" style="color: #ff6b35; font-weight: 600; font-size: 1.1rem;">
+                        @Model.tong_tien.ToString("N0") ₫
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Danh sách vé & QR code -->
+        <div class="tickets-section">
+            <h3><i class="fas fa-qrcode"></i> Mã QR Vé (@tickets.Count vé)</h3>
+            <div class="tickets-grid">
+                @foreach (var ticket in tickets)
+                {
+                    <div class="ticket-item">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Ghế @ticket.Ghe.so_ghe</div>
+                        <div class="ticket-qr">@ticket.ma_qr_code</div>
+                        <div style="font-size: 0.75rem; margin-top: 0.5rem; opacity: 0.8;">
+                            @(ticket.gia_ve.ToString("N0")) ₫
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ✅ Form hủy vé (nếu chưa hủy) -->
+        @if (cancelRequest == null || cancelRequest.trang_thai == "Từ chối")
+        {
+            if (!isShowtimePassed && !tickets.Any(t => t.trang_thai_ve == "Đã sử dụng" || t.trang_thai_ve == "Đã Hủy"))
+            {
+                <div class="cancel-form">
+                    <h4 style="margin-top: 0;">⚠️ Hủy Vé</h4>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Bạn sẽ nhận được <strong style="color: #27ae60; font-size: 1.1rem;">70%</strong> giá trị vé (trừ 30% phí hủy)
+                    </p>
+
+                    <div class="refund-info">
+                        <div style="margin-bottom: 0.5rem;">Số tiền hoàn lại:</div>
+                        <div class="refund-amount">
+                            @(Math.Round(Model.tong_tien * 0.7m, 0).ToString("N0")) ₫
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                            Gốc: @Model.tong_tien.ToString("N0") ₫ - Phí 30%: @(Math.Round(Model.tong_tien * 0.3m, 0).ToString("N0")) ₫
+                        </div>
+                    </div>
+
+                    <form id="cancelForm" onsubmit="return submitCancelRequest();">
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label class="form-label">
+                                <i class="fas fa-comment"></i> Lý Do Hủy (tùy chọn)
+                            </label>
+                            <textarea name="reason" id="reason" class="form-input form-textarea" 
+                                      placeholder="Ví dụ: Lịch trình bận, không thích phim..."></textarea>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn-action btn-cancel-ticket" style="width: 25%;">
+                                <i class="fas fa-trash"></i> Xác Nhận Hủy Vé
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function submitCancelRequest() {
+            const reason = document.getElementById('reason').value.trim();
+
+            if (!confirm("⚠️ Bạn sắp hủy vé này!\n\n💰 Bạn sẽ nhận được 70% giá trị vé\n(Phí hủy 30%: @(Math.Round(Model.tong_tien * 0.3m, 0).ToString("N0")) ₫)\n\nXác nhận?")) {
+                return false;
+            }
+
+            $.ajax({
+                url: '@Url.Action("RequestCancel", "TicketRefund")',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: $('[name="__RequestVerificationToken"]').val(),
+                    bookingId: @Model.Dat_Ve_id,
+                    reason: reason
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('❌ Có lỗi xảy ra!');
+                }
+            });
+
+            return false;
+        }
+    </script>
+}

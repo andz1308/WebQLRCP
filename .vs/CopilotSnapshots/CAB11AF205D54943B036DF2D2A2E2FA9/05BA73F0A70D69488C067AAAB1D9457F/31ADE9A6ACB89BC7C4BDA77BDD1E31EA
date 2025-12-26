@@ -1,0 +1,141 @@
+﻿using System;
+using System.Linq;
+using System.Timers;
+using WebCinema.Models;
+using WebCinema.Infrastructure;
+
+namespace WebCinema.Services
+{
+    /// <summary>
+    /// Service tự động hủy đơn đặt vé chưa thanh toán sau 10 phút
+    /// </summary>
+    public class BookingExpirationService
+    {
+        private static Timer _expirationTimer;
+        private CSDLDataContext db;
+        private const int EXPIRATION_MINUTES = 10;  // ✅ 10 phút
+
+        public BookingExpirationService()
+        {
+            db = new CSDLDataContext();
+        }
+
+        /// <summary>
+        /// Bắt đầu dịch vụ kiểm tra tự động
+        /// </summary>
+        public static void StartExpirationCheck()
+        {
+            try
+            {
+                _expirationTimer = new Timer();
+                _expirationTimer.Interval = 60000;  // Kiểm tra mỗi 1 phút
+                _expirationTimer.Elapsed += OnTimerElapsed;
+                _expirationTimer.AutoReset = true;
+                _expirationTimer.Start();
+
+                LoggingHelper.LogInfo("✅ BookingExpirationService started");
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Dừng dịch vụ
+        /// </summary>
+        public static void StopExpirationCheck()
+        {
+            if (_expirationTimer != null)
+            {
+                _expirationTimer.Stop();
+                _expirationTimer.Dispose();
+                LoggingHelper.LogInfo("✅ BookingExpirationService stopped");
+            }
+        }
+
+        /// <summary>
+        /// Sự kiện Timer elapsed
+        /// </summary>
+        private static void OnTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                CancelExpiredBookings();
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Hủy các đơn đặt vé quá hạn (chưa thanh toán sau 10 phút)
+        /// </summary>
+        private static void CancelExpiredBookings()
+        {
+            try
+            {
+                using (var db = new CSDLDataContext())
+                {
+                    var now = DateTime.Now;
+                    var expirationTime = now.AddMinutes(-EXPIRATION_MINUTES);
+
+                    // 🔍 Tìm các đơn "Chưa thanh toán" được tạo trước 10 phút
+                    var expiredBookings = db.Dat_Ves
+                        .Where(b => b.trang_thai_Dat_Ve == "Chưa thanh toán" &&
+                                    b.ngay_tao.HasValue &&
+                                    b.ngay_tao.Value <= expirationTime)
+                        .ToList();
+
+                    if (expiredBookings.Count == 0)
+                    {
+                        return;  // Không có đơn nào hết hạn
+                    }
+
+                    LoggingHelper.LogInfo($"⏰ Found {expiredBookings.Count} expired bookings to cancel");
+
+                    foreach (var booking in expiredBookings)
+                    {
+                        try
+                        {
+                            // ✅ CẬP NHẬT TRẠNG THÁI ĐƠNG THÀNH "ĐÃ HỦY"
+                            booking.trang_thai_Dat_Ve = "Đã Hủy";
+
+                            // ✅ QUAY LẠI VÉ VỀ TRẠNG THÁI "TRỐNG" - BƯỚC THIẾT YẾU
+                            var bookingVes = db.Ves.Where(v => v.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+                            foreach (var ticket in bookingVes)
+                            {
+                                ticket.Dat_Ve_id = null;  // ✅ GIẢI PHÓNG VÉ
+                                ticket.trang_thai_ve = "Chưa sử dụng";
+                                ticket.ma_qr_code = null;
+                            }
+
+                            // ✅ XÓA CÁC ĐỒ ĂN LIÊN QUAN
+                            var foodOrders = db.DonHang_DoAns.Where(f => f.Dat_Ve_id == booking.Dat_Ve_id).ToList();
+                            foreach (var food in foodOrders)
+                            {
+                                db.DonHang_DoAns.DeleteOnSubmit(food);
+                            }
+
+                            LoggingHelper.LogInfo($"⏰ Cancelled expired booking ID={booking.Dat_Ve_id}, Customer={booking.khach_hang_id}, Released {bookingVes.Count} seats");
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggingHelper.LogError(ex);
+                        }
+                    }
+
+                    // ✅ LƯU TẤT CẢ THAY ĐỔI - QUAN TRỌNG!
+                    db.SubmitChanges();
+
+                    LoggingHelper.LogInfo($"✅ Successfully cancelled {expiredBookings.Count} expired bookings and released seats");
+                }
+            }
+            catch (Exception ex)
+            {
+                LoggingHelper.LogError(ex);
+            }
+        }
+    }
+}

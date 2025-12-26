@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebCinema.Services;
+using WebCinema.Models;
+
+namespace WebCinema.Controllers
+{
+    public class HomeController : Controller
+    {
+        private MovieService movieService = new MovieService();
+
+        public ActionResult Index()//Trang chủ
+        {
+            // Lấy danh sách phim đang chiếu
+            var movies = movieService.GetNowShowingMovies();
+            
+            // Tạo danh sách ViewModel để truyền thêm thông tin
+            var movieViewModels = movies.Select(m => new
+            {
+                Movie = m,
+                Genres = movieService.GetMovieGenres(m.phim_id),
+                AverageRating = movieService.GetAverageRating(m.phim_id),
+                RatingCount = movieService.GetRatingCount(m.phim_id)
+            }).ToList();
+
+            return View(movieViewModels);
+        }
+
+        public ActionResult Detail(int id)//Trang chi tiết phim
+        {
+            // Lấy thông tin phim
+            var movie = movieService.GetMovieById(id);
+            
+            if (movie == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Lấy thông tin bổ sung
+            ViewBag.Movie = movie;
+            ViewBag.Genres = movieService.GetMovieGenres(id);
+            ViewBag.Cast = movieService.GetMovieCast(id);
+            ViewBag.AverageRating = movieService.GetAverageRating(id);
+            ViewBag.RatingCount = movieService.GetRatingCount(id);
+            ViewBag.Showtimes = movieService.GetMovieShowtimes(id);
+
+            return View();
+        }
+
+        public ActionResult About()
+        {
+            ViewBag.Message = "Your application description page.";
+
+            return View();
+        }
+
+        public ActionResult Contact()
+        {
+            ViewBag.Message = "Your contact page.";
+
+            return View();
+        }
+    }
+}

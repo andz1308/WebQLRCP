@@ -1,0 +1,76 @@
+﻿@model WebCinema.Models.Phong_Chieu
+
+@{
+    ViewBag.Title = "Tạo Phòng Chiếu Mới";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+    Response.ContentEncoding = System.Text.Encoding.UTF8;
+    Response.Charset = "utf-8";
+    bool hasSpecificRap = ViewBag.HasSpecificRap ?? false;
+}
+
+<h2>Tạo Phòng Chiếu Mới</h2>
+<hr />
+
+@using (Html.BeginForm("Create", "Auditori", FormMethod.Post, new { @class = "form-horizontal" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    @if (hasSpecificRap)
+    {
+<div class="form-group">
+    <label class="control-label col-md-2">Thuộc Rạp</label>
+    <div class="col-md-10">
+        <p class="form-control-static">
+            <strong>@ViewBag.RapName</strong>
+        </p>
+        @Html.HiddenFor(model => model.rap_id)
+    </div>
+</div>
+    }
+    else
+    {
+<div class="form-group">
+    @Html.LabelFor(model => model.rap_id, "Chọn rạp", new { @class = "control-label col-md-2" })
+    <div class="col-md-10">
+        @Html.DropDownList("rap_id", (SelectList)ViewBag.RapList, "--- Chọn rạp ---", new { @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.rap_id, "", new { @class = "text-danger" })
+    </div>
+</div>
+    }
+
+<div class="form-group">
+    @Html.LabelFor(model => model.ten_phong, "Tên phòng chiếu", new { @class = "control-label col-md-2" })
+    <div class="col-md-10">
+        @Html.TextBoxFor(model => model.ten_phong, new { @class = "form-control", placeholder = "VD: Phòng A1, Phòng B2" })
+        @Html.ValidationMessageFor(model => model.ten_phong, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    @Html.LabelFor(model => model.so_hang, "Số hàng ghế", new { @class = "control-label col-md-2" })
+    <div class="col-md-10">
+        @Html.TextBoxFor(model => model.so_hang, new { @type = "number", @min = "1", @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.so_hang, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    @Html.LabelFor(model => model.so_cot, "Số cột ghế", new { @class = "control-label col-md-2" })
+    <div class="col-md-10">
+        @Html.TextBoxFor(model => model.so_cot, new { @type = "number", @min = "1", @class = "form-control" })
+        @Html.ValidationMessageFor(model => model.so_cot, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-10">
+        <button type="submit" class="btn btn-success">
+            <i class="glyphicon glyphicon-plus"></i> Tạo Phòng Chiếu
+        </button>
+        <a href="javascript:history.back()" class="btn btn-default">
+            <i class="glyphicon glyphicon-remove"></i> Quay Lại
+        </a>
+    </div>
+</div>
+}

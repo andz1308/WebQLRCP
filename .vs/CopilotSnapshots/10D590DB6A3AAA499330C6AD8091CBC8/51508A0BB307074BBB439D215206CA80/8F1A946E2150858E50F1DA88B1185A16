@@ -1,0 +1,411 @@
+﻿@model IEnumerable<WebCinema.Models.Dat_Ve>
+
+@{
+    ViewBag.Title = "Quản Lý Vé & Đơn Hàng";
+    Layout = "~/Areas/Admin/Views/Shared/LayoutAdmin.cshtml";
+}
+
+<div class="content-card">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-ticket-alt"></i> Quản Lý Vé & Đơn Hàng</h2>
+    </div>
+
+    <!-- Filter Section -->
+    <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+        @using (Html.BeginForm("Index", "TicketManagement", FormMethod.Get))
+        {
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Tìm kiếm (Khách hàng/Phim/Mã đơn)</label>
+                    <input type="text" name="searchText" value="@ViewBag.SearchText" class="form-control" placeholder="Nhập tên khách hoặc tên phim..." />
+                </div>
+
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-control">
+                        <option value="">-- Tất cả --</option>
+                        <option value="Đã xác nhận" @(ViewBag.Status == "Đã xác nhận" ? "selected" : "")>Đã xác nhận</option>
+                        <option value="Chờ xác nhận" @(ViewBag.Status == "Chờ xác nhận" ? "selected" : "")>Chờ xác nhận</option>
+                        <option value="Đã hủy" @(ViewBag.Status == "Đã hủy" ? "selected" : "")>Đã hủy</option>
+                        <option value="Vé đã hết hạn" @(ViewBag.Status == "Vé đã hết hạn" ? "selected" : "")>Vé đã hết hạn</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                </div>
+
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary" style="flex: 1;">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Report Link -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="@Url.Action("Report")" class="btn btn-info" style="display: inline-block;">
+            <i class="fas fa-chart-bar"></i> Xem Báo Cáo
+        </a>
+    </div>
+
+    <!-- Booking List -->
+    @if (Model != null && Model.Any())
+    {
+        <div style="overflow-x: auto;">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã Đơn</th>
+                        <th>Khách Hàng</th>
+                        <th>Phim</th>
+                        <th>Rạp</th>
+                        <th>Ngày Chiếu</th>
+                        <th>Số Ghế</th>
+                        <th>Trạng Thái Vé</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái Đơn</th>
+                        <th>Ngày Đặt</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model)
+                    {
+                        var firstTicket = booking.Ves.FirstOrDefault();
+                        var showtime = firstTicket?.Suat_Chieu;
+                        var cinema = showtime?.Phong_Chieu?.Rap;
+                        var movie = showtime?.Phim;
+                        var seats = string.Join(", ", booking.Ves.Select(v => v.Ghe.so_ghe));
+                        
+                        // Determine ticket status badge
+                        var ticketStatus = firstTicket?.trang_thai_ve ?? "Chưa xác định";
+                        var ticketStatusClass = ticketStatus == "Chưa sử dụng" ? "info" 
+                                              : ticketStatus == "Đã sử dụng" ? "success" 
+                                              : ticketStatus == "Vé đã hết hạn" ? "warning"
+                                              : "danger";
+                        
+                        var bookingStatusClass = booking.trang_thai_Dat_Ve == "Đã xác nhận" ? "success" 
+                                        : booking.trang_thai_Dat_Ve == "Chờ xác nhận" ? "warning" 
+                                        : "danger";
+
+                        <tr>
+                            <td>
+                                <strong>#@booking.Dat_Ve_id</strong>
+                            </td>
+                            <td>
+                                @if (booking.Khach_Hang != null)
+                                {
+                                    <div>@booking.Khach_Hang.ho_ten</div>
+                                    <small style="color: #999;">@booking.Khach_Hang.email</small>
+                                }
+                            </td>
+                            <td>
+                                @if (movie != null)
+                                {
+                                    @movie.ten_phim
+                                }
+                            </td>
+                            <td>
+                                @if (cinema != null)
+                                {
+                                    <div>@cinema.ten_rap</div>
+                                    <small style="color: #999;">@showtime.Phong_Chieu.ten_phong</small>
+                                }
+                            </td>
+                            <td>
+                                @if (showtime != null)
+                                {
+                                    <div>@showtime.ngay_chieu.ToString("dd/MM/yyyy")</div>
+                                    <small style="color: #999;">@showtime.Ca_Chieu.gio_bat_dau.ToString(@"hh\:mm")</small>
+                                }
+                            </td>
+                            <td style="max-width: 150px; word-wrap: break-word;">
+                                @seats
+                            </td>
+                            <td>
+                                <span class="badge badge-@ticketStatusClass">@ticketStatus</span>
+                            </td>
+                            <td>
+                                <strong style="color: #ff6b35;">@booking.tong_tien.ToString("N0") ₫</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-@bookingStatusClass">@booking.trang_thai_Dat_Ve</span>
+                            </td>
+                            <td>
+                                <small>@booking.ngay_tao.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Details", new { id = booking.Dat_Ve_id })" class="btn btn-sm btn-info" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="showStatusModal(@booking.Dat_Ve_id)" title="Thay đổi trạng thái">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteBooking(@booking.Dat_Ve_id)" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p style="text-align: center; color: #999; padding: 2rem;">Không có đơn hàng nào.</p>
+    }
+</div>
+
+<!-- Status Modal -->
+<div id="statusModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 2rem; border-radius: 12px; width: 50%; max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: #2c3e50; margin: 0;"><i class="fas fa-edit"></i> Thay Đổi Trạng Thái</h3>
+            <span onclick="closeStatusModal()" style="cursor: pointer; font-size: 1.5rem; color: #999;">&times;</span>
+        </div>
+        <input type="hidden" id="bookingId" />
+        <div class="form-group">
+            <label class="form-label">Trạng Thái Mới *</label>
+            <select id="newStatus" class="form-control">
+                <option value="">-- Chọn trạng thái --</option>
+                <option value="Đã xác nhận">Đã xác nhận</option>
+                <option value="Chờ xác nhận">Chờ xác nhận</option>
+                <option value="Đã hủy">Đã hủy</option>
+            </select>
+        </div>
+        <div style="text-align: right; margin-top: 1.5rem;">
+            <button onclick="closeStatusModal()" class="btn btn-secondary" style="margin-right: 0.5rem;">Hủy</button>
+            <button onclick="updateStatus()" class="btn btn-primary">
+                <i class="fas fa-save"></i> Cập Nhật
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    .table thead tr {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: #ff6b35;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #ff8555;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover {
+        background: #138496;
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        color: black;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+    }
+
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c82333;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:hover,
+    .form-control:focus {
+        border-color: #ff6b35;
+        outline: none;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+@section scripts {
+    <script>
+        function showStatusModal(bookingId) {
+            document.getElementById('bookingId').value = bookingId;
+            document.getElementById('newStatus').value = '';
+            document.getElementById('statusModal').style.display = 'block';
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').style.display = 'none';
+        }
+
+        function updateStatus() {
+            var bookingId = document.getElementById('bookingId').value;
+            var newStatus = document.getElementById('newStatus').value;
+
+            if (!newStatus) {
+                alert('Vui lòng chọn trạng thái mới!');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateStatus")',
+                type: 'POST',
+                data: {
+                    id: bookingId,
+                    newStatus: newStatus
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra!');
+                }
+            });
+        }
+
+        function deleteBooking(bookingId) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { id: bookingId },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra!');
+                    }
+                });
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('statusModal');
+            if (event.target == modal) {
+                closeStatusModal();
+            }
+        }
+    </script>
+}
