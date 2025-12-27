@@ -85,6 +85,24 @@ namespace WebCinema.Areas.Admin.Controllers
                 if (ModelState.ContainsKey("loai_ngay_id"))
                     ModelState["loai_ngay_id"].Errors.Clear();
 
+                // ✅ VALIDATION: Kiểm tra ngày chiếu không quá 1 tháng
+                var today = DateTime.Today;
+                var maxDate = today.AddMonths(1);
+                
+                if (showtime.ngay_chieu.Date < today)
+                {
+                    TempData["ErrorMessage"] = "Không thể chọn ngày chiếu trong quá khứ!";
+                    SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                    return View(showtime);
+                }
+                
+                if (showtime.ngay_chieu.Date > maxDate)
+                {
+                    TempData["ErrorMessage"] = $"Chỉ được chọn ngày chiếu trong vòng 1 tháng tới (từ {today:dd/MM/yyyy} đến {maxDate:dd/MM/yyyy})!";
+                    SetCreateViewBag(cinemaId, showtime.phong_chieu_id);
+                    return View(showtime);
+                }
+
                 if (ModelState.IsValid)
                 {
                     if (!db.Phong_Chieus.Any(pc => pc.rap_id == cinemaId))
